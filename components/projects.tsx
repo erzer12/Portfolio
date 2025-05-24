@@ -13,7 +13,7 @@ const projects = [
     description:
       "Delivers news with GPT summarization, user preferences, and translations. Built with Flask, MongoDB, and Discord.py.",
     technologies: ["Python", "Flask", "MongoDB", "Discord.py", "GPT", "API Integration"],
-    image: "/placeholder.svg?height=300&width=500",
+    image: "/images/NewsHunt Bot.png",
   },
   // Additional projects can be added here
 ]
@@ -78,7 +78,7 @@ export default function Projects() {
               <Card className="h-full overflow-hidden">
                 <div className="h-48 overflow-hidden">
                   <img
-                    src={project.image || "/images/NewsHunt Bot.png"}
+                    src={project.image || "/placeholder.svg"}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
