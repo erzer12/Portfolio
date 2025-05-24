@@ -48,6 +48,9 @@ Name: ${name}
 Email: ${email}
 Message: ${message}
       `,
+      headers: {
+        "Reply-To": email, // ✅ So replies go to the client's email
+      },
     })
 
     await client.close()
