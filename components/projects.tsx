@@ -78,7 +78,7 @@ export default function Projects() {
               <Card className="h-full overflow-hidden">
                 <div className="h-48 overflow-hidden">
                   <img
-                    src={project.image || "/placeholder.svg"}
+                    src={project.image || "/images/NewsHunt Bot.png"}
                     alt={project.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   />
