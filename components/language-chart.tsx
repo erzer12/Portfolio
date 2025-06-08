@@ -69,7 +69,7 @@ export default function LanguageChart() {
         <CardTitle>Programming Languages</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]" ref={chartRef}>
+        <div className="h-[300px] relative bg-background/50 rounded-lg p-2" ref={chartRef}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -106,10 +106,14 @@ export default function LanguageChart() {
                   return [`${value} repos (${language?.percentage}%)`, name]
                 }}
                 contentStyle={{
-                  backgroundColor: "var(--background)",
-                  borderColor: "var(--border)",
+                  backgroundColor: "hsl(var(--popover))",
+                  borderColor: "hsl(var(--border))",
                   borderRadius: "var(--radius)",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                  opacity: 1,
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid hsl(var(--border))",
+                  color: "hsl(var(--popover-foreground))",
                 }}
               />
               <Legend

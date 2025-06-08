@@ -1,25 +1,30 @@
-import Header from "@/components/header"
+import EnhancedHeader from "@/components/enhanced-header"
 import AboutMe from "@/components/about-me"
-import Statistics from "@/components/statistics"
+import UpdatedStatistics from "@/components/updated-statistics"
 import Skills from "@/components/skills"
 import Projects from "@/components/projects"
-import GitHubSection from "@/components/github-section"
+import EnhancedGitHubSection from "@/components/enhanced-github-section"
 import Education from "@/components/education"
 import Certifications from "@/components/certifications"
-import Contact from "@/components/contact"
+import ToolkitSection from "@/components/toolkit-section"
+import EnhancedContact from "@/components/enhanced-contact"
 import { HoverCard } from "@/components/hover-card"
+import { Toaster } from "@/components/ui/toaster"
+import CollaborationCTA from "@/components/collaboration-cta"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <EnhancedHeader />
+
+      {/* Add top padding to account for fixed header */}
       <main className="container mx-auto px-4 py-8 space-y-20">
         <HoverCard>
           <AboutMe />
         </HoverCard>
 
         <HoverCard>
-          <Statistics />
+          <UpdatedStatistics />
         </HoverCard>
 
         <HoverCard>
@@ -31,8 +36,12 @@ export default function Home() {
         </HoverCard>
 
         <HoverCard>
-          <GitHubSection />
+          <EnhancedGitHubSection />
         </HoverCard>
+
+        <ToolkitSection />
+
+        <CollaborationCTA />
 
         <HoverCard>
           <Education />
@@ -42,14 +51,17 @@ export default function Home() {
           <Certifications />
         </HoverCard>
 
-        <HoverCard>
-          <Contact />
-        </HoverCard>
+        <EnhancedContact />
       </main>
 
-      <footer className="py-6 text-center text-muted-foreground">
-        <p>© {new Date().getFullYear()} Harshil P. All rights reserved.</p>
+      <footer className="py-6 text-center text-muted-foreground border-t mt-20">
+        <div className="container mx-auto px-4">
+          <p>© {new Date().getFullYear()} Harshil P. All rights reserved.</p>
+          <p className="text-sm mt-2">Built with Next.js, TypeScript, and Supabase</p>
+        </div>
       </footer>
+
+      <Toaster />
     </div>
   )
 }

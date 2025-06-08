@@ -13,7 +13,7 @@ const projects = [
     description:
       "Delivers news with GPT summarization, user preferences, and translations. Built with Flask, MongoDB, and Discord.py.",
     technologies: ["Python", "Flask", "MongoDB", "Discord.py", "GPT", "API Integration"],
-    image: "/images/NewsHunt Bot.png", // Make sure this file exists in /public/images
+    image: "/images/newshunt-bot.png", // Make sure this file exists in /public/images
   },
   // Add more projects as needed
 ]
@@ -66,11 +66,7 @@ export default function Projects() {
   return (
     <section id="projects" className="py-10">
       <SectionHeading>Projects</SectionHeading>
-      <div
-        ref={carouselRef}
-        className="flex overflow-x-auto pb-8 hide-scrollbar"
-        style={{ scrollBehavior: "smooth" }}
-      >
+      <div ref={carouselRef} className="flex overflow-x-auto pb-8 hide-scrollbar" style={{ scrollBehavior: "smooth" }}>
         <div className="flex gap-6 min-w-max">
           {projects.map((project) => (
             <motion.div
@@ -85,6 +81,7 @@ export default function Projects() {
                     src={project.image ?? "/placeholder.svg"}
                     alt={project.title || "Project"}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    loading="lazy"
                   />
                 </div>
                 <CardContent className="p-6">
