@@ -1,3 +1,5 @@
+import { withNetlify } from '@netlify/next'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -9,6 +11,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    appDir: true,
+  },
 }
 
-export default nextConfig
+export default withNetlify(nextConfig)
