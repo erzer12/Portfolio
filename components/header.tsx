@@ -29,8 +29,8 @@ export default function EnhancedHeader() {
     setIsDownloading(true)
     try {
       const link = document.createElement("a")
-      link.href = "/Harshil_P_Resume.pdf"
-      link.setAttribute("download", "Harshil_P_Resume.pdf")
+      link.href = "/resume.pdf"
+      link.setAttribute("download", "resume.pdf")
       link.setAttribute("target", "_blank")
       document.body.appendChild(link)
       link.click()
