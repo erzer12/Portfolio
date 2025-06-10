@@ -12,6 +12,7 @@ export default function EnhancedHeader() {
   const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -23,6 +24,23 @@ export default function EnhancedHeader() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const handleResumeDownload = async () => {
+    setIsDownloading(true)
+    try {
+      const link = document.createElement("a")
+      link.href = "/Harshil_P_Resume.pdf"
+      link.setAttribute("download", "Harshil_P_Resume.pdf")
+      link.setAttribute("target", "_blank")
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error("Download failed:", error)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   if (!mounted) return null
 
@@ -113,9 +131,15 @@ export default function EnhancedHeader() {
 
             {/* Download Resume Button */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline" size="sm" className="hidden lg:flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden lg:flex items-center gap-2"
+                onClick={handleResumeDownload}
+                disabled={isDownloading}
+              >
                 <Download className="h-4 w-4" />
-                Resume
+                {isDownloading ? "Downloading..." : "Resume"}
               </Button>
             </motion.div>
 
@@ -171,6 +195,20 @@ export default function EnhancedHeader() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Mobile Resume Download */}
+                <div className="px-4 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full flex items-center gap-2"
+                    onClick={handleResumeDownload}
+                    disabled={isDownloading}
+                  >
+                    <Download className="h-4 w-4" />
+                    {isDownloading ? "Downloading..." : "Download Resume"}
+                  </Button>
+                </div>
 
                 {/* Mobile Social Links */}
                 <div className="flex items-center justify-center gap-4 pt-4 border-t">
