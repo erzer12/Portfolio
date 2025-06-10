@@ -61,7 +61,7 @@ export default function AboutMe() {
                 <div className="space-y-3 text-center">
                   <div className="flex items-center justify-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-primary" />
-                    <span>Kottarakkara, Kerala, India</span>
+                    <span>Pathanamthitta, Kerala, India</span>
                   </div>
 
                   <div className="flex items-center justify-center gap-2 text-sm">
