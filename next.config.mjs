@@ -1,4 +1,5 @@
-import { withNetlify } from '@netlify/next'
+import netlifyPlugin from '@netlify/next'
+const { withNetlify } = netlifyPlugin
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
