@@ -1,8 +1,10 @@
 "use server"
 
-import { createClient } from "@/supabase/server"
-import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
 import { headers } from "next/headers"
+
+// Create a single server-side client
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 export async function submitContactForm(formData: FormData) {
   try {
@@ -14,9 +16,11 @@ export async function submitContactForm(formData: FormData) {
       return { success: false, error: "All fields are required" }
     }
 
-    // Create Supabase client with proper SSR setup
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { success: false, error: "Please enter a valid email address" }
+    }
 
     // Get client info
     const headersList = headers()
@@ -24,52 +28,42 @@ export async function submitContactForm(formData: FormData) {
     const forwarded = headersList.get("x-forwarded-for")
     const ipAddress = forwarded ? forwarded.split(",")[0] : "127.0.0.1"
 
-    // Insert into Supabase
+    console.log("Attempting to insert contact submission...")
+
+    // Insert into Supabase with better error handling
     const { data, error } = await supabase
       .from("contact_submissions")
-      .insert([
-        {
-          name,
-          email,
-          message,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-        },
-      ])
+      .insert({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        message: message.trim(),
+        ip_address: ipAddress,
+        user_agent: userAgent,
+      })
       .select()
+      .single()
 
     if (error) {
-      console.error("Supabase error:", error)
-      return { success: false, error: "Failed to save submission. Please try again." }
-    }
+      console.error("Supabase insertion error:", error)
 
-    // Optional: Send email notification (don't fail if this doesn't work)
-    try {
-      // Only attempt email if the edge function exists
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({ name, email, message }),
-        })
-
-        // Don't throw error if email service fails
-        if (!emailResponse.ok) {
-          console.log("Email service unavailable, but form submitted successfully")
-        }
+      // Handle specific error types
+      if (error.code === "PGRST116") {
+        return { success: false, error: "Database table not found. Please contact the administrator." }
       }
-    } catch (emailError) {
-      // Email service is optional - don't fail the whole submission
-      console.log("Email service not available, but form submitted successfully:", emailError)
+
+      if (error.message?.includes("permission")) {
+        return { success: false, error: "Permission denied. Please try again later." }
+      }
+
+      return { success: false, error: "Failed to save your message. Please try again." }
     }
+
+    console.log("Contact submission saved successfully:", data)
 
     return {
       success: true,
       message: "Thank you for your message! I'll get back to you soon.",
-      data: data?.[0],
+      data: data,
     }
   } catch (error) {
     console.error("Contact form error:", error)

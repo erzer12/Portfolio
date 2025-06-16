@@ -30,25 +30,46 @@ export default function EnhancedContact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Basic client-side validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+        duration: 3000,
+      })
+      return
+    }
+
     startTransition(async () => {
-      const formDataObj = new FormData()
-      formDataObj.append("name", formData.name)
-      formDataObj.append("email", formData.email)
-      formDataObj.append("message", formData.message)
+      try {
+        const formDataObj = new FormData()
+        formDataObj.append("name", formData.name)
+        formDataObj.append("email", formData.email)
+        formDataObj.append("message", formData.message)
 
-      const result = await submitContactForm(formDataObj)
+        const result = await submitContactForm(formDataObj)
 
-      if (result.success) {
-        toast({
-          title: "Message sent!",
-          description: result.message,
-          duration: 5000,
-        })
-        setFormData({ name: "", email: "", message: "" })
-      } else {
+        if (result.success) {
+          toast({
+            title: "Message sent!",
+            description: result.message,
+            duration: 5000,
+          })
+          setFormData({ name: "", email: "", message: "" })
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+            duration: 5000,
+          })
+        }
+      } catch (error) {
+        console.error("Form submission error:", error)
         toast({
           title: "Error",
-          description: result.error,
+          description: "Something went wrong. Please try again.",
           variant: "destructive",
           duration: 5000,
         })

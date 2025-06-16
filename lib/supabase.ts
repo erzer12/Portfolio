@@ -1,15 +1,7 @@
-import { createClient as createBrowserClient } from "@/supabase/client"
-import { createClient as createServerClient } from "@/supabase/server"
-import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
 
-// Client-side Supabase client
-export const supabase = createBrowserClient()
-
-// Server-side Supabase client
-export const getServerSupabase = () => {
-  const cookieStore = cookies()
-  return createServerClient(cookieStore)
-}
+// Create a single client instance to avoid multiple GoTrueClient instances
+export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 // Type definitions for your database
 export type ContactSubmission = {
@@ -20,4 +12,9 @@ export type ContactSubmission = {
   ip_address?: string
   user_agent?: string
   submitted_at?: string
+}
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 }
