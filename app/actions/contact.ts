@@ -3,22 +3,69 @@
 import { createClient } from "@supabase/supabase-js"
 import { headers } from "next/headers"
 
-// Create a single server-side client
+// Create a single server-side client with better error handling
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+console.log("Supabase URL:", supabaseUrl ? "Set" : "Missing")
+console.log("Supabase Key:", supabaseKey ? "Set" : "Missing")
+
 if (!supabaseUrl || !supabaseKey) {
   console.error("Missing Supabase environment variables")
-  throw new Error("Configuration error. Please try again later.")
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null
+
+// Helper function to extract error details
+function extractErrorDetails(error: any) {
+  const details: any = {}
+
+  // Try to get all possible error properties
+  try {
+    details.message = error?.message || "No message"
+    details.code = error?.code || "No code"
+    details.details = error?.details || "No details"
+    details.hint = error?.hint || "No hint"
+    details.status = error?.status || "No status"
+    details.statusText = error?.statusText || "No statusText"
+
+    // Get all enumerable properties
+    Object.keys(error || {}).forEach((key) => {
+      details[key] = error[key]
+    })
+
+    // Try to stringify the entire error
+    details.fullError = JSON.stringify(error)
+
+    // Get constructor name
+    details.constructor = error?.constructor?.name || "Unknown"
+
+    // Get all property names (including non-enumerable)
+    if (error) {
+      details.allProperties = Object.getOwnPropertyNames(error)
+    }
+  } catch (e) {
+    details.extractionError = "Failed to extract error details"
+  }
+
+  return details
+}
 
 export async function submitContactForm(formData: FormData) {
   try {
+    // Check if Supabase is configured
+    if (!supabase) {
+      return {
+        success: false,
+        error: "Database not configured. Please check environment variables.",
+      }
+    }
+
     const name = formData.get("name") as string
     const email = formData.get("email") as string
     const message = formData.get("message") as string
+
+    console.log("Form data received:", { name: !!name, email: !!email, message: !!message })
 
     if (!name || !email || !message) {
       return { success: false, error: "All fields are required" }
@@ -36,20 +83,6 @@ export async function submitContactForm(formData: FormData) {
     const forwarded = headersList.get("x-forwarded-for")
     const ipAddress = forwarded ? forwarded.split(",")[0] : "127.0.0.1"
 
-    console.log("Attempting to insert contact submission...")
-
-    // Test the connection first
-    const { data: testData, error: testError } = await supabase
-      .from("contact_submissions")
-      .select("count", { count: "exact", head: true })
-
-    if (testError) {
-      console.error("Supabase connection test failed:", testError)
-      return { success: false, error: "Database connection failed. Please try again later." }
-    }
-
-    console.log("Supabase connection test successful")
-
     // Prepare the data
     const submissionData = {
       name: name.trim(),
@@ -59,38 +92,35 @@ export async function submitContactForm(formData: FormData) {
       user_agent: userAgent,
     }
 
-    console.log("Inserting data:", submissionData)
+    console.log("Attempting to insert:", submissionData)
 
-    // Insert into Supabase
+    // Try the insertion with comprehensive error handling
     const { data, error } = await supabase.from("contact_submissions").insert(submissionData).select()
 
     if (error) {
-      console.error("Supabase insertion error:", JSON.stringify(error, null, 2))
-      console.error("Error details:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      })
+      console.error("Raw error object:", error)
+      console.error("Error type:", typeof error)
+      console.error("Error instanceof Error:", error instanceof Error)
 
-      // Handle specific error types
-      if (error.code === "PGRST116") {
-        return { success: false, error: "Database table not found. Please contact the administrator." }
+      const errorDetails = extractErrorDetails(error)
+      console.error("Extracted error details:", errorDetails)
+
+      // Return a more informative error message
+      let errorMessage = "Failed to save your message."
+
+      if (errorDetails.message && errorDetails.message !== "No message") {
+        errorMessage = errorDetails.message
+      } else if (errorDetails.code && errorDetails.code !== "No code") {
+        errorMessage = `Database error (${errorDetails.code})`
+      } else if (errorDetails.status) {
+        errorMessage = `Request failed with status ${errorDetails.status}`
       }
 
-      if (error.code === "42501") {
-        return { success: false, error: "Permission denied. Please check database policies." }
+      return {
+        success: false,
+        error: errorMessage,
+        debug: errorDetails, // Include debug info for development
       }
-
-      if (error.message?.includes("permission")) {
-        return { success: false, error: "Permission denied. Please try again later." }
-      }
-
-      if (error.message?.includes("relation") && error.message?.includes("does not exist")) {
-        return { success: false, error: "Database table not found. Please contact support." }
-      }
-
-      return { success: false, error: `Database error: ${error.message || "Unknown error"}` }
     }
 
     console.log("Contact submission saved successfully:", data)
@@ -101,10 +131,16 @@ export async function submitContactForm(formData: FormData) {
       data: data?.[0],
     }
   } catch (error) {
-    console.error("Contact form error:", error)
+    console.error("Outer catch error:", error)
+    console.error("Outer error type:", typeof error)
+
+    const errorDetails = extractErrorDetails(error)
+    console.error("Outer error details:", errorDetails)
+
     return {
       success: false,
       error: `Something went wrong: ${error instanceof Error ? error.message : "Unknown error"}`,
+      debug: errorDetails,
     }
   }
 }
