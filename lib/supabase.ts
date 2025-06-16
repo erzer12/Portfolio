@@ -1,7 +1,15 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient as createBrowserClient } from "@/supabase/client"
+import { createClient as createServerClient } from "@/supabase/server"
+import { cookies } from "next/headers"
 
-// Create a single supabase client for interacting with your database
-export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+// Client-side Supabase client
+export const supabase = createBrowserClient()
+
+// Server-side Supabase client
+export const getServerSupabase = () => {
+  const cookieStore = cookies()
+  return createServerClient(cookieStore)
+}
 
 // Type definitions for your database
 export type ContactSubmission = {

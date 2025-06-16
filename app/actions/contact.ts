@@ -1,9 +1,8 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@/supabase/server"
+import { cookies } from "next/headers"
 import { headers } from "next/headers"
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 export async function submitContactForm(formData: FormData) {
   try {
@@ -14,6 +13,10 @@ export async function submitContactForm(formData: FormData) {
     if (!name || !email || !message) {
       return { success: false, error: "All fields are required" }
     }
+
+    // Create Supabase client with proper SSR setup
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
 
     // Get client info
     const headersList = headers()
