@@ -225,10 +225,10 @@ async function ensureTableExists(): Promise<boolean> {
 }
 
 export async function submitContactForm(formData: FormData) {
-  try {
-    // Get headers at the top level of the server action
-    const headersList = await headers()
+  // Get headers at the top level of the server action - BEFORE the try block
+  const headersList = await headers()
 
+  try {
     // Check if Supabase is configured
     if (!supabase) {
       return { 
