@@ -5,6 +5,19 @@ import { headers } from "next/headers"
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
+// Helper function to create fetch with timeout
+function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 10000): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  return fetch(url, {
+    ...options,
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timeoutId)
+  })
+}
+
 export async function submitContactForm(formData: FormData) {
   try {
     const name = formData.get("name") as string
@@ -42,14 +55,14 @@ export async function submitContactForm(formData: FormData) {
 
     // Send email notification (optional - you can set up email service)
     try {
-      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
+      const emailResponse = await fetchWithTimeout(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
         },
         body: JSON.stringify({ name, email, message }),
-      })
+      }, 10000) // 10 second timeout
     } catch (emailError) {
       console.log("Email service not available, but form submitted successfully")
     }

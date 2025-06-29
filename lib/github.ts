@@ -133,11 +133,24 @@ const LANGUAGE_COLORS: Record<string, string> = {
   default: "#8257e5",
 }
 
+// Helper function to create fetch with timeout
+function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 10000): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  return fetch(url, {
+    ...options,
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timeoutId)
+  })
+}
+
 export async function fetchGitHubUser(): Promise<GitHubUser | null> {
   try {
-    const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, {
+    const response = await fetchWithTimeout(`https://api.github.com/users/${GITHUB_USERNAME}`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
-    })
+    }, 10000) // 10 second timeout
 
     if (!response.ok) {
       throw new Error("Failed to fetch GitHub user")
@@ -152,9 +165,9 @@ export async function fetchGitHubUser(): Promise<GitHubUser | null> {
 
 export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
   try {
-    const response = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`, {
+    const response = await fetchWithTimeout(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`, {
       next: { revalidate: 3600 }, // Cache for 1 hour
-    })
+    }, 10000) // 10 second timeout
 
     if (!response.ok) {
       throw new Error("Failed to fetch GitHub repos")
