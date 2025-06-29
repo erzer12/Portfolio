@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Validate environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('Missing Supabase environment variables')
+}
+
+// Validate URL format
+let supabase: any = null
+if (supabaseUrl && supabaseServiceKey) {
+  try {
+    new URL(supabaseUrl)
+    supabase = createClient(supabaseUrl, supabaseServiceKey)
+  } catch (error) {
+    console.error('Invalid Supabase URL format:', supabaseUrl)
+  }
+}
 
 // CORS headers
 const corsHeaders = {
@@ -22,6 +36,13 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable - database configuration error" },
+        { status: 503, headers: corsHeaders }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const submissionId = searchParams.get("id")
 
@@ -68,6 +89,13 @@ export async function GET(request: NextRequest) {
 // Admin endpoint to get all submissions (requires authentication)
 export async function POST(request: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable - database configuration error" },
+        { status: 503, headers: corsHeaders }
+      )
+    }
+
     const authHeader = request.headers.get("authorization")
     
     // Simple API key authentication (replace with your preferred auth method)

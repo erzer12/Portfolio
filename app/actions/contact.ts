@@ -3,7 +3,22 @@
 import { createClient } from "@supabase/supabase-js"
 import { headers } from "next/headers"
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+// Validate environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing required Supabase environment variables')
+}
+
+// Validate URL format
+try {
+  new URL(supabaseUrl)
+} catch (error) {
+  throw new Error('Invalid Supabase URL format')
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -212,12 +227,12 @@ export async function submitContactForm(formData: FormData) {
       }
 
       const emailResponse = await fetchWithTimeout(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-contact-notification`,
+        `${supabaseUrl}/functions/v1/send-contact-notification`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+            "Authorization": `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify(emailPayload),
         },
