@@ -22,6 +22,34 @@ if (supabaseUrl && supabaseServiceKey) {
   }
 }
 
+// Helper function to format error for logging
+function formatError(error: any): string {
+  if (!error) return 'Unknown error'
+  
+  // If it's a string, return as is
+  if (typeof error === 'string') return error
+  
+  // If it has a message property, use that
+  if (error.message) return error.message
+  
+  // If it has details, code, or hint properties (common in Supabase errors)
+  if (error.details || error.code || error.hint) {
+    const parts = []
+    if (error.code) parts.push(`Code: ${error.code}`)
+    if (error.message) parts.push(`Message: ${error.message}`)
+    if (error.details) parts.push(`Details: ${error.details}`)
+    if (error.hint) parts.push(`Hint: ${error.hint}`)
+    return parts.join(', ')
+  }
+  
+  // Try to stringify the error object
+  try {
+    return JSON.stringify(error, null, 2)
+  } catch {
+    return String(error)
+  }
+}
+
 // CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,7 +91,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error("Database error:", error)
+      console.error("Database error:", formatError(error))
       return NextResponse.json(
         { error: "Submission not found" },
         { status: 404, headers: corsHeaders }
@@ -80,7 +108,7 @@ export async function GET(request: NextRequest) {
     )
 
   } catch (error) {
-    console.error("Contact status error:", error)
+    console.error("Contact status error:", formatError(error))
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500, headers: corsHeaders }
@@ -125,7 +153,7 @@ export async function POST(request: NextRequest) {
     const { data, error, count } = await query
 
     if (error) {
-      console.error("Database error:", error)
+      console.error("Database error:", formatError(error))
       return NextResponse.json(
         { error: "Failed to fetch submissions" },
         { status: 500, headers: corsHeaders }
@@ -143,7 +171,7 @@ export async function POST(request: NextRequest) {
     )
 
   } catch (error) {
-    console.error("Admin contact fetch error:", error)
+    console.error("Admin contact fetch error:", formatError(error))
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500, headers: corsHeaders }
