@@ -41,6 +41,34 @@ const SPAM_PATTERNS = [
   /(.)\1{10,}/i, // Repeated characters
 ]
 
+// Helper function to format error for logging
+function formatError(error: any): string {
+  if (!error) return 'Unknown error'
+  
+  // If it's a string, return as is
+  if (typeof error === 'string') return error
+  
+  // If it has a message property, use that
+  if (error.message) return error.message
+  
+  // If it has details, code, or hint properties (common in Supabase errors)
+  if (error.details || error.code || error.hint) {
+    const parts = []
+    if (error.code) parts.push(`Code: ${error.code}`)
+    if (error.message) parts.push(`Message: ${error.message}`)
+    if (error.details) parts.push(`Details: ${error.details}`)
+    if (error.hint) parts.push(`Hint: ${error.hint}`)
+    return parts.join(', ')
+  }
+  
+  // Try to stringify the error object
+  try {
+    return JSON.stringify(error, null, 2)
+  } catch {
+    return String(error)
+  }
+}
+
 // Helper function to create fetch with timeout
 function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 15000): Promise<Response> {
   const controller = new AbortController()
@@ -86,7 +114,7 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
       .gte("created_at", oneHourAgo.toISOString())
 
     if (hourlyError) {
-      console.error("Rate limit check error (hourly):", hourlyError)
+      console.error("Rate limit check error (hourly):", formatError(hourlyError))
       return { allowed: true } // Allow on error to avoid blocking legitimate users
     }
 
@@ -105,7 +133,7 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
       .gte("created_at", oneDayAgo.toISOString())
 
     if (dailyError) {
-      console.error("Rate limit check error (daily):", dailyError)
+      console.error("Rate limit check error (daily):", formatError(dailyError))
       return { allowed: true }
     }
 
@@ -126,7 +154,7 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
       .limit(1)
 
     if (cooldownError) {
-      console.error("Rate limit check error (cooldown):", cooldownError)
+      console.error("Rate limit check error (cooldown):", formatError(cooldownError))
       return { allowed: true }
     }
 
@@ -139,7 +167,7 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
 
     return { allowed: true }
   } catch (error) {
-    console.error("Rate limit check error:", error)
+    console.error("Rate limit check error:", formatError(error))
     return { allowed: true } // Allow on error
   }
 }
@@ -188,13 +216,13 @@ async function ensureTableExists(): Promise<boolean> {
     })
 
     if (error) {
-      console.error("Error creating table:", error)
+      console.error("Error creating table:", formatError(error))
       return false
     }
 
     return true
   } catch (error) {
-    console.error("Error ensuring table exists:", error)
+    console.error("Error ensuring table exists:", formatError(error))
     return false
   }
 }
@@ -266,7 +294,7 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
       .single()
 
     if (dbError) {
-      console.error("Database error:", dbError)
+      console.error("Database error:", formatError(dbError))
       return { success: false, error: "Failed to save your message. Please try again." }
     }
 
@@ -307,7 +335,7 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
         .eq("id", submissionData.id)
 
     } catch (emailError) {
-      console.error("Email notification error:", emailError)
+      console.error("Email notification error:", formatError(emailError))
       // Don't fail the submission if email fails
       
       // Update status to indicate email failed
@@ -324,7 +352,7 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
     }
 
   } catch (error) {
-    console.error("Contact form submission error:", error)
+    console.error("Contact form submission error:", formatError(error))
     return { 
       success: false, 
       error: "Something went wrong. Please try again later." 
