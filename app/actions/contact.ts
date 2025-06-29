@@ -1,7 +1,6 @@
 "use server"
 
 import { createClient } from "@supabase/supabase-js"
-import { headers } from "next/headers"
 
 // Validate environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -64,30 +63,6 @@ function isValidEmail(email: string): boolean {
 // Check for spam content
 function containsSpam(text: string): boolean {
   return SPAM_PATTERNS.some(pattern => pattern.test(text))
-}
-
-// Get client IP address - now accepts headersList as parameter
-function getClientIP(headersList: any): string {
-  try {
-    const forwarded = headersList.get("x-forwarded-for")
-    const realIP = headersList.get("x-real-ip")
-    const cfConnectingIP = headersList.get("cf-connecting-ip")
-    
-    if (forwarded) {
-      return forwarded.split(",")[0].trim()
-    }
-    if (realIP) {
-      return realIP
-    }
-    if (cfConnectingIP) {
-      return cfConnectingIP
-    }
-    
-    return "127.0.0.1"
-  } catch (error) {
-    console.error("Error getting client IP:", error)
-    return "127.0.0.1"
-  }
 }
 
 // Check rate limiting
@@ -224,10 +199,7 @@ async function ensureTableExists(): Promise<boolean> {
   }
 }
 
-export async function submitContactForm(formData: FormData) {
-  // Get headers at the top level of the server action - BEFORE the try block
-  const headersList = await headers()
-
+export async function submitContactForm(formData: FormData, ipAddress?: string, userAgent?: string) {
   try {
     // Check if Supabase is configured
     if (!supabase) {
@@ -267,12 +239,12 @@ export async function submitContactForm(formData: FormData) {
       return { success: false, error: "Your message appears to contain spam content. Please revise and try again." }
     }
 
-    // Get client information - pass headersList to avoid context issues
-    const userAgent = headersList.get("user-agent") || ""
-    const ipAddress = getClientIP(headersList)
+    // Use provided client information or defaults
+    const clientIP = ipAddress || "127.0.0.1"
+    const clientUserAgent = userAgent || ""
 
     // Check rate limiting
-    const rateLimitCheck = await checkRateLimit(ipAddress)
+    const rateLimitCheck = await checkRateLimit(clientIP)
     if (!rateLimitCheck.allowed) {
       return { success: false, error: rateLimitCheck.message || "Rate limit exceeded" }
     }
@@ -285,8 +257,8 @@ export async function submitContactForm(formData: FormData) {
           name,
           email,
           message,
-          ip_address: ipAddress,
-          user_agent: userAgent,
+          ip_address: clientIP,
+          user_agent: clientUserAgent,
           status: 'pending'
         },
       ])
@@ -306,8 +278,8 @@ export async function submitContactForm(formData: FormData) {
         message,
         timestamp: submissionData.created_at,
         submissionId: submissionData.id,
-        ipAddress,
-        userAgent
+        ipAddress: clientIP,
+        userAgent: clientUserAgent
       }
 
       const emailResponse = await fetchWithTimeout(

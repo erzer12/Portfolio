@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { submitContactForm } from "@/app/actions/contact"
 import { motion } from "framer-motion"
 import { Send, MapPin, Phone, Clock } from "lucide-react"
 
@@ -55,24 +54,31 @@ export default function EnhancedContact() {
 
     startTransition(async () => {
       try {
-        const formDataObj = new FormData()
-        formDataObj.append("name", formData.name.trim())
-        formDataObj.append("email", formData.email.trim())
-        formDataObj.append("message", formData.message.trim())
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            message: formData.message.trim(),
+          }),
+        })
 
-        const result = await submitContactForm(formDataObj)
+        const result = await response.json()
 
-        if (result.success) {
+        if (response.ok && result.success) {
           toast({
             title: "Message sent!",
-            description: result.message,
+            description: result.message || "Thank you for your message! I'll get back to you soon.",
             duration: 5000,
           })
           setFormData({ name: "", email: "", message: "" })
         } else {
           toast({
             title: "Error",
-            description: result.error,
+            description: result.error || "Failed to send message. Please try again.",
             variant: "destructive",
             duration: 5000,
           })
