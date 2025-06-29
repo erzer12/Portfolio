@@ -30,25 +30,58 @@ export default function EnhancedContact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Basic client-side validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+        duration: 5000,
+      })
+      return
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+        duration: 5000,
+      })
+      return
+    }
+
     startTransition(async () => {
-      const formDataObj = new FormData()
-      formDataObj.append("name", formData.name)
-      formDataObj.append("email", formData.email)
-      formDataObj.append("message", formData.message)
+      try {
+        const formDataObj = new FormData()
+        formDataObj.append("name", formData.name.trim())
+        formDataObj.append("email", formData.email.trim())
+        formDataObj.append("message", formData.message.trim())
 
-      const result = await submitContactForm(formDataObj)
+        const result = await submitContactForm(formDataObj)
 
-      if (result.success) {
-        toast({
-          title: "Message sent!",
-          description: result.message,
-          duration: 5000,
-        })
-        setFormData({ name: "", email: "", message: "" })
-      } else {
+        if (result.success) {
+          toast({
+            title: "Message sent!",
+            description: result.message,
+            duration: 5000,
+          })
+          setFormData({ name: "", email: "", message: "" })
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+            duration: 5000,
+          })
+        }
+      } catch (error) {
+        console.error("Form submission error:", error)
         toast({
           title: "Error",
-          description: result.error,
+          description: "An unexpected error occurred. Please try again.",
           variant: "destructive",
           duration: 5000,
         })
@@ -164,6 +197,7 @@ export default function EnhancedContact() {
                         required
                         disabled={isPending}
                         className="transition-all duration-200 focus:scale-[1.02]"
+                        maxLength={100}
                       />
                     </motion.div>
 
@@ -211,7 +245,11 @@ export default function EnhancedContact() {
                       required
                       disabled={isPending}
                       className="resize-none transition-all duration-200 focus:scale-[1.01]"
+                      maxLength={2000}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.message.length}/2000 characters
+                    </p>
                   </motion.div>
 
                   <motion.div

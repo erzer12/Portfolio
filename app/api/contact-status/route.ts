@@ -7,9 +7,11 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('Missing Supabase environment variables')
+  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing')
 }
 
-// Validate URL format
+// Create supabase client only if we have the required environment variables
 let supabase: any = null
 if (supabaseUrl && supabaseServiceKey) {
   try {
@@ -107,7 +109,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { page = 1, limit = 20, status } = await request.json()
+    const body = await request.json().catch(() => ({}))
+    const { page = 1, limit = 20, status } = body
 
     let query = supabase
       .from("contact_submissions")

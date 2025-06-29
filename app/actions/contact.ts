@@ -8,17 +8,23 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing required Supabase environment variables')
+  console.error('Missing required Supabase environment variables')
+  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing')
 }
 
-// Validate URL format
-try {
-  new URL(supabaseUrl)
-} catch (error) {
-  throw new Error('Invalid Supabase URL format')
-}
+// Create supabase client only if we have the required environment variables
+let supabase: any = null
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+if (supabaseUrl && supabaseServiceKey) {
+  // Validate URL format
+  try {
+    new URL(supabaseUrl)
+    supabase = createClient(supabaseUrl, supabaseServiceKey)
+  } catch (error) {
+    console.error('Invalid Supabase URL format:', supabaseUrl)
+  }
+}
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -61,26 +67,37 @@ function containsSpam(text: string): boolean {
 }
 
 // Get client IP address
-function getClientIP(headersList: Headers): string {
-  const forwarded = headersList.get("x-forwarded-for")
-  const realIP = headersList.get("x-real-ip")
-  const cfConnectingIP = headersList.get("cf-connecting-ip")
-  
-  if (forwarded) {
-    return forwarded.split(",")[0].trim()
+async function getClientIP(): Promise<string> {
+  try {
+    const headersList = await headers()
+    const forwarded = headersList.get("x-forwarded-for")
+    const realIP = headersList.get("x-real-ip")
+    const cfConnectingIP = headersList.get("cf-connecting-ip")
+    
+    if (forwarded) {
+      return forwarded.split(",")[0].trim()
+    }
+    if (realIP) {
+      return realIP
+    }
+    if (cfConnectingIP) {
+      return cfConnectingIP
+    }
+    
+    return "127.0.0.1"
+  } catch (error) {
+    console.error("Error getting client IP:", error)
+    return "127.0.0.1"
   }
-  if (realIP) {
-    return realIP
-  }
-  if (cfConnectingIP) {
-    return cfConnectingIP
-  }
-  
-  return "127.0.0.1"
 }
 
 // Check rate limiting
 async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; message?: string }> {
+  if (!supabase) {
+    console.warn("Supabase not configured, skipping rate limit check")
+    return { allowed: true }
+  }
+
   try {
     const now = new Date()
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
@@ -155,6 +172,14 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
 
 export async function submitContactForm(formData: FormData) {
   try {
+    // Check if Supabase is configured
+    if (!supabase) {
+      return { 
+        success: false, 
+        error: "Contact form is not configured. Please check your environment variables." 
+      }
+    }
+
     // Extract and validate form data
     const name = (formData.get("name") as string)?.trim()
     const email = (formData.get("email") as string)?.trim().toLowerCase()
@@ -183,9 +208,9 @@ export async function submitContactForm(formData: FormData) {
     }
 
     // Get client information
-    const headersList = headers()
+    const headersList = await headers()
     const userAgent = headersList.get("user-agent") || ""
-    const ipAddress = getClientIP(headersList)
+    const ipAddress = await getClientIP()
 
     // Check rate limiting
     const rateLimitCheck = await checkRateLimit(ipAddress)

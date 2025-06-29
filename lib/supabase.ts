@@ -6,15 +6,39 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 // Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables')
-  throw new Error('Supabase configuration is incomplete. Please check your environment variables.')
-}
+  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+  console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing')
+  
+  // Create a dummy client to prevent crashes during development
+  if (typeof window !== 'undefined') {
+    console.warn('Creating dummy Supabase client for development')
+  }
+  
+  // Return a minimal client that won't crash the app
+  const dummyClient = {
+    from: () => ({
+      select: () => Promise.resolve({ data: [], error: null }),
+      insert: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      update: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      delete: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    }),
+    auth: {
+      signUp: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      signIn: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      signOut: () => Promise.resolve({ error: null }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    }
+  }
+  
+  export const supabase = dummyClient as any
+} else {
+  // Validate URL format
+  try {
+    new URL(supabaseUrl)
+  } catch (error) {
+    console.error('Invalid Supabase URL format:', supabaseUrl)
+    throw new Error('Invalid Supabase URL format. Please check NEXT_PUBLIC_SUPABASE_URL in your environment variables.')
+  }
 
-// Validate URL format
-try {
-  new URL(supabaseUrl)
-} catch (error) {
-  console.error('Invalid Supabase URL format:', supabaseUrl)
-  throw new Error('Invalid Supabase URL format. Please check NEXT_PUBLIC_SUPABASE_URL in your environment variables.')
+  export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 }
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)

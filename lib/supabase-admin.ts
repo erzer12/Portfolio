@@ -5,19 +5,37 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase admin environment variables')
+  console.error('Missing Supabase admin environment variables')
+  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
+  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing')
 }
 
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+// Create admin client only if we have the required environment variables
+let supabaseAdmin: any = null
+
+if (supabaseUrl && supabaseServiceKey) {
+  try {
+    new URL(supabaseUrl)
+    supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  } catch (error) {
+    console.error('Invalid Supabase URL format:', supabaseUrl)
   }
-})
+}
+
+export { supabaseAdmin }
 
 // Helper function to get all contact submissions (admin only)
 export async function getAllContactSubmissions() {
   try {
+    if (!supabaseAdmin) {
+      return { data: null, error: { message: 'Supabase admin client not configured' } }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('contact_submissions')
       .select('*')
@@ -38,6 +56,10 @@ export async function getAllContactSubmissions() {
 // Helper function to update submission status
 export async function updateSubmissionStatus(id: string, status: string) {
   try {
+    if (!supabaseAdmin) {
+      return { data: null, error: { message: 'Supabase admin client not configured' } }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('contact_submissions')
       .update({ status })

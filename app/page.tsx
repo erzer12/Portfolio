@@ -11,6 +11,7 @@ import EnhancedContact from "@/components/enhanced-contact"
 import { HoverCard } from "@/components/hover-card"
 import { Toaster } from "@/components/ui/toaster"
 import CollaborationCTA from "@/components/collaboration-cta"
+import SupabaseStatus from "@/components/supabase-status"
 
 export default function Home() {
   return (
@@ -19,6 +20,11 @@ export default function Home() {
 
       {/* Add top padding to account for fixed header */}
       <main className="container mx-auto px-4 py-8 space-y-20">
+        {/* Development helper - remove in production */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <SupabaseStatus />
+        </div>
+
         <HoverCard>
           <AboutMe />
         </HoverCard>
