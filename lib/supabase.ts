@@ -3,6 +3,9 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+// Declare supabase variable at top level
+let supabase: any
+
 // Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables')
@@ -30,7 +33,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
     }
   }
   
-  export const supabase = dummyClient as any
+  supabase = dummyClient
 } else {
   // Validate URL format
   try {
@@ -40,5 +43,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Invalid Supabase URL format. Please check NEXT_PUBLIC_SUPABASE_URL in your environment variables.')
   }
 
-  export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  supabase = createClient(supabaseUrl, supabaseAnonKey)
 }
+
+// Export supabase at the end of the file
+export { supabase }
