@@ -66,10 +66,9 @@ function containsSpam(text: string): boolean {
   return SPAM_PATTERNS.some(pattern => pattern.test(text))
 }
 
-// Get client IP address
-async function getClientIP(): Promise<string> {
+// Get client IP address - now accepts headersList as parameter
+function getClientIP(headersList: any): string {
   try {
-    const headersList = await headers()
     const forwarded = headersList.get("x-forwarded-for")
     const realIP = headersList.get("x-real-ip")
     const cfConnectingIP = headersList.get("cf-connecting-ip")
@@ -170,8 +169,66 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
   }
 }
 
+// Create table if it doesn't exist
+async function ensureTableExists(): Promise<boolean> {
+  if (!supabase) {
+    return false
+  }
+
+  try {
+    // Try to create the table - this will fail silently if it already exists
+    const { error } = await supabase.rpc('exec', {
+      sql: `
+        CREATE TABLE IF NOT EXISTS contact_submissions (
+          id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+          name text NOT NULL,
+          email text NOT NULL,
+          message text NOT NULL,
+          ip_address text,
+          user_agent text,
+          status text DEFAULT 'pending',
+          created_at timestamptz DEFAULT now()
+        );
+        
+        -- Enable RLS
+        ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
+        
+        -- Create policy for service role access
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_policies 
+            WHERE tablename = 'contact_submissions' 
+            AND policyname = 'Service role can manage all data'
+          ) THEN
+            CREATE POLICY "Service role can manage all data"
+              ON contact_submissions
+              FOR ALL
+              TO service_role
+              USING (true)
+              WITH CHECK (true);
+          END IF;
+        END $$;
+      `
+    })
+
+    if (error) {
+      console.error("Error creating table:", error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error("Error ensuring table exists:", error)
+    return false
+  }
+}
+
 export async function submitContactForm(formData: FormData) {
   try {
+    // Get headers at the top level of the server action
+    const headersList = await headers()
+
     // Check if Supabase is configured
     if (!supabase) {
       return { 
@@ -179,6 +236,9 @@ export async function submitContactForm(formData: FormData) {
         error: "Contact form is not configured. Please check your environment variables." 
       }
     }
+
+    // Ensure table exists
+    await ensureTableExists()
 
     // Extract and validate form data
     const name = (formData.get("name") as string)?.trim()
@@ -207,10 +267,9 @@ export async function submitContactForm(formData: FormData) {
       return { success: false, error: "Your message appears to contain spam content. Please revise and try again." }
     }
 
-    // Get client information
-    const headersList = await headers()
+    // Get client information - pass headersList to avoid context issues
     const userAgent = headersList.get("user-agent") || ""
-    const ipAddress = await getClientIP()
+    const ipAddress = getClientIP(headersList)
 
     // Check rate limiting
     const rateLimitCheck = await checkRateLimit(ipAddress)

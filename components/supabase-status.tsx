@@ -32,17 +32,35 @@ export default function SupabaseStatus() {
           return
         }
 
-        // Try to make a simple query to test the connection
+        // First, try a simple connection test
+        const { data: connectionTest, error: connectionError } = await supabase
+          .from('_supabase_migrations')
+          .select('version', { count: 'exact', head: true })
+          .limit(1)
+
+        if (connectionError && !connectionError.message.includes('relation "_supabase_migrations" does not exist')) {
+          setStatus({
+            connected: false,
+            error: connectionError.message,
+          })
+          setLoading(false)
+          return
+        }
+
+        // Connection is working, now check for the contact_submissions table
         const { data, error } = await supabase
           .from('contact_submissions')
           .select('count', { count: 'exact', head: true })
+          .limit(1)
 
         if (error) {
           // Check if it's a table not found error
-          if (error.message.includes('relation "contact_submissions" does not exist')) {
+          if (error.message.includes('relation "contact_submissions" does not exist') || 
+              error.message.includes('does not exist') ||
+              error.code === 'PGRST116') {
             setStatus({
               connected: true,
-              error: "Database connected but contact_submissions table not found. Please run migrations.",
+              error: "Database connected but contact_submissions table not found. The table will be created automatically when you submit the contact form.",
               projectUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
               tableExists: false,
             })
@@ -132,8 +150,8 @@ export default function SupabaseStatus() {
 
         {status.error && (
           <div className="text-sm">
-            <span className="font-medium text-red-500">Issue:</span>
-            <p className="text-red-500 text-xs mt-1">{status.error}</p>
+            <span className="font-medium text-yellow-600">Note:</span>
+            <p className="text-yellow-600 text-xs mt-1">{status.error}</p>
           </div>
         )}
 
@@ -152,8 +170,8 @@ export default function SupabaseStatus() {
           <div className="text-sm text-muted-foreground">
             <p className="mb-2">Database connected! Next steps:</p>
             <ol className="list-decimal list-inside space-y-1 text-xs">
-              <li>The contact_submissions table will be created automatically</li>
-              <li>Try submitting the contact form to test</li>
+              <li>Submit the contact form to create the table automatically</li>
+              <li>The table will be created with proper security settings</li>
             </ol>
           </div>
         )}
