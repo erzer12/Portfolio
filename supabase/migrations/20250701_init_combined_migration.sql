@@ -1,34 +1,73 @@
 /*
-  # Create users and profiles tables with authentication
+  # Combined Migration: Contact Submissions, Users, Profiles
 
-  1. New Tables
-    - `users`
-      - `id` (uuid, primary key)
-      - `email` (text, unique, required)
-      - `created_at` (timestamp with time zone)
-      - `name` (text)
-      - `avatar_url` (text)
-    
-    - `profiles`
-      - `id` (uuid, primary key, references users.id)
-      - `username` (text, unique)
-      - `bio` (text)
-      - `website` (text)
-      - `updated_at` (timestamp with time zone)
+  This migration creates the following tables:
+    - contact_submissions
+    - users
+    - profiles
 
-  2. Security
-    - Enable RLS on both tables
-    - Users can read public profile data
-    - Users can only edit their own profile
-    - Users can delete their own account
-
-  3. Indexes
-    - Index on email for fast lookups
-    - Index on username for profile searches
-    - Index on updated_at for sorting
+  It sets up Row Level Security (RLS) and appropriate policies, as well as indexes and triggers for all three tables.
 */
 
--- Create users table
+-- 1. Create contact_submissions table
+CREATE TABLE IF NOT EXISTS contact_submissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL,
+  message text NOT NULL,
+  ip_address text,
+  user_agent text,
+  status text DEFAULT 'pending',
+  created_at timestamptz DEFAULT now()
+);
+
+-- Function to send email via HTTP request (requires http extension)
+CREATE OR REPLACE FUNCTION notify_contact_submission()
+RETURNS TRIGGER AS $$
+DECLARE
+  response json;
+BEGIN
+  -- Replace with your email API endpoint and payload
+  PERFORM http_post(
+    'https://YOUR_EMAIL_API_ENDPOINT',
+    json_build_object(
+      'to', 'YOUR_EMAIL@example.com',
+      'subject', 'New Contact Submission',
+      'text', 'Name: ' || NEW.name || E'\nEmail: ' || NEW.email || E'\nMessage: ' || NEW.message
+    )::text,
+    'application/json'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to send email on new contact submission
+CREATE TRIGGER trigger_notify_contact_submission
+  AFTER INSERT ON contact_submissions
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_contact_submission();
+
+-- Enable RLS on contact_submissions
+ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
+
+-- Policy for admin/all authenticated users to read all contact submissions
+CREATE POLICY "Admin can read all contact submissions"
+  ON contact_submissions
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Indexes for contact_submissions
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_ip_created 
+  ON contact_submissions(ip_address, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_email 
+  ON contact_submissions(email);
+
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_status 
+  ON contact_submissions(status);
+
+-- 2. Create users table
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text UNIQUE NOT NULL,
@@ -37,7 +76,7 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url text
 );
 
--- Create profiles table
+-- 3. Create profiles table
 CREATE TABLE IF NOT EXISTS profiles (
   id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   username text UNIQUE,
@@ -46,11 +85,11 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at timestamptz DEFAULT now()
 );
 
--- Enable Row Level Security
+-- Enable RLS on users and profiles
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Create indexes for performance
+-- Indexes for users and profiles
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username);
 CREATE INDEX IF NOT EXISTS idx_profiles_updated_at ON profiles(updated_at);
