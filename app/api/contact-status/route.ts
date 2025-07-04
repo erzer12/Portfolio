@@ -1,26 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
-
-// Validate environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase environment variables')
-  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
-  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing')
-}
-
-// Create supabase client only if we have the required environment variables
-let supabase: any = null
-if (supabaseUrl && supabaseServiceKey) {
-  try {
-    new URL(supabaseUrl)
-    supabase = createClient(supabaseUrl, supabaseServiceKey)
-  } catch (error) {
-    console.error('Invalid Supabase URL format:', supabaseUrl)
-  }
-}
+import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 // Helper function to format error for logging
 function formatError(error: any): string {
@@ -31,16 +11,6 @@ function formatError(error: any): string {
   
   // If it has a message property, use that
   if (error.message) return error.message
-  
-  // If it has details, code, or hint properties (common in Supabase errors)
-  if (error.details || error.code || error.hint) {
-    const parts = []
-    if (error.code) parts.push(`Code: ${error.code}`)
-    if (error.message) parts.push(`Message: ${error.message}`)
-    if (error.details) parts.push(`Details: ${error.details}`)
-    if (error.hint) parts.push(`Hint: ${error.hint}`)
-    return parts.join(', ')
-  }
   
   // Try to stringify the error object
   try {
@@ -66,13 +36,6 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "Service temporarily unavailable - database configuration error" },
-        { status: 503, headers: corsHeaders }
-      )
-    }
-
     const { searchParams } = new URL(request.url)
     const submissionId = searchParams.get("id")
 
@@ -83,26 +46,24 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get submission status
-    const { data, error } = await supabase
-      .from("contact_submissions")
-      .select("id, status, created_at")
-      .eq("id", submissionId)
-      .single()
+    // Get submission status from Firestore
+    const docRef = doc(db, "contact_submissions", submissionId)
+    const docSnap = await getDoc(docRef)
 
-    if (error) {
-      console.error("Database error:", formatError(error))
+    if (!docSnap.exists()) {
       return NextResponse.json(
         { error: "Submission not found" },
         { status: 404, headers: corsHeaders }
       )
     }
 
+    const data = docSnap.data()
+    
     return NextResponse.json(
       {
-        id: data.id,
+        id: docSnap.id,
         status: data.status,
-        submitted_at: data.created_at,
+        submitted_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
       },
       { headers: corsHeaders }
     )
@@ -119,13 +80,6 @@ export async function GET(request: NextRequest) {
 // Admin endpoint to get all submissions (requires authentication)
 export async function POST(request: NextRequest) {
   try {
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "Service temporarily unavailable - database configuration error" },
-        { status: 503, headers: corsHeaders }
-      )
-    }
-
     const authHeader = request.headers.get("authorization")
     
     // Simple API key authentication (replace with your preferred auth method)
@@ -138,34 +92,42 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { page = 1, limit = 20, status } = body
+    const { page = 1, limit: pageLimit = 20, status } = body
 
-    let query = supabase
-      .from("contact_submissions")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range((page - 1) * limit, page * limit - 1)
+    const submissionsRef = collection(db, "contact_submissions")
+    let q = query(
+      submissionsRef,
+      orderBy("created_at", "desc")
+    )
 
     if (status) {
-      query = query.eq("status", status)
-    }
-
-    const { data, error, count } = await query
-
-    if (error) {
-      console.error("Database error:", formatError(error))
-      return NextResponse.json(
-        { error: "Failed to fetch submissions" },
-        { status: 500, headers: corsHeaders }
+      q = query(
+        submissionsRef,
+        where("status", "==", status),
+        orderBy("created_at", "desc")
       )
     }
 
+    // Note: Firestore doesn't have built-in pagination like SQL LIMIT/OFFSET
+    // For production, you'd want to implement cursor-based pagination
+    const querySnapshot = await getDocs(q)
+    const allSubmissions = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      created_at: doc.data().created_at?.toDate?.()?.toISOString() || doc.data().created_at
+    }))
+
+    // Simple pagination simulation (not efficient for large datasets)
+    const startIndex = (page - 1) * pageLimit
+    const endIndex = startIndex + pageLimit
+    const paginatedSubmissions = allSubmissions.slice(startIndex, endIndex)
+
     return NextResponse.json(
       {
-        submissions: data,
-        total: count,
+        submissions: paginatedSubmissions,
+        total: allSubmissions.length,
         page,
-        limit,
+        limit: pageLimit,
       },
       { headers: corsHeaders }
     )

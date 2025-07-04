@@ -1,29 +1,7 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
-
-// Validate environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing required Supabase environment variables')
-  console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing')
-  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing')
-}
-
-// Create supabase client only if we have the required environment variables
-let supabase: any = null
-
-if (supabaseUrl && supabaseServiceKey) {
-  // Validate URL format
-  try {
-    new URL(supabaseUrl)
-    supabase = createClient(supabaseUrl, supabaseServiceKey)
-  } catch (error) {
-    console.error('Invalid Supabase URL format:', supabaseUrl)
-  }
-}
+import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -51,35 +29,12 @@ function formatError(error: any): string {
   // If it has a message property, use that
   if (error.message) return error.message
   
-  // If it has details, code, or hint properties (common in Supabase errors)
-  if (error.details || error.code || error.hint) {
-    const parts = []
-    if (error.code) parts.push(`Code: ${error.code}`)
-    if (error.message) parts.push(`Message: ${error.message}`)
-    if (error.details) parts.push(`Details: ${error.details}`)
-    if (error.hint) parts.push(`Hint: ${error.hint}`)
-    return parts.join(', ')
-  }
-  
   // Try to stringify the error object
   try {
     return JSON.stringify(error, null, 2)
   } catch {
     return String(error)
   }
-}
-
-// Helper function to create fetch with timeout
-function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 15000): Promise<Response> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-
-  return fetch(url, {
-    ...options,
-    signal: controller.signal,
-  }).finally(() => {
-    clearTimeout(timeoutId)
-  })
 }
 
 // Validate email format
@@ -93,32 +48,26 @@ function containsSpam(text: string): boolean {
   return SPAM_PATTERNS.some(pattern => pattern.test(text))
 }
 
-// Check rate limiting
+// Check rate limiting using Firestore
 async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; message?: string }> {
-  if (!supabase) {
-    console.warn("Supabase not configured, skipping rate limit check")
-    return { allowed: true }
-  }
-
   try {
     const now = new Date()
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
     const cooldownTime = new Date(now.getTime() - RATE_LIMIT.COOLDOWN_MINUTES * 60 * 1000)
 
+    const submissionsRef = collection(db, "contact_submissions")
+
     // Check submissions in the last hour
-    const { count: hourlyCount, error: hourlyError } = await supabase
-      .from("contact_submissions")
-      .select("*", { count: "exact", head: true })
-      .eq("ip_address", ipAddress)
-      .gte("created_at", oneHourAgo.toISOString())
+    const hourlyQuery = query(
+      submissionsRef,
+      where("ip_address", "==", ipAddress),
+      where("created_at", ">=", Timestamp.fromDate(oneHourAgo)),
+      orderBy("created_at", "desc")
+    )
+    const hourlySnapshot = await getDocs(hourlyQuery)
 
-    if (hourlyError) {
-      console.error("Rate limit check error (hourly):", formatError(hourlyError))
-      return { allowed: true } // Allow on error to avoid blocking legitimate users
-    }
-
-    if ((hourlyCount || 0) >= RATE_LIMIT.MAX_SUBMISSIONS_PER_HOUR) {
+    if (hourlySnapshot.size >= RATE_LIMIT.MAX_SUBMISSIONS_PER_HOUR) {
       return { 
         allowed: false, 
         message: `Too many submissions. Please wait before submitting again. (Max ${RATE_LIMIT.MAX_SUBMISSIONS_PER_HOUR} per hour)` 
@@ -126,18 +75,15 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     }
 
     // Check submissions in the last day
-    const { count: dailyCount, error: dailyError } = await supabase
-      .from("contact_submissions")
-      .select("*", { count: "exact", head: true })
-      .eq("ip_address", ipAddress)
-      .gte("created_at", oneDayAgo.toISOString())
+    const dailyQuery = query(
+      submissionsRef,
+      where("ip_address", "==", ipAddress),
+      where("created_at", ">=", Timestamp.fromDate(oneDayAgo)),
+      orderBy("created_at", "desc")
+    )
+    const dailySnapshot = await getDocs(dailyQuery)
 
-    if (dailyError) {
-      console.error("Rate limit check error (daily):", formatError(dailyError))
-      return { allowed: true }
-    }
-
-    if ((dailyCount || 0) >= RATE_LIMIT.MAX_SUBMISSIONS_PER_DAY) {
+    if (dailySnapshot.size >= RATE_LIMIT.MAX_SUBMISSIONS_PER_DAY) {
       return { 
         allowed: false, 
         message: `Daily submission limit reached. Please try again tomorrow. (Max ${RATE_LIMIT.MAX_SUBMISSIONS_PER_DAY} per day)` 
@@ -145,20 +91,16 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     }
 
     // Check cooldown period
-    const { data: recentSubmissions, error: cooldownError } = await supabase
-      .from("contact_submissions")
-      .select("created_at")
-      .eq("ip_address", ipAddress)
-      .gte("created_at", cooldownTime.toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1)
+    const cooldownQuery = query(
+      submissionsRef,
+      where("ip_address", "==", ipAddress),
+      where("created_at", ">=", Timestamp.fromDate(cooldownTime)),
+      orderBy("created_at", "desc"),
+      limit(1)
+    )
+    const cooldownSnapshot = await getDocs(cooldownQuery)
 
-    if (cooldownError) {
-      console.error("Rate limit check error (cooldown):", formatError(cooldownError))
-      return { allowed: true }
-    }
-
-    if (recentSubmissions && recentSubmissions.length > 0) {
+    if (!cooldownSnapshot.empty) {
       return { 
         allowed: false, 
         message: `Please wait ${RATE_LIMIT.COOLDOWN_MINUTES} minutes between submissions.` 
@@ -168,78 +110,12 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     return { allowed: true }
   } catch (error) {
     console.error("Rate limit check error:", formatError(error))
-    return { allowed: true } // Allow on error
-  }
-}
-
-// Create table if it doesn't exist
-async function ensureTableExists(): Promise<boolean> {
-  if (!supabase) {
-    return false
-  }
-
-  try {
-    // Try to create the table - this will fail silently if it already exists
-    const { error } = await supabase.rpc('exec', {
-      sql: `
-        CREATE TABLE IF NOT EXISTS contact_submissions (
-          id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-          name text NOT NULL,
-          email text NOT NULL,
-          message text NOT NULL,
-          ip_address text,
-          user_agent text,
-          status text DEFAULT 'pending',
-          created_at timestamptz DEFAULT now()
-        );
-        
-        -- Enable RLS
-        ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
-        
-        -- Create policy for service role access
-        DO $$
-        BEGIN
-          IF NOT EXISTS (
-            SELECT 1 FROM pg_policies 
-            WHERE tablename = 'contact_submissions' 
-            AND policyname = 'Service role can manage all data'
-          ) THEN
-            CREATE POLICY "Service role can manage all data"
-              ON contact_submissions
-              FOR ALL
-              TO service_role
-              USING (true)
-              WITH CHECK (true);
-          END IF;
-        END $$;
-      `
-    })
-
-    if (error) {
-      console.error("Error creating table:", formatError(error))
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error("Error ensuring table exists:", formatError(error))
-    return false
+    return { allowed: true } // Allow on error to avoid blocking legitimate users
   }
 }
 
 export async function submitContactForm(formData: FormData, ipAddress?: string, userAgent?: string) {
   try {
-    // Check if Supabase is configured
-    if (!supabase) {
-      return { 
-        success: false, 
-        error: "Contact form is not configured. Please check your environment variables." 
-      }
-    }
-
-    // Ensure table exists
-    await ensureTableExists()
-
     // Extract and validate form data
     const name = (formData.get("name") as string)?.trim()
     const email = (formData.get("email") as string)?.trim().toLowerCase()
@@ -277,78 +153,28 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
       return { success: false, error: rateLimitCheck.message || "Rate limit exceeded" }
     }
 
-    // Insert into Supabase database
-    const { data: submissionData, error: dbError } = await supabase
-      .from("contact_submissions")
-      .insert([
-        {
-          name,
-          email,
-          message,
-          ip_address: clientIP,
-          user_agent: clientUserAgent,
-          status: 'pending'
-        },
-      ])
-      .select()
-      .single()
-
-    if (dbError) {
-      console.error("Database error:", formatError(dbError))
-      return { success: false, error: "Failed to save your message. Please try again." }
+    // Insert into Firestore
+    const submissionData = {
+      name,
+      email,
+      message,
+      ip_address: clientIP,
+      user_agent: clientUserAgent,
+      status: 'pending',
+      created_at: Timestamp.now(),
+      processed: false
     }
 
-    // Send email notification
-    try {
-      const emailPayload = {
-        name,
-        email,
-        message,
-        timestamp: submissionData.created_at,
-        submissionId: submissionData.id,
-        ipAddress: clientIP,
-        userAgent: clientUserAgent
-      }
+    const docRef = await addDoc(collection(db, "contact_submissions"), submissionData)
 
-      const emailResponse = await fetchWithTimeout(
-        `${supabaseUrl}/functions/v1/send-contact-notification`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify(emailPayload),
-        },
-        15000 // 15 second timeout for email
-      )
-
-      if (!emailResponse.ok) {
-        console.error("Email service error:", await emailResponse.text())
-        // Don't fail the submission if email fails
-      }
-
-      // Update submission status to indicate email was attempted
-      await supabase
-        .from("contact_submissions")
-        .update({ status: 'processed' })
-        .eq("id", submissionData.id)
-
-    } catch (emailError) {
-      console.error("Email notification error:", formatError(emailError))
-      // Don't fail the submission if email fails
-      
-      // Update status to indicate email failed
-      await supabase
-        .from("contact_submissions")
-        .update({ status: 'email_failed' })
-        .eq("id", submissionData.id)
-    }
+    // Update submission status to indicate it was processed
+    // Note: In a real Firebase setup, you might use Cloud Functions for email notifications
+    console.log("Contact form submitted successfully:", docRef.id)
 
     return { 
       success: true, 
       message: "Thank you for your message! I'll get back to you soon.",
-      submissionId: submissionData.id
+      submissionId: docRef.id
     }
 
   } catch (error) {
