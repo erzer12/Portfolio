@@ -1,7 +1,7 @@
 "use server"
 
-import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { adminDb } from "@/lib/firebase-admin"
+import { Timestamp } from "firebase-admin/firestore"
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -56,16 +56,15 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
     const cooldownTime = new Date(now.getTime() - RATE_LIMIT.COOLDOWN_MINUTES * 60 * 1000)
 
-    const submissionsRef = collection(db, "contact_submissions")
+    const submissionsRef = adminDb.collection("contact_submissions")
 
     // Check submissions in the last hour
-    const hourlyQuery = query(
-      submissionsRef,
-      where("ip_address", "==", ipAddress),
-      where("created_at", ">=", Timestamp.fromDate(oneHourAgo)),
-      orderBy("created_at", "desc")
-    )
-    const hourlySnapshot = await getDocs(hourlyQuery)
+    const hourlyQuery = submissionsRef
+      .where("ip_address", "==", ipAddress)
+      .where("created_at", ">=", Timestamp.fromDate(oneHourAgo))
+      .orderBy("created_at", "desc")
+    
+    const hourlySnapshot = await hourlyQuery.get()
 
     if (hourlySnapshot.size >= RATE_LIMIT.MAX_SUBMISSIONS_PER_HOUR) {
       return { 
@@ -75,13 +74,12 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     }
 
     // Check submissions in the last day
-    const dailyQuery = query(
-      submissionsRef,
-      where("ip_address", "==", ipAddress),
-      where("created_at", ">=", Timestamp.fromDate(oneDayAgo)),
-      orderBy("created_at", "desc")
-    )
-    const dailySnapshot = await getDocs(dailyQuery)
+    const dailyQuery = submissionsRef
+      .where("ip_address", "==", ipAddress)
+      .where("created_at", ">=", Timestamp.fromDate(oneDayAgo))
+      .orderBy("created_at", "desc")
+    
+    const dailySnapshot = await dailyQuery.get()
 
     if (dailySnapshot.size >= RATE_LIMIT.MAX_SUBMISSIONS_PER_DAY) {
       return { 
@@ -91,14 +89,13 @@ async function checkRateLimit(ipAddress: string): Promise<{ allowed: boolean; me
     }
 
     // Check cooldown period
-    const cooldownQuery = query(
-      submissionsRef,
-      where("ip_address", "==", ipAddress),
-      where("created_at", ">=", Timestamp.fromDate(cooldownTime)),
-      orderBy("created_at", "desc"),
-      limit(1)
-    )
-    const cooldownSnapshot = await getDocs(cooldownQuery)
+    const cooldownQuery = submissionsRef
+      .where("ip_address", "==", ipAddress)
+      .where("created_at", ">=", Timestamp.fromDate(cooldownTime))
+      .orderBy("created_at", "desc")
+      .limit(1)
+    
+    const cooldownSnapshot = await cooldownQuery.get()
 
     if (!cooldownSnapshot.empty) {
       return { 
@@ -153,7 +150,7 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
       return { success: false, error: rateLimitCheck.message || "Rate limit exceeded" }
     }
 
-    // Insert into Firestore
+    // Insert into Firestore using Admin SDK
     const submissionData = {
       name,
       email,
@@ -165,10 +162,8 @@ export async function submitContactForm(formData: FormData, ipAddress?: string, 
       processed: false
     }
 
-    const docRef = await addDoc(collection(db, "contact_submissions"), submissionData)
+    const docRef = await adminDb.collection("contact_submissions").add(submissionData)
 
-    // Update submission status to indicate it was processed
-    // Note: In a real Firebase setup, you might use Cloud Functions for email notifications
     console.log("Contact form submitted successfully:", docRef.id)
 
     return { 

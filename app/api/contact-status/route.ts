@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { adminDb } from "@/lib/firebase-admin"
 
 // Helper function to format error for logging
 function formatError(error: any): string {
@@ -46,11 +45,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get submission status from Firestore
-    const docRef = doc(db, "contact_submissions", submissionId)
-    const docSnap = await getDoc(docRef)
+    // Get submission status from Firestore using Admin SDK
+    const docRef = adminDb.collection("contact_submissions").doc(submissionId)
+    const docSnap = await docRef.get()
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json(
         { error: "Submission not found" },
         { status: 404, headers: corsHeaders }
@@ -62,8 +61,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         id: docSnap.id,
-        status: data.status,
-        submitted_at: data.created_at?.toDate?.()?.toISOString() || data.created_at,
+        status: data?.status,
+        submitted_at: data?.created_at?.toDate?.()?.toISOString() || data?.created_at,
       },
       { headers: corsHeaders }
     )
@@ -94,33 +93,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
     const { page = 1, limit: pageLimit = 20, status } = body
 
-    const submissionsRef = collection(db, "contact_submissions")
-    let q = query(
-      submissionsRef,
-      orderBy("created_at", "desc")
-    )
+    const submissionsRef = adminDb.collection("contact_submissions")
+    let query = submissionsRef.orderBy("created_at", "desc")
 
     if (status) {
-      q = query(
-        submissionsRef,
-        where("status", "==", status),
-        orderBy("created_at", "desc")
-      )
+      query = submissionsRef
+        .where("status", "==", status)
+        .orderBy("created_at", "desc") as any
     }
 
-    // Note: Firestore doesn't have built-in pagination like SQL LIMIT/OFFSET
-    // For production, you'd want to implement cursor-based pagination
-    const querySnapshot = await getDocs(q)
+    // Apply limit for pagination
+    if (pageLimit > 0) {
+      query = query.limit(pageLimit * page) as any
+    }
+
+    const querySnapshot = await query.get()
     const allSubmissions = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       created_at: doc.data().created_at?.toDate?.()?.toISOString() || doc.data().created_at
     }))
 
-    // Simple pagination simulation (not efficient for large datasets)
+    // Simple pagination simulation (for better performance, use Firestore pagination)
     const startIndex = (page - 1) * pageLimit
     const endIndex = startIndex + pageLimit
-    const paginatedSubmissions = allSubmissions.slice(startIndex, endIndex)
+    const paginatedSubmissions = pageLimit > 0 ? allSubmissions.slice(startIndex, endIndex) : allSubmissions
 
     return NextResponse.json(
       {
