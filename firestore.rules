@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Contact submissions collection
+    match /contact_submissions/{document} {
+      // Allow anyone to create contact submissions
+      allow create: if true;
+      
+      // Only allow reading/updating/deleting with admin authentication
+      // In production, you'd implement proper authentication
+      allow read, update, delete: if false;
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
