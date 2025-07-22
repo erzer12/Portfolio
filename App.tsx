@@ -9,6 +9,7 @@ import { ProjectCaseStudy } from './components/ProjectCaseStudy';
 import { ContactPage } from './components/ContactPage';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { Button } from './components/ui/button';
+import LinesBackground from './components/LinesBackground';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('Home');
@@ -99,30 +100,13 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
-      <div className="min-h-screen bg-background relative">
-        {showMainNavigation && (
-          <Header 
-            currentPage={currentPage} 
-            onPageChange={handlePageChange}
-            isDarkMode={isDarkMode}
-            onThemeToggle={handleThemeToggle}
-          />
-        )}
-        <main>
-          {renderPage()}
-        </main>
-        {showMainNavigation && <Footer onPageChange={handlePageChange} />}
-        
-        {/* Admin Mode Toggle - Hidden in production */}
-        <Button
-          onClick={() => setIsAdminMode(true)}
-          className="fixed bottom-4 right-4 bg-neon-blue/20 border border-neon-blue/30 text-neon-blue hover:bg-neon-blue/30 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 z-40"
-          size="sm"
-        >
-          Admin
-        </Button>
-      </div>
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <LinesBackground />
+      {showMainNavigation && <Header currentPage={currentPage} onPageChange={handlePageChange} onThemeToggle={handleThemeToggle} isDarkMode={isDarkMode} />}
+      <main className="relative z-10">
+        {renderPage()}
+      </main>
+      <Footer onPageChange={handlePageChange} />
     </div>
   );
 }
