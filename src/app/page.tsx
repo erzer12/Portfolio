@@ -5,11 +5,24 @@ import ScrollAnimator from '@/components/scroll-animator';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Github, ExternalLink, Mail } from 'lucide-react';
+import { Github, ExternalLink, Mail, BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
 
-const skills = [
-  "JavaScript (ES6+)", "TypeScript", "React", "Next.js", "Node.js",
-  "HTML & (S)CSS", "Tailwind CSS", "Figma", "Git & GitHub", "SQL & NoSQL"
+const skillCategories = [
+  {
+    title: 'AI & Machine Learning',
+    icon: <BrainCircuit size={40} className="text-primary" />,
+    skills: ['Python', 'Generative AI', 'Prompt Engineering', 'TensorFlow', 'Scikit-learn']
+  },
+  {
+    title: 'Backend & Bot Development',
+    icon: <Bot size={40} className="text-primary" />,
+    skills: ['Flask', 'MongoDB', 'API Integration', 'Bot Development']
+  },
+  {
+    title: 'Tools & Deployment',
+    icon: <TerminalSquare size={40} className="text-primary" />,
+    skills: ['GitHub', 'Discord.py', 'Cloud Deployment']
+  }
 ];
 
 const projects = [
@@ -106,13 +119,25 @@ export default function Home() {
 
         <ScrollAnimator as="section" id="skills" className="flex flex-col items-start justify-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
-            <span className="text-primary">02.</span> Skills
+            <span className="text-primary">02.</span> Technical Skills
           </h2>
-          <div className="flex flex-wrap gap-4 justify-center">
-            {skills.map((skill) => (
-              <Badge key={skill} variant="outline" className="text-lg font-body px-4 py-2 border-2 border-primary text-primary hover:bg-primary/10 transition-all duration-300 transform hover:scale-105">
-                {skill}
-              </Badge>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {skillCategories.map((category) => (
+              <Card key={category.title} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
+                <CardHeader className="items-center text-center">
+                  {category.icon}
+                  <CardTitle className="font-headline text-3xl mt-4">{category.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {category.skills.map((skill) => (
+                      <Badge key={skill} variant="secondary" className="font-body text-sm">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </ScrollAnimator>
