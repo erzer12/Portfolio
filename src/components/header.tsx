@@ -33,12 +33,13 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const NavContent = ({ isMobile = false }) => (
+  const NavContent = ({ isMobile = false, onLinkClick }: { isMobile?: boolean, onLinkClick?: () => void }) => (
     <>
       {navLinks.map((link) => (
         <a
           key={link.href}
           href={link.href}
+          onClick={onLinkClick}
           className={cn(
             "font-headline text-lg glitch-hover hover:text-accent transition-colors",
             isMobile ? "block text-2xl py-4 text-center" : "text-md"
@@ -46,12 +47,10 @@ export default function Header() {
           data-text={link.name}
         >
           {isMobile ? (
-            <SheetClose asChild>
-              <div className="w-full h-full">
-                <span className="text-accent mr-1">{link.number}.</span>
-                <span>{link.name}</span>
-              </div>
-            </SheetClose>
+            <div className="w-full h-full">
+              <span className="text-accent mr-1">{link.number}.</span>
+              <span>{link.name}</span>
+            </div>
           ) : (
             <>
               <span className="text-accent mr-1">{link.number}.</span>
@@ -87,9 +86,11 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-background/90 backdrop-blur-xl border-l-border/50">
-              <div className="flex flex-col items-center justify-center h-full gap-8">
-                <NavContent isMobile />
-              </div>
+               <SheetClose asChild>
+                <div className="flex flex-col items-center justify-center h-full gap-8">
+                  <NavContent isMobile />
+                </div>
+              </SheetClose>
             </SheetContent>
           </Sheet>
         </div>
