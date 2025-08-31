@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -41,17 +42,22 @@ export default function ContactForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      await sendEmail(values);
-      toast({
-        title: "Message Sent!",
-        description: "Thanks for reaching out. I'll get back to you shortly.",
-      });
-      form.reset();
+      const result = await sendEmail(values);
+      if (result.success) {
+        toast({
+          title: "Message Sent!",
+          description: "Thanks for reaching out. I'll get back to you shortly.",
+        });
+        form.reset();
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request. Please try again.",
+        description:
+          error instanceof Error ? error.message : "There was a problem with your request. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
