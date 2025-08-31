@@ -124,15 +124,20 @@ export default function Home() {
                 When I'm not at my computer, I'm usually found exploring the latest in AI research, experimenting with new bot frameworks, or contributing to open-source projects.
               </p>
             </div>
-            <div className="md:col-span-2 relative w-64 h-64 mx-auto group">
-               <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
-                <Image
-                  src="https://firebasestorage.googleapis.com/v0/b/project-3987932328827914946.appspot.com/o/image.png?alt=media&token=19037359-40f0-4591-8898-ac2f349479ac"
-                  alt="Profile Picture"
-                  width={256}
-                  height={256}
-                  className="rounded-lg object-cover relative z-10 w-full h-full shadow-xl"
-                />
+            <div className="md:col-span-2 relative w-64 h-80 mx-auto group">
+              <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
+              <Image
+                src="https://storage.googleapis.com/project-3987932328827914946-files/d67e7616-52c6-430c-ab5c-60ff86903828"
+                alt="Profile Picture"
+                width={256}
+                height={320}
+                className="rounded-lg object-cover relative z-10 w-full h-full shadow-xl"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/80 backdrop-blur-[2px] rounded-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
+                <p className="text-center text-white text-sm">
+                  A passionate developer with a love for creating innovative and user-friendly applications.
+                </p>
+              </div>
             </div>
           </div>
         </ScrollAnimator>
