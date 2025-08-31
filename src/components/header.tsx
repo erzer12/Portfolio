@@ -7,11 +7,11 @@ import { Menu, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { name: 'Home', href: '#home', number: '01' },
-  { name: 'About', href: '#about', number: '02' },
-  { name: 'Skills', href: '#skills', number: '03' },
-  { name: 'Projects', href: '#projects', number: '04' },
-  { name: 'Contact', href: '#contact', number: '05' },
+  { name: 'Home', href: '#home' },
+  { name: 'About', href: '#about' },
+  { name: 'Skills', href: '#skills' },
+  { name: 'Projects', href: '#projects' },
+  { name: 'Contact', href: '#contact' },
 ];
 
 const Logo = () => (
@@ -45,13 +45,28 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const section = document.getElementById(href.substring(1));
+    if (section) {
+      window.scrollTo({
+        top: section.offsetTop,
+        behavior: 'smooth',
+      });
+      setActiveLink(href);
+    }
+  };
+
   const NavContent = ({ isMobile = false, onLinkClick }: { isMobile?: boolean, onLinkClick?: () => void }) => (
     <>
       {navLinks.map((link) => (
         <a
           key={link.href}
           href={link.href}
-          onClick={onLinkClick}
+          onClick={(e) => {
+            handleLinkClick(e, link.href);
+            onLinkClick?.();
+          }}
           className={cn(
             "font-headline text-lg glitch-hover hover:text-primary transition-colors",
             activeLink === link.href ? "text-primary" : "text-foreground",
@@ -59,17 +74,10 @@ export default function Header() {
           )}
           data-text={link.name}
         >
-          {isMobile ? (
-            <div className="w-full h-full">
-              <span className="text-primary mr-1">{link.number}.</span>
-              <span>{link.name}</span>
-            </div>
-          ) : (
-            <>
-              <span className="text-primary mr-1">{link.number}.</span>
-              <span>{link.name}</span>
-            </>
-          )}
+          <span className={cn(isMobile && "text-primary mr-1")}>
+            {isMobile ? `${navLinks.findIndex(l => l.href === link.href) + 1}.` : ''}
+          </span>
+          <span>{link.name}</span>
         </a>
       ))}
       <a href="/resume.pdf" download>
@@ -100,7 +108,9 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-background/90 backdrop-blur-xl border-l-border/50">
                 <div className="flex flex-col items-center justify-center h-full gap-8">
-                  <NavContent isMobile onLinkClick={() => document.querySelector<HTMLButtonElement>('[data-radix-dialog-close]')?.click()} />
+                  <SheetClose asChild>
+                    <NavContent isMobile onLinkClick={() => {}} />
+                  </SheetClose>
                 </div>
             </SheetContent>
           </Sheet>
