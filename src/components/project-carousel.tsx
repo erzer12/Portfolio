@@ -2,16 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Github, ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Project {
   title: string;
@@ -28,23 +23,21 @@ interface ProjectCarouselProps {
 }
 
 export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
-  const plugin = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
-  );
+    const scrollerRef = React.useRef<HTMLDivElement>(null);
 
+    React.useEffect(() => {
+        const scroller = scrollerRef.current;
+        if (scroller) {
+            scroller.setAttribute('data-animated', 'true');
+        }
+    }, []);
+  
   return (
-    <Carousel
-      plugins={[plugin.current]}
-      className="w-full"
-      opts={{
-        align: 'start',
-        loop: true,
-      }}
-    >
-      <CarouselContent className="-ml-4">
-        {projects.map((project, index) => (
-          <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4 group">
-             <div className="p-1">
+    <div ref={scrollerRef} className="scroller w-full overflow-hidden">
+      <div className="scroller__inner flex gap-4 py-4 w-max">
+        {[...projects, ...projects].map((project, index) => (
+          <div key={index} className="w-[350px] md:w-[450px] group">
+             <div className="p-1 h-full">
                 <Card className="bg-card/50 backdrop-blur-sm border-border/50 transition-all duration-300 flex flex-col h-full transform-gpu group-hover:scale-105 group-hover:border-primary/80">
                     <CardHeader>
                     <div className="overflow-hidden rounded-t-lg">
@@ -83,9 +76,9 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
                     </CardContent>
                 </Card>
             </div>
-          </CarouselItem>
+          </div>
         ))}
-      </CarouselContent>
-    </Carousel>
+      </div>
+    </div>
   );
 }
