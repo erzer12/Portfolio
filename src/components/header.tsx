@@ -7,16 +7,17 @@ import { Menu, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { name: 'About', href: '#about', number: '01' },
-  { name: 'Skills', href: '#skills', number: '02' },
-  { name: 'Projects', href: '#projects', number: '03' },
-  { name: 'Contact', href: '#contact', number: '04' },
+  { name: 'Home', href: '#home', number: '01' },
+  { name: 'About', href: '#about', number: '02' },
+  { name: 'Skills', href: '#skills', number: '03' },
+  { name: 'Projects', href: '#projects', number: '04' },
+  { name: 'Contact', href: '#contact', number: '05' },
 ];
 
 const Logo = () => (
   <a href="#home" className="z-50">
-    <div className="font-headline text-4xl text-accent glitch-hover" data-text="N">
-      <span>N</span>
+    <div className="font-headline text-4xl text-accent glitch-hover" data-text="HP">
+      <span>HP</span>
     </div>
   </a>
 );
@@ -45,9 +46,11 @@ export default function Header() {
           data-text={link.name}
         >
           {isMobile ? (
-            <SheetClose className="w-full h-full">
-              <span className="text-accent mr-1">{link.number}.</span>
-              <span>{link.name}</span>
+            <SheetClose asChild>
+              <div className="w-full h-full">
+                <span className="text-accent mr-1">{link.number}.</span>
+                <span>{link.name}</span>
+              </div>
             </SheetClose>
           ) : (
             <>
