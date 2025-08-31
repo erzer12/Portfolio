@@ -50,6 +50,7 @@ export default function ContactForm() {
         });
         form.reset();
       } else {
+        // The server action returned a failure
         throw new Error(result.message);
       }
     } catch (error) {
