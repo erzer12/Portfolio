@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Github, ExternalLink, Mail, BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
+import ProjectCarousel from '@/components/project-carousel';
 
 const skillCategories = [
   {
@@ -27,13 +28,13 @@ const skillCategories = [
 
 const projects = [
   {
-    title: 'Project One',
-    description: 'A brief description of this cool project, highlighting the technologies used and its purpose. Built with React and Node.js.',
+    title: 'Newshunt - AI-Powered Discord Bot',
+    description: 'Developed a modular Discord bot for international and local news with user-customized preferences and language translation.',
     image: 'https://picsum.photos/600/400',
-    tags: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+    tags: ['Discord.py', 'GPT-4', 'Flask', 'MongoDB'],
     github: '#',
     live: '#',
-    aiHint: 'technology abstract'
+    aiHint: 'news bot abstract'
   },
   {
     title: 'Project Two',
@@ -58,6 +59,24 @@ const projects = [
     description: 'An exploration of 3D graphics and animations on the web using Three.js and React Three Fiber.',
     image: 'https://picsum.photos/seed/picsum/600/400',
     tags: ['Three.js', 'React Three Fiber', 'Blender'],
+    github: '#',
+    live: '#',
+    aiHint: 'technology abstract'
+  },
+   {
+    title: 'Project Five',
+    description: 'A brief description of this cool project, highlighting the technologies used and its purpose. Built with React and Node.js.',
+    image: 'https://picsum.photos/600/400',
+    tags: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+    github: '#',
+    live: '#',
+    aiHint: 'technology abstract'
+  },
+  {
+    title: 'Project Six',
+    description: 'Another awesome project that showcases my skills in UI/UX design and frontend development using Next.js and Tailwind CSS.',
+    image: 'https://picsum.photos/600/400?grayscale',
+    tags: ['Next.js', 'Tailwind CSS', 'Figma'],
     github: '#',
     live: '#',
     aiHint: 'technology abstract'
@@ -142,50 +161,13 @@ export default function Home() {
           </div>
         </ScrollAnimator>
 
-        <ScrollAnimator as="section" id="projects" className="flex flex-col items-start justify-center">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
+        <section id="projects" className="flex flex-col items-start justify-center w-full overflow-hidden">
+          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative container mx-auto px-4 md:px-8">
             <span className="text-primary">03.</span> Projects
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
-                <CardHeader>
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={600}
-                    height={400}
-                    className="rounded-t-lg mb-4 object-cover group-hover:scale-105 transition-transform duration-300"
-                    data-ai-hint={project.aiHint}
-                  />
-                  <CardTitle className="font-headline text-3xl flex justify-between items-center">
-                    {project.title}
-                    <div className="flex gap-4">
-                      <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Github size={24} />
-                      </a>
-                      <a href={project.live} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <ExternalLink size={24} />
-                      </a>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <CardDescription className="text-muted-foreground/80">
-                    {project.description}
-                  </CardDescription>
-                </CardContent>
-                <CardContent>
-                   <div className="flex flex-wrap gap-2 pt-2">
-                    {project.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="font-body">{tag}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollAnimator>
+          <ProjectCarousel projects={projects} />
+        </section>
+
 
         <ScrollAnimator as="section" id="contact" className="flex flex-col items-center justify-center text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-4 relative">
