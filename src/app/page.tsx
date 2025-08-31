@@ -132,6 +132,7 @@ export default function Home() {
                 width={256}
                 height={320}
                 className="rounded-lg object-cover relative z-10 w-full h-full shadow-xl"
+                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/80 backdrop-blur-[2px] rounded-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
                 <p className="text-center text-white text-sm">
