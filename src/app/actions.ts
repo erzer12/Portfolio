@@ -15,7 +15,6 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
   const parsedData = contactSchema.safeParse(formData);
 
   if (!parsedData.success) {
-    // This case should ideally be caught by client-side validation
     const errorMessages = parsedData.error.issues.map(issue => issue.message).join(' ');
     return { success: false, message: `Invalid form data: ${errorMessages}` };
   }
@@ -30,8 +29,7 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
     return { success: true, message: 'Your message has been saved successfully!' };
   } catch (e) {
     console.error("Error adding document to Firestore: ", e);
-    // Log the detailed error
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return { success: false, message: `Failed to save message due to a database error. Please try again later. Details: ${errorMessage}` };
+    return { success: false, message: `Failed to save message to database. Details: ${errorMessage}` };
   }
 }
