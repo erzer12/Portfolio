@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Github, ExternalLink, Mail, BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
 import ProjectCarousel from '@/components/project-carousel';
+import ContactForm from '@/components/contact-form';
 
 const skillCategories = [
   {
@@ -177,12 +178,9 @@ export default function Home() {
           <p className="max-w-xl mx-auto text-muted-foreground mb-8">
             I'm currently looking for new opportunities, my inbox is always open. Whether you have a question or just want to say hi, I'll try my best to get back to you!
           </p>
-          <a href="mailto:your.email@example.com">
-             <Button size="lg" className="font-headline text-xl glitch-hover" data-text="Say Hello">
-                <Mail className="mr-2 h-5 w-5" />
-                <span>Say Hello</span>
-            </Button>
-          </a>
+          <div className="w-full max-w-2xl">
+            <ContactForm />
+          </div>
         </ScrollAnimator>
       </main>
       <Footer />
