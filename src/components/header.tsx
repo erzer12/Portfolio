@@ -16,7 +16,7 @@ const navLinks = [
 
 const Logo = () => (
   <a href="#home" className="z-50">
-    <div className="font-headline text-4xl text-accent glitch-hover" data-text="HP">
+    <div className="font-headline text-4xl text-primary glitch-hover" data-text="HP">
       <span>HP</span>
     </div>
   </a>
@@ -24,11 +24,23 @@ const Logo = () => (
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeLink, setActiveLink] = useState('#home');
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      
+      const sections = navLinks.map(link => document.getElementById(link.href.substring(1)));
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        if (section && scrollPosition >= section.offsetTop && scrollPosition < section.offsetTop + section.offsetHeight) {
+          setActiveLink(`#${section.id}`);
+          break;
+        }
+      }
     };
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -41,26 +53,27 @@ export default function Header() {
           href={link.href}
           onClick={onLinkClick}
           className={cn(
-            "font-headline text-lg glitch-hover hover:text-accent transition-colors",
+            "font-headline text-lg glitch-hover hover:text-primary transition-colors",
+            activeLink === link.href ? "text-primary" : "text-foreground",
             isMobile ? "block text-2xl py-4 text-center" : "text-md"
           )}
           data-text={link.name}
         >
           {isMobile ? (
             <div className="w-full h-full">
-              <span className="text-accent mr-1">{link.number}.</span>
+              <span className="text-primary mr-1">{link.number}.</span>
               <span>{link.name}</span>
             </div>
           ) : (
             <>
-              <span className="text-accent mr-1">{link.number}.</span>
+              <span className="text-primary mr-1">{link.number}.</span>
               <span>{link.name}</span>
             </>
           )}
         </a>
       ))}
       <a href="/resume.pdf" download>
-        <Button variant="outline" className={cn("font-headline text-lg border-accent text-accent hover:bg-accent/10", isMobile && "w-full mt-4")}>
+        <Button variant="outline" className={cn("font-headline text-lg border-primary text-primary hover:bg-primary/10", isMobile && "w-full mt-4")}>
           <Download className="mr-2 h-4 w-4" />
           Resume
         </Button>
@@ -82,15 +95,13 @@ export default function Header() {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
-                <Menu className="h-8 w-8 text-accent" />
+                <Menu className="h-8 w-8 text-primary" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-background/90 backdrop-blur-xl border-l-border/50">
-               <SheetClose asChild>
                 <div className="flex flex-col items-center justify-center h-full gap-8">
-                  <NavContent isMobile />
+                  <NavContent isMobile onLinkClick={() => document.querySelector<HTMLButtonElement>('[data-radix-dialog-close]')?.click()} />
                 </div>
-              </SheetClose>
             </SheetContent>
           </Sheet>
         </div>
