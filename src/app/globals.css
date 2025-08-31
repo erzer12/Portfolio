@@ -230,6 +230,10 @@
   pointer-events: none;
 }
 
-.cursor__ball circle {
-  fill: white;
+.cursor__ball--small circle {
+  fill: hsl(var(--primary));
+}
+
+.cursor__ball--big circle {
+  fill: hsl(var(--primary));
 }
