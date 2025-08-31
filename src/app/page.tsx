@@ -2,6 +2,7 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import ScrollAnimator from '@/components/scroll-animator';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -25,9 +26,29 @@ export default function Home() {
               </Button>
             </a>
         </ScrollAnimator>
-        <section id="about" className="flex items-center justify-center">
-          <h1 className="font-headline text-6xl">About</h1>
-        </section>
+        <ScrollAnimator as="section" id="about" className="flex flex-col items-start justify-center">
+          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
+            <span className="text-accent">01.</span> About Me
+          </h2>
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="text-muted-foreground text-lg space-y-4">
+              <p>
+                Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
+              </p>
+            </div>
+            <div className="relative w-64 h-64 mx-auto">
+               <div className="absolute inset-0 bg-accent/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-6"></div>
+                <Image
+                  src="https://picsum.photos/256/256"
+                  alt="Profile Picture"
+                  width={256}
+                  height={256}
+                  className="rounded-lg object-cover relative z-10 w-full h-full grayscale hover:grayscale-0 transition-all duration-300"
+                  data-ai-hint="portrait person"
+                />
+            </div>
+          </div>
+        </ScrollAnimator>
         <section id="skills" className="flex items-center justify-center">
           <h1 className="font-headline text-6xl">Skills</h1>
         </section>
