@@ -90,7 +90,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow container mx-auto px-4 md:px-8">
-        <ScrollAnimator as="section" id="home" className="flex flex-col items-start justify-center text-left">
+        <ScrollAnimator as="section" id="home" className="flex flex-col items-center justify-center text-center">
             <p className="text-primary font-headline text-2xl md:text-3xl mb-4">Hi, my name is</p>
             <h1 className="text-5xl md:text-8xl font-bold font-headline glitch-text" data-text="Harshil P">
               Harshil P
@@ -108,12 +108,12 @@ export default function Home() {
             </a>
         </ScrollAnimator>
 
-        <ScrollAnimator as="section" id="about" className="flex flex-col items-start justify-center">
+        <ScrollAnimator as="section" id="about" className="flex flex-col items-center justify-center text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
             <span className="text-primary">01.</span> About Me
           </h2>
           <div className="grid md:grid-cols-5 gap-16 items-center">
-            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4">
+            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center md:text-left">
               <p>
                 Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
               </p>
@@ -142,7 +142,7 @@ export default function Home() {
           </div>
         </ScrollAnimator>
 
-        <ScrollAnimator as="section" id="skills" className="flex flex-col items-start justify-center">
+        <ScrollAnimator as="section" id="skills" className="flex flex-col items-center justify-center text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
             <span className="text-primary">02.</span> Technical Skills
           </h2>
@@ -167,7 +167,7 @@ export default function Home() {
           </div>
         </ScrollAnimator>
 
-        <section id="projects" className="flex flex-col items-start justify-center w-full overflow-hidden">
+        <section id="projects" className="flex flex-col items-center justify-center w-full overflow-hidden text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative container mx-auto px-4 md:px-8">
             <span className="text-primary">03.</span> Projects
           </h2>
