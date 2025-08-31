@@ -75,6 +75,14 @@
     scroll-behavior: smooth;
   }
 
+  html {
+    cursor: none;
+  }
+
+  a, button, [role="button"], input, textarea, select {
+    cursor: none;
+  }
+
   section {
     @apply min-h-[calc(100vh-80px)] py-20 md:py-32;
   }
