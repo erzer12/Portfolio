@@ -41,8 +41,10 @@ export default function ContactForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    console.log("Form values:", values); // Log form values
     try {
       const result = await sendEmail(values);
+      console.log("Server action result:", result); // Log server action result
       if (result.success) {
         toast({
           title: "Message Sent!",
@@ -50,11 +52,10 @@ export default function ContactForm() {
         });
         form.reset();
       } else {
-        // The server action returned a failure
-        throw new Error(result.message);
+        throw new Error(result.message || "An unknown error occurred.");
       }
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error("Form submission error:", error); // Log the full error
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
