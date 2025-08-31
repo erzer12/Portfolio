@@ -95,8 +95,8 @@ export default function Home() {
             <h1 className="text-5xl md:text-8xl font-bold font-headline glitch-text" data-text="Harshil P">
               Harshil P
             </h1>
-            <h2 className="text-4xl md:text-6xl font-bold font-headline text-muted-foreground mt-2 glitch-text" data-text="AI & Bot Enthusiast">
-              AI & Bot Enthusiast
+            <h2 className="text-4xl md:text-6xl font-bold font-headline text-muted-foreground mt-2 glitch-text" data-text="AI & ml enthusiast">
+              AI & ml enthusiast
             </h2>
             <p className="mt-6 max-w-xl text-muted-foreground text-lg">
               Enthusiastic Computer Science undergraduate dedicated to software development, with a focus on app creation, web scraping, bot development, and AI-driven tools.
