@@ -61,12 +61,16 @@ export default function ProjectCarousel({ projects }: ProjectCarouselProps) {
                   <CardTitle className="font-headline text-3xl flex justify-between items-center pt-4">
                     {project.title}
                     <div className="flex gap-4">
-                      <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Github size={24} />
-                      </a>
-                      <a href={project.live} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <ExternalLink size={24} />
-                      </a>
+                      {project.github && project.github !== '#' && (
+                        <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                          <Github size={24} />
+                        </a>
+                      )}
+                      {project.live && project.live !== '#' && (
+                        <a href={project.live} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                          <ExternalLink size={24} />
+                        </a>
+                      )}
                     </div>
                   </CardTitle>
                 </CardHeader>
