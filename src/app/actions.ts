@@ -44,8 +44,8 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Notifier <noreply@yourdomain.com>', // IMPORTANT: Replace with your verified domain
-      to: ['your-email@example.com'], // IMPORTANT: Replace with your actual email
+      from: 'Portfolio Notifier <noreply@harshilp.codes>', // IMPORTANT: Replace with your verified domain
+      to: ['harshilp1234@gmail.com'], // IMPORTANT: Replace with your actual email
       subject: `New Message from ${parsedData.data.name}`,
       html: `
         <p>You received a new message from your portfolio contact form:</p>
