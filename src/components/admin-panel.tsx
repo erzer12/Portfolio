@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -79,6 +78,12 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Clear selection when switching tabs
+  useEffect(() => {
+    if (activeTab === "skills") setSelectedProject(null);
+    if (activeTab === "projects") setSelectedSkill(null);
+  }, [activeTab]);
 
   const skillForm = useForm({
     resolver: zodResolver(skillSchema),
@@ -189,7 +194,13 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
             <div className="grid grid-cols-3 gap-4 h-full">
               {/* List Column */}
               <div className="col-span-1 overflow-y-auto border-r pr-4">
-                 <Button onClick={() => { setSelectedSkill(null); setSelectedProject(null); }} className="w-full mb-4">
+                 <Button
+                   onClick={() => {
+                     if (activeTab === "skills") setSelectedSkill(null);
+                     if (activeTab === "projects") setSelectedProject(null);
+                   }}
+                   className="w-full mb-4"
+                 >
                     <PlusCircle className="mr-2" />
                     Add New
                 </Button>
@@ -229,7 +240,7 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
                        <FormField control={skillForm.control} name="icon" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Icon</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                          <Select value={field.value} onValueChange={field.onChange}>
                             <FormControl><SelectTrigger><SelectValue placeholder="Select an icon" /></SelectTrigger></FormControl>
                             <SelectContent>
                               <SelectItem value="BrainCircuit">BrainCircuit</SelectItem>
