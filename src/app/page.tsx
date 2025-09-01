@@ -115,7 +115,7 @@ export default function Home() {
             <span className="text-primary">01.</span> About Me
           </h2>
           <div className="grid md:grid-cols-5 gap-16 items-center">
-            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center md:text-left">
+            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center">
               <p>
                 Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
               </p>
@@ -128,22 +128,17 @@ export default function Home() {
             </div>
             <div className="md:col-span-2 relative w-64 h-80 mx-auto group">
               <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
-              <div className="relative z-10 w-full h-full">
-                <Image
+              <div className="relative z-10 w-full h-full rounded-lg overflow-hidden">
+                 <Image
                   src="/harshil_image.jpg"
                   alt="Profile Picture"
                   width={256}
                   height={320}
-                  className="rounded-lg object-cover w-full h-full shadow-xl transition-opacity duration-300 group-hover:opacity-0"
+                  className="object-cover w-full h-full shadow-xl"
                 />
-                <Image
-                  src="https://picsum.photos/256/320"
-                  alt="Hover Profile Picture"
-                  width={256}
-                  height={320}
-                  data-ai-hint="fun portrait"
-                  className="absolute inset-0 rounded-lg object-cover w-full h-full shadow-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/80 backdrop-blur-[2px] rounded-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center text-sm">
+                  A passionate developer with a love for creating innovative and user-friendly applications.
+                </div>
               </div>
             </div>
           </div>
