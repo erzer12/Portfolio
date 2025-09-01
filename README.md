@@ -51,22 +51,24 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
 3.  **Set up Environment Variables:**
-    Create a file named `.env.local` in the root of your project. This file will hold your secret keys for Firebase and Resend.
+    Create a file named `.env.local` in the root of your project by copying the example file:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Now, open `.env.local` and fill in the required values.
 
     **a. Firebase Configuration:**
     - Go to your [Firebase Console](https://console.firebase.google.com/).
-    - Create a new project or use your existing `portfolio-9afb3` project.
-    - Go to **Project Settings** > **General** and find your Firebase config object under "Your apps".
-    - Copy the configuration keys into `src/lib/firebase.ts`. (This is already done in the project, but you can update it if needed).
+    - Create a new project or select an existing one.
+    - In your **Project Settings** > **General** tab, scroll down to "Your apps".
+    - Click the **Web** icon (`</>`) to create a new web app or select your existing one.
+    - You will find a `firebaseConfig` object. Copy the corresponding values from this object into your `.env.local` file for each `NEXT_PUBLIC_FIREBASE_*` variable.
 
     **b. Resend Configuration:**
     - [Sign up for Resend](https://resend.com/) and verify a domain you own.
     - Create an API Key in the Resend dashboard.
-    - Add the API key to your `.env.local` file:
-      ```
-      RESEND_API_KEY=your_resend_api_key
-      ```
-    - In `src/app/actions.ts`, update the `from` and `to` email addresses in the `resend.emails.send` function.
+    - Add the API key to your `.env.local` file as `RESEND_API_KEY`.
+    - In `src/app/actions.ts`, update the `from` and `to` email addresses in the `resend.emails.send` function to match your verified domain and desired recipient.
 
 4.  **Run the development server:**
     ```bash
@@ -82,4 +84,4 @@ This app is ready to be deployed on any platform that supports Next.js, such as:
 - **[Vercel](https://vercel.com/):** The easiest way to deploy a Next.js app. Simply connect your GitHub repository.
 - **[Firebase App Hosting](https://firebase.google.com/docs/app-hosting):** The `apphosting.yaml` file is already configured.
 
-Remember to set your environment variables (especially `RESEND_API_KEY`) in your hosting provider's dashboard.
+Remember to set your environment variables (especially `RESEND_API_KEY` and all `NEXT_PUBLIC_FIREBASE_*` keys) in your hosting provider's dashboard.
