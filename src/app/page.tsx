@@ -130,12 +130,11 @@ export default function Home() {
               <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
               <div className="relative z-10 w-full h-full">
                 <Image
-                  src="https://storage.googleapis.com/project-3987932328827914946-files/d67e7616-52c6-430c-ab5c-60ff86903828"
+                  src="/harshil_image.jpg"
                   alt="Profile Picture"
                   width={256}
                   height={320}
                   className="rounded-lg object-cover w-full h-full shadow-xl transition-opacity duration-300 group-hover:opacity-0"
-                  unoptimized
                 />
                 <Image
                   src="https://picsum.photos/256/320"
