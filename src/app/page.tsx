@@ -35,25 +35,23 @@ const projects = [
   {
     title: 'Internshala Job Scraper',
     description: 'Built a Python script automates the process of scraping job listings from Internshala.com, extracting key details, and saving the data into a structured Excel file. It is a simple and efficient tool for collecting job-related information',
-    image: 'https://picsum.photos/600/400',
-    aiHint: 'market analysis',
+    image: 'https://play-lh.googleusercontent.com/8t6U6HGuMnP1DAJYpb4U_fEwVA7fgaOBJYRyfPHM5OLZllGj-8tsmJhu6Y4ikMrGpZg',
+    aiHint: 'Web scraper',
     tags: ['Python', 'BeautifulSoup4', 'Pandas', 'Requests','Openpyxl'],
-    github: 'https://github.com/erzer12/job-scraper',
-    live: '#',
+    github: 'https://github.com/erzer12/job-scraper'
   },
   {
     title: 'Discord News Bot',
     description: 'A modular Discord bot for international news with country/language preferences, daily news, onboarding, and Render deployment support.',
-    image: 'https://ibb.co/mV368g2D',
-    aiHint: 'moderation bot',
+    image: 'https://www.dropbox.com/scl/fi/999ybq5eocrsketpgo5mp/icons8-news-480.png?rlkey=kfv57ipzxlnibidm4rh1hfgqm&st=krh0oan8&dl=0',
+    aiHint: 'Utility bot',
     tags: ['Python', 'Discord.py', 'MongoDB','Flask'],
-    github: 'https://github.com/erzer12/NewsHunt-bot',
-    live: '#',
+    github: 'https://github.com/erzer12/NewsHunt-bot'
   },
   {
     title: 'Personal Portfolio Website',
     description: 'Designed and developed a personal portfolio website to showcase my projects and skills, built with a modern tech stack and a focus on user experience.',
-    image: 'https://picsum.photos/600/400',
+    image: 'https://www.dropbox.com/scl/fi/50g7qvj419mg0xe4981zw/Gemini_Generated_Image_ns0gqxns0gqxns0g.png?rlkey=wwqqm0105r83qyoutc23uodg4&st=6an2wkwq&dl=0',
     aiHint: 'portfolio website',
     tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
     github: 'https://github.com/erzer12/my-portfolio',
