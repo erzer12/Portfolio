@@ -81,7 +81,7 @@ export default function Header() {
           <span>{link.name}</span>
         </a>
       ))}
-      <a href="/resume.pdf" download="Harshil_P_Resume.pdf">
+      <a href="/Harshil_P_Resume.pdf" download="resume.pdf">
         <Button variant="outline" className={cn("font-headline text-lg border-primary text-primary hover:bg-primary/10", isMobile && "w-full mt-4")}>
           <Download className="mr-2 h-4 w-4" />
           Resume
