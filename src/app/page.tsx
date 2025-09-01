@@ -115,7 +115,7 @@ export default function Home() {
             <span className="text-primary">01.</span> About Me
           </h2>
           <div className="grid md:grid-cols-5 gap-16 items-center">
-            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center md:text-left">
+            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center">
               <p>
                 Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
               </p>
