@@ -114,8 +114,8 @@ export default function Home() {
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
             <span className="text-primary">01.</span> About Me
           </h2>
-          <div className="grid md:grid-cols-5 gap-16 items-center">
-            <div className="md:col-span-3 text-muted-foreground text-lg space-y-4 text-center">
+          <div className="flex flex-col items-center gap-12">
+            <div className="max-w-3xl text-muted-foreground text-lg space-y-4 text-center">
               <p>
                 Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
               </p>
@@ -126,7 +126,7 @@ export default function Home() {
                 When I'm not at my computer, I'm usually found exploring the latest in AI research, experimenting with new bot frameworks, or contributing to open-source projects.
               </p>
             </div>
-            <div className="md:col-span-2 relative w-64 h-80 mx-auto group">
+            <div className="relative w-64 h-80 mx-auto group">
               <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
               <div className="relative z-10 w-full h-full rounded-lg overflow-hidden">
                  <Image
