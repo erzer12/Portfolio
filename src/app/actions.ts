@@ -3,8 +3,9 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Resend } from 'resend';
+import { revalidatePath } from 'next/cache';
 
 const contactSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -69,5 +70,85 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
     // The message was saved to Firestore, but email failed.
     // We can inform the user, but it's not a total failure.
     return { success: false, message: `Message was saved, but failed to send email notification. Details: ${errorMessage}` };
+  }
+}
+
+// --- Admin Panel Actions ---
+
+const skillSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, 'Title is required'),
+  icon: z.string().min(1, 'Icon is required'),
+  skills: z.array(z.string()).min(1, 'At least one skill is required'),
+});
+
+const projectSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  image: z.string().url('Must be a valid URL').min(1, 'Image URL is required'),
+  tags: z.array(z.string()).min(1, 'At least one tag is required'),
+  github: z.string().url('Must be a valid URL'),
+  live: z.string().url('Must be a valid URL'),
+  aiHint: z.string().optional(),
+  order: z.number().optional(),
+});
+
+
+export async function saveSkill(formData: z.infer<typeof skillSchema>) {
+  const parsed = skillSchema.safeParse(formData);
+  if (!parsed.success) {
+    return { success: false, message: 'Invalid skill data.' };
+  }
+  try {
+    const { id, ...skillData } = parsed.data;
+    const docRef = id ? doc(db, 'skills', id) : doc(collection(db, 'skills'));
+    await setDoc(docRef, skillData, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Skill saved successfully.' };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to save skill: ${errorMessage}` };
+  }
+}
+
+export async function deleteSkill(id: string) {
+  try {
+    if (!id) throw new Error("Document ID is required for deletion.");
+    await deleteDoc(doc(db, 'skills', id));
+    revalidatePath('/');
+    return { success: true, message: 'Skill deleted successfully.' };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to delete skill: ${errorMessage}` };
+  }
+}
+
+export async function saveProject(formData: z.infer<typeof projectSchema>) {
+  const parsed = projectSchema.safeParse(formData);
+  if (!parsed.success) {
+    return { success: false, message: 'Invalid project data.' };
+  }
+  try {
+    const { id, ...projectData } = parsed.data;
+    const docRef = id ? doc(db, 'projects', id) : doc(collection(db, 'projects'));
+    await setDoc(docRef, projectData, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Project saved successfully.' };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to save project: ${errorMessage}` };
+  }
+}
+
+export async function deleteProject(id: string) {
+  try {
+    if (!id) throw new Error("Document ID is required for deletion.");
+    await deleteDoc(doc(db, 'projects', id));
+    revalidatePath('/');
+    return { success: true, message: 'Project deleted successfully.' };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to delete project: ${errorMessage}` };
   }
 }
