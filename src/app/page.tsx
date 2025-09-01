@@ -1,4 +1,5 @@
 
+
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
@@ -127,18 +128,22 @@ export default function Home() {
             </div>
             <div className="md:col-span-2 relative w-64 h-80 mx-auto group">
               <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
-              <Image
-                src="https://storage.googleapis.com/project-3987932328827914946-files/d67e7616-52c6-430c-ab5c-60ff86903828"
-                alt="Profile Picture"
-                width={256}
-                height={320}
-                className="rounded-lg object-cover relative z-10 w-full h-full shadow-xl"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/80 backdrop-blur-[2px] rounded-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
-                <p className="text-center text-white text-sm">
-                  A passionate developer with a love for creating innovative and user-friendly applications.
-                </p>
+              <div className="relative z-10 w-full h-full">
+                <Image
+                  src="/harshil_image.jpg"
+                  alt="Profile Picture"
+                  width={256}
+                  height={320}
+                  className="rounded-lg object-cover w-full h-full shadow-xl transition-opacity duration-300 group-hover:opacity-0"
+                />
+                <Image
+                  src="https://picsum.photos/256/320"
+                  alt="Hover Profile Picture"
+                  width={256}
+                  height={320}
+                  data-ai-hint="fun portrait"
+                  className="absolute inset-0 rounded-lg object-cover w-full h-full shadow-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                />
               </div>
             </div>
           </div>
