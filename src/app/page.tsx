@@ -1,88 +1,81 @@
 
-
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import ScrollAnimator from '@/components/scroll-animator';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Github, ExternalLink, Mail, BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
 import ProjectCarousel from '@/components/project-carousel';
 import ContactForm from '@/components/contact-form';
 
-const skillCategories = [
-  {
-    title: 'AI & Machine Learning',
-    icon: <BrainCircuit size={40} className="text-primary" />,
-    skills: ['Python', 'Generative AI', 'Prompt Engineering', 'TensorFlow', 'Scikit-learn']
-  },
-  {
-    title: 'Backend & Bot Development',
-    icon: <Bot size={40} className="text-primary" />,
-    skills: ['Flask', 'MongoDB', 'API Integration', 'Bot Development']
-  },
-  {
-    title: 'Tools & Deployment',
-    icon: <TerminalSquare size={40} className="text-primary" />,
-    skills: ['GitHub', 'Discord.py', 'Cloud Deployment']
-  }
+const skills = [
+    {
+      id: 'frontend',
+      icon: <BrainCircuit size={40} className="text-primary" />,
+      title: 'AI & Machine Learning',
+      skills: ['Python', 'TensorFlow', 'Scikit-learn', 'OpenCV', 'NLTK', 'Spacy', 'Generative AI', 'Prompt Engineering'],
+    },
+    {
+      id: 'backend',
+      icon: <TerminalSquare size={40} className="text-primary" />,
+      title: 'App/Web Development',
+      skills: ['Django', 'Flask', 'FastAPI', 'HTML/CSS', 'JavaScript', 'SQL', 'Firebase', 'REST APIs'],
+    },
+    {
+      id: 'tools',
+      icon: <Bot size={40} className="text-primary" />,
+      title: 'Bot Development & Automation',
+      skills: ['Selenium', 'BS4', 'Playwright', 'Scrapy', 'Discord.py', 'Telegram Bot API', 'Web Scraping', 'Automation'],
+    },
 ];
 
 const projects = [
   {
-    title: 'Newshunt - AI-Powered Discord Bot',
-    description: 'Developed a modular Discord bot for international and local news with user-customized preferences and language translation.',
+    title: 'AI-Powered E-commerce Chatbot',
+    description: 'Developed an intelligent chatbot for an e-commerce platform to handle customer queries, provide product recommendations, and process orders, improving user engagement and sales.',
     image: 'https://picsum.photos/600/400',
-    tags: ['Discord.py', 'GPT-4', 'Flask', 'MongoDB'],
-    github: '#',
+    aiHint: 'e-commerce chatbot',
+    tags: ['Python', 'NLTK', 'TensorFlow', 'Django', 'React'],
+    github: 'https://github.com/erzer12',
     live: '#',
-    aiHint: 'news bot abstract'
   },
   {
-    title: 'Project Two',
-    description: 'Another awesome project that showcases my skills in UI/UX design and frontend development using Next.js and Tailwind CSS.',
-    image: 'https://picsum.photos/600/400?grayscale',
-    tags: ['Next.js', 'Tailwind CSS', 'Figma'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-  {
-    title: 'Project Three',
-    description: 'This project involved building a full-stack application with a focus on performance and scalability. Deployed on Vercel.',
-    image: 'https://picsum.photos/600/400?blur=1',
-    tags: ['SvelteKit', 'Go', 'GraphQL', 'Docker'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-  {
-    title: 'Project Four',
-    description: 'An exploration of 3D graphics and animations on the web using Three.js and React Three Fiber.',
-    image: 'https://picsum.photos/seed/picsum/600/400',
-    tags: ['Three.js', 'React Three Fiber', 'Blender'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-   {
-    title: 'Project Five',
-    description: 'A brief description of this cool project, highlighting the technologies used and its purpose. Built with React and Node.js.',
+    title: 'Automated Job Application Bot',
+    description: 'Created a bot that automates the process of finding and applying for jobs on multiple platforms, saving users time and effort in their job search.',
     image: 'https://picsum.photos/600/400',
-    tags: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
-    github: '#',
+    aiHint: 'job application',
+    tags: ['Python', 'Selenium', 'Beautiful Soup', 'Pandas'],
+    github: 'https://github.com/erzer12',
     live: '#',
-    aiHint: 'technology abstract'
   },
   {
-    title: 'Project Six',
-    description: 'Another awesome project that showcases my skills in UI/UX design and frontend development using Next.js and Tailwind CSS.',
-    image: 'https://picsum.photos/600/400?grayscale',
-    tags: ['Next.js', 'Tailwind CSS', 'Figma'],
-    github: '#',
+    title: 'Web Scraping for Market Analysis',
+    description: 'Built a web scraper to collect and analyze data from various e-commerce sites, providing valuable insights into market trends and competitor pricing.',
+    image: 'https://picsum.photos/600/400',
+    aiHint: 'market analysis',
+    tags: ['Python', 'Scrapy', 'Pandas', 'Matplotlib'],
+    github: 'https://github.com/erzer12',
     live: '#',
-    aiHint: 'technology abstract'
+  },
+  {
+    title: 'Discord Moderation Bot',
+    description: 'A comprehensive moderation bot for Discord servers, featuring automated content filtering, user warnings, and a reputation system to maintain community standards.',
+    image: 'https://picsum.photos/600/400',
+    aiHint: 'moderation bot',
+    tags: ['Python', 'Discord.py', 'SQLAlchemy'],
+    github: 'https://github.com/erzer12',
+    live: '#',
+  },
+  {
+    title: 'Personal Portfolio Website',
+    description: 'Designed and developed a personal portfolio website to showcase my projects and skills, built with a modern tech stack and a focus on user experience.',
+    image: 'https://picsum.photos/600/400',
+    aiHint: 'portfolio website',
+    tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
+    github: 'https://github.com/erzer12',
+    live: '#',
   },
 ];
 
@@ -149,15 +142,15 @@ export default function Home() {
             <span className="text-primary">02.</span> Technical Skills
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            {skillCategories.map((category) => (
-              <Card key={category.title} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
+            {skills.map((category) => (
+              <Card key={category.id} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
                 <CardHeader className="items-center text-center">
                   {category.icon}
                   <CardTitle className="font-headline text-3xl mt-4">{category.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {category.skills.map((skill) => (
+                    {category.skills.map((skill: string) => (
                       <Badge key={skill} variant="secondary" className="font-body text-sm">
                         {skill}
                       </Badge>
