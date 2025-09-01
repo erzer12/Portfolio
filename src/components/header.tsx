@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -59,7 +60,7 @@ export default function Header() {
 
   const NavContent = ({ isMobile = false, onLinkClick }: { isMobile?: boolean, onLinkClick?: () => void }) => (
     <>
-      {navLinks.map((link) => (
+      {navLinks.map((link, index) => (
         <a
           key={link.href}
           href={link.href}
@@ -75,7 +76,7 @@ export default function Header() {
           data-text={link.name}
         >
           <span className={cn(isMobile && "text-primary mr-1")}>
-            {isMobile ? `${navLinks.findIndex(l => l.href === link.href) + 1}.` : ''}
+            {isMobile ? `0${index + 1}.` : ''}
           </span>
           <span>{link.name}</span>
         </a>
@@ -111,11 +112,11 @@ export default function Header() {
                 <SheetHeader className="sr-only">
                     <SheetTitle>Mobile Navigation Menu</SheetTitle>
                 </SheetHeader>
-                <div className="flex flex-col items-center justify-center h-full gap-8">
+                <nav className="flex flex-col items-center justify-center h-full gap-8">
                   <SheetClose asChild>
                     <NavContent isMobile onLinkClick={() => {}} />
                   </SheetClose>
-                </div>
+                </nav>
             </SheetContent>
           </Sheet>
         </div>
