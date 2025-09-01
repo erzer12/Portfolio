@@ -1,11 +1,10 @@
-import { Github, Linkedin, Mail, Twitter, Code, Heart } from 'lucide-react';
+import { Github, Linkedin, Mail, Code, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 
 const socialLinks = [
-  { icon: Github, href: '#', label: 'GitHub' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Mail, href: 'mailto:harshil@example.com', label: 'Email' },
+  { icon: Github, href: 'https://github.com/erzer12', label: 'GitHub' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/in/harshilp1/', label: 'LinkedIn' },
+  { icon: Mail, href: 'mailto:harshilp1234@gmail.com', label: 'Email' },
 ];
 
 const quickLinks = [
