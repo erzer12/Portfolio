@@ -51,7 +51,7 @@ const projects = [
   {
     title: 'Personal Portfolio Website',
     description: 'Designed and developed a personal portfolio website to showcase my projects and skills, built with a modern tech stack and a focus on user experience.',
-    image: '/Gemini_Generated_Image_ns0gqxns0gqxns0g.png',
+    image: '/Logo.png',
     aiHint: 'portfolio website',
     tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
     github: 'https://github.com/erzer12/my-portfolio',
