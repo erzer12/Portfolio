@@ -1,4 +1,4 @@
-# Personal Portfolio - "Nothing" Inspired
+# Personal Portfolio
 
 This is a personal portfolio website built with Next.js, TypeScript, and Tailwind CSS. It features a minimalist, "Nothing"-inspired design with glitch effects, smooth animations, and a functional contact form that integrates with Firebase and Resend for email notifications.
 
