@@ -1,95 +1,62 @@
 
 
+import { getDocs, collection, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import ScrollAnimator from '@/components/scroll-animator';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Github, ExternalLink, Mail, BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
 import ProjectCarousel from '@/components/project-carousel';
 import ContactForm from '@/components/contact-form';
+import AdminPanel from '@/components/admin-panel';
 
-const skillCategories = [
-  {
-    title: 'AI & Machine Learning',
-    icon: <BrainCircuit size={40} className="text-primary" />,
-    skills: ['Python', 'Generative AI', 'Prompt Engineering', 'TensorFlow', 'Scikit-learn']
-  },
-  {
-    title: 'Backend & Bot Development',
-    icon: <Bot size={40} className="text-primary" />,
-    skills: ['Flask', 'MongoDB', 'API Integration', 'Bot Development']
-  },
-  {
-    title: 'Tools & Deployment',
-    icon: <TerminalSquare size={40} className="text-primary" />,
-    skills: ['GitHub', 'Discord.py', 'Cloud Deployment']
+const iconMap = {
+  BrainCircuit: <BrainCircuit size={40} className="text-primary" />,
+  Bot: <Bot size={40} className="text-primary" />,
+  TerminalSquare: <TerminalSquare size={40} className="text-primary" />,
+};
+
+async function getSkills() {
+  try {
+    const skillsCollection = collection(db, 'skills');
+    const skillsSnapshot = await getDocs(skillsCollection);
+    const skillsList = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return skillsList.map(skill => ({
+      ...skill,
+      icon: iconMap[skill.icon as keyof typeof iconMap] || <BrainCircuit size={40} className="text-primary" />
+    }));
+  } catch (error) {
+    console.error("Error fetching skills:", error);
+    return [];
   }
-];
+}
 
-const projects = [
-  {
-    title: 'Newshunt - AI-Powered Discord Bot',
-    description: 'Developed a modular Discord bot for international and local news with user-customized preferences and language translation.',
-    image: 'https://picsum.photos/600/400',
-    tags: ['Discord.py', 'GPT-4', 'Flask', 'MongoDB'],
-    github: '#',
-    live: '#',
-    aiHint: 'news bot abstract'
-  },
-  {
-    title: 'Project Two',
-    description: 'Another awesome project that showcases my skills in UI/UX design and frontend development using Next.js and Tailwind CSS.',
-    image: 'https://picsum.photos/600/400?grayscale',
-    tags: ['Next.js', 'Tailwind CSS', 'Figma'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-  {
-    title: 'Project Three',
-    description: 'This project involved building a full-stack application with a focus on performance and scalability. Deployed on Vercel.',
-    image: 'https://picsum.photos/600/400?blur=1',
-    tags: ['SvelteKit', 'Go', 'GraphQL', 'Docker'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-  {
-    title: 'Project Four',
-    description: 'An exploration of 3D graphics and animations on the web using Three.js and React Three Fiber.',
-    image: 'https://picsum.photos/seed/picsum/600/400',
-    tags: ['Three.js', 'React Three Fiber', 'Blender'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-   {
-    title: 'Project Five',
-    description: 'A brief description of this cool project, highlighting the technologies used and its purpose. Built with React and Node.js.',
-    image: 'https://picsum.photos/600/400',
-    tags: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-  {
-    title: 'Project Six',
-    description: 'Another awesome project that showcases my skills in UI/UX design and frontend development using Next.js and Tailwind CSS.',
-    image: 'https://picsum.photos/600/400?grayscale',
-    tags: ['Next.js', 'Tailwind CSS', 'Figma'],
-    github: '#',
-    live: '#',
-    aiHint: 'technology abstract'
-  },
-];
+async function getProjects() {
+  try {
+    const projectsCollection = collection(db, 'projects');
+    const q = orderBy('order', 'asc');
+    const projectsSnapshot = await getDocs(projectsCollection);
+    const projectsList = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+     // Simple sort if order is not consistent
+    projectsList.sort((a, b) => (a.order || 99) - (b.order || 99));
+    return projectsList;
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return [];
+  }
+}
 
+export default async function Home() {
+  const skills = await getSkills();
+  const projects = await getProjects();
 
-export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <AdminPanel skills={skills} projects={projects} />
       <Header />
       <main className="flex-grow container mx-auto px-4 md:px-8">
         <ScrollAnimator as="section" id="home" className="flex flex-col items-center justify-center text-center">
@@ -148,32 +115,40 @@ export default function Home() {
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
             <span className="text-primary">02.</span> Technical Skills
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            {skillCategories.map((category) => (
-              <Card key={category.title} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
-                <CardHeader className="items-center text-center">
-                  {category.icon}
-                  <CardTitle className="font-headline text-3xl mt-4">{category.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {category.skills.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="font-body text-sm">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {skills.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+              {skills.map((category) => (
+                <Card key={category.id} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
+                  <CardHeader className="items-center text-center">
+                    {category.icon}
+                    <CardTitle className="font-headline text-3xl mt-4">{category.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {category.skills.map((skill: string) => (
+                        <Badge key={skill} variant="secondary" className="font-body text-sm">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No skills to display. Add some in the admin panel (Ctrl+Shift+A).</p>
+          )}
         </ScrollAnimator>
 
         <section id="projects" className="flex flex-col items-center justify-center w-full overflow-hidden text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative container mx-auto px-4 md:px-8">
             <span className="text-primary">03.</span> Projects
           </h2>
-          <ProjectCarousel projects={projects} />
+          {projects.length > 0 ? (
+            <ProjectCarousel projects={projects} />
+          ) : (
+            <p className="text-muted-foreground">No projects to display. Add some in the admin panel (Ctrl+Shift+A).</p>
+          )}
         </section>
 
 
