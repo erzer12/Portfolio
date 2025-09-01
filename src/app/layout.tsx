@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import CustomCursor from '@/components/custom-cursor';
 
 export const metadata: Metadata = {
-  title: 'Nothing Portfolio',
+  title: 'Harshil P | Portfolio',
   description: 'A personal portfolio with a "Nothing" inspired design.',
 };
 
