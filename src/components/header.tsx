@@ -97,7 +97,7 @@ export default function Header() {
     )}>
       <div className="container mx-auto px-4 md:px-8 flex items-center justify-between h-full">
         <Logo />
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           <NavContent />
         </nav>
         <div className="md:hidden">
