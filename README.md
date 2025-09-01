@@ -55,7 +55,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     **a. Firebase Configuration:**
     - Go to your [Firebase Console](https://console.firebase.google.com/).
-    - Create a new project or use your existing `portfolio-9afb3` project.
+    - Create a new project or use your existing project.
     - Go to **Project Settings** > **General** and find your Firebase config object under "Your apps".
     - Copy the configuration keys into `src/lib/firebase.ts`. (This is already done in the project, but you can update it if needed).
 
