@@ -34,30 +34,48 @@ const skills = [
 const projects = [
   {
     title: 'Internshala Job Scraper',
-    description: 'Built a Python script automates the process of scraping job listings from Internshala.com, extracting key details, and saving the data into a structured Excel file. It is a simple and efficient tool for collecting job-related information',
+    description: 'Built a Python script that automates the process of scraping job listings from Internshala.com, extracting key details, and saving the data into a structured Excel file. A simple and efficient tool for collecting job-related information.',
     image: '/icons8-web-scraper-480.png',
     aiHint: 'Web scraper',
-    tags: ['Python', 'BeautifulSoup4', 'Pandas', 'Requests','Openpyxl'],
+    tags: ['Python', 'BeautifulSoup4', 'Pandas', 'Requests', 'Openpyxl'],
     github: 'https://github.com/erzer12/job-scraper'
   },
   {
     title: 'Discord News Bot',
-    description: 'A modular Discord bot for international news with country/language preferences, daily news, onboarding, and Render deployment support.',
+    description: 'A modular Discord bot for international news with country/language preferences, onboarding, daily news delivery, and admin configuration. Deployed on Render with Flask for uptime checks.',
     image: '/icons8-news-480.png',
     aiHint: 'Utility bot',
-    tags: ['Python', 'Discord.py', 'MongoDB','Flask'],
+    tags: ['Python', 'Discord.py', 'MongoDB', 'Flask'],
     github: 'https://github.com/erzer12/NewsHunt-bot'
   },
   {
-    title: 'Personal Portfolio Website',
-    description: 'Designed and developed a personal portfolio website to showcase my projects and skills, built with a modern tech stack and a focus on user experience.',
-    image: '/Logo.png',
-    aiHint: 'portfolio website',
-    tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
-    github: 'https://github.com/erzer12/my-portfolio',
-    live: 'https://harshilp.codes',
+    title: 'HR Agent',
+    description: 'AI-powered web application that automates resume screening, candidate ranking, and interview scheduling using GPT models. Built with Flask and Python, featuring automated email notifications and smart candidate evaluation.',
+    image: '/icons8-human-resources-480.png',
+    aiHint: 'AI automation app',
+    tags: ['Python', 'Flask', 'OpenAI API', 'GPT', 'Automation'],
+    github: 'https://github.com/erzer12/hr-agent'
   },
+  {
+    title: 'Personal Portfolio Website',
+    description: 'Personal portfolio website showcasing projects and skills with a minimalist design. Built using Next.js, TypeScript, and Tailwind CSS, integrated with Firebase for backend functionality.',
+    image: '/Logo.png',
+    aiHint: 'Portfolio website',
+    tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Firebase'],
+    github: 'https://github.com/erzer12/my-portfolio',
+    live: 'https://harshilp.codes'
+  },
+  {
+    title: 'NASA Hackathon – Historical Risk Explorer',
+    description: 'Streamlit-based visualization tool developed for the NASA Earth Observation Challenge. Allows users to analyze environmental data, assess risk probabilities, and explore multiple variables interactively.',
+    image: '/icons8-nasa-planet-480.png',
+    aiHint: 'Data visualization app',
+    tags: ['Python', 'Streamlit', 'NumPy', 'Pandas', 'Data Visualization'],
+    github: 'https://github.com/erzer12/Nasa-hacthon',
+    live: 'https://harshil-cloud-busters.share.connect.posit.cloud/'
+  }
 ];
+
 
 export default function Home() {
   return (
