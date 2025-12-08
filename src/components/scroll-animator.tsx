@@ -3,21 +3,20 @@
 import { useState, useEffect, useRef, type ElementType, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-interface ScrollAnimatorProps extends HTMLAttributes<HTMLElement> {
-  as?: ElementType;
+interface ScrollAnimatorProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-const ScrollAnimator = ({ as: Comp = 'div', children, className, ...props }: ScrollAnimatorProps) => {
+const ScrollAnimator = ({ children, className, ...props }: ScrollAnimatorProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          if(ref.current) {
+          if (ref.current) {
             observer.unobserve(ref.current);
           }
         }
@@ -41,13 +40,13 @@ const ScrollAnimator = ({ as: Comp = 'div', children, className, ...props }: Scr
   }, []);
 
   return (
-    <Comp
+    <div
       ref={ref}
       className={cn('scroll-animator', { 'is-visible': isVisible }, className)}
       {...props}
     >
       {children}
-    </Comp>
+    </div>
   );
 };
 

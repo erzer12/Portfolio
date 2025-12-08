@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // NOTE: Since the application uses a custom Access Code system and does not sign in to Firebase Auth,
+    // we must allow public writes. The application logic (Next.js Server Actions) safeguards the database
+    // by only performing writes after verifying the Access Code on the server.
+    
+    // --- Public Content ---
+    match /projects/{document} {
+      allow read, write: if true;
+    }
+    match /skills/{document} {
+      allow read, write: if true;
+    }
+    match /experience/{document} {
+      allow read, write: if true;
+    }
+    match /certifications/{document} {
+      allow read, write: if true;
+    }
+    match /profile/{document} {
+      allow read, write: if true;
+    }
+    match /education/{document} {
+      allow read, write: if true;
+    }
+    
+    // --- Testimonials ---
+    match /testimonials/{document} {
+      allow read, write: if true;
+    }
+    
+    // --- Contact Messages ---
+    match /messages/{document} {
+      allow read, write: if true;
+    }
+  }
+}

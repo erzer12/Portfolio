@@ -40,7 +40,7 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
     // We return success because the primary action (saving the message) worked.
     return { success: true, message: 'Your message has been saved successfully!' };
   }
-  
+
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
@@ -60,7 +60,7 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
     if (error) {
       throw new Error(error.message);
     }
-    
+
     console.log("Email sent successfully via Resend:", data);
     return { success: true, message: 'Your message has been sent and saved successfully!' };
 
@@ -86,16 +86,21 @@ const projectSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
-  image: z.string().url('Must be a valid URL').min(1, 'Image URL is required'),
-  tags: z.array(z.string()).min(1, 'At least one tag is required'),
-  github: z.string().url('Must be a valid URL'),
-  live: z.string().url('Must be a valid URL'),
+  image: z.string().optional().or(z.literal('')),
+  tags: z.union([z.string(), z.array(z.string())]).transform(val => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+    return [];
+  }),
+  github: z.string().optional().or(z.literal('')),
+  live: z.string().optional().or(z.literal('')),
   aiHint: z.string().optional(),
   order: z.number().optional(),
 });
 
 
 export async function saveSkill(formData: z.infer<typeof skillSchema>) {
+  // ... (keep existing)
   const parsed = skillSchema.safeParse(formData);
   if (!parsed.success) {
     return { success: false, message: 'Invalid skill data.' };
@@ -113,6 +118,7 @@ export async function saveSkill(formData: z.infer<typeof skillSchema>) {
 }
 
 export async function deleteSkill(id: string) {
+  // ... (keep existing)
   try {
     if (!id) throw new Error("Document ID is required for deletion.");
     await deleteDoc(doc(db, 'skills', id));
@@ -125,19 +131,380 @@ export async function deleteSkill(id: string) {
 }
 
 export async function saveProject(formData: z.infer<typeof projectSchema>) {
+  console.log("Saving project:", formData);
   const parsed = projectSchema.safeParse(formData);
   if (!parsed.success) {
-    return { success: false, message: 'Invalid project data.' };
+    console.error("Validation error:", parsed.error);
+    return { success: false, message: `Invalid project data: ${parsed.error.message}` };
   }
   try {
     const { id, ...projectData } = parsed.data;
     const docRef = id ? doc(db, 'projects', id) : doc(collection(db, 'projects'));
     await setDoc(docRef, projectData, { merge: true });
+    console.log("Project saved to:", docRef.id);
     revalidatePath('/');
     return { success: true, message: 'Project saved successfully.' };
   } catch (e) {
+    console.error("Firestore error:", e);
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
     return { success: false, message: `Failed to save project: ${errorMessage}` };
+  }
+}
+
+// --- Testimonial Actions ---
+
+const testimonialSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Name is required'),
+  role: z.string().min(1, 'Role is required'),
+  message: z.string().min(1, 'Message is required'),
+  rating: z.number().min(1).max(5).default(5),
+  approved: z.boolean().default(false), // Admin can set to true immediately
+});
+
+export async function saveTestimonial(formData: z.infer<typeof testimonialSchema>) {
+  const parsed = testimonialSchema.safeParse(formData);
+  if (!parsed.success) return { success: false, message: 'Invalid data' };
+
+  try {
+    const { id, ...data } = parsed.data;
+    const docRef = id ? doc(db, 'testimonials', id) : doc(collection(db, 'testimonials'));
+
+    const payload = {
+      ...data,
+      createdAt: id ? undefined : new Date().toISOString() // Only set created at on new
+    };
+    // Remove undefined keys
+    Object.keys(payload).forEach(key => payload[key as keyof typeof payload] === undefined && delete payload[key as keyof typeof payload]);
+
+    await setDoc(docRef, payload, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Recommendation saved.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to save recommendation.' };
+  }
+}
+
+export async function deleteTestimonial(id: string) {
+  try {
+    await deleteDoc(doc(db, 'testimonials', id));
+    revalidatePath('/');
+    return { success: true, message: 'Recommendation deleted.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to delete recommendation.' };
+  }
+}
+
+// --- Experience Actions ---
+
+const experienceSchema = z.object({
+  id: z.string().optional(),
+  company: z.string().min(1, 'Company is required'),
+  role: z.string().min(1, 'Role is required'),
+  start: z.string().min(1, 'Start date is required'),
+  end: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
+  order: z.number().optional(),
+});
+
+export async function saveExperience(formData: z.infer<typeof experienceSchema>) {
+  const parsed = experienceSchema.safeParse(formData);
+  if (!parsed.success) return { success: false, message: 'Invalid experience data' };
+
+  try {
+    const { id, ...data } = parsed.data;
+    const docRef = id ? doc(db, 'experience', id) : doc(collection(db, 'experience'));
+    // If it's new and order is missing, maybe set a default timestamp as order or handle in UI
+    if (!id && data.order === undefined) {
+      data.order = Date.now();
+    }
+    await setDoc(docRef, data, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Experience saved.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to save experience.' };
+  }
+}
+
+export async function deleteExperience(id: string) {
+  try {
+    await deleteDoc(doc(db, 'experience', id));
+    revalidatePath('/');
+    return { success: true, message: 'Experience deleted.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to delete experience.' };
+  }
+}
+
+// --- Certification Actions ---
+
+const certificationSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Name is required'),
+  issuer: z.string().min(1, 'Issuer is required'),
+  date: z.string().min(1, 'Date is required'),
+  link: z.string().url('Must be valid URL').optional(),
+  image: z.string().optional(),
+  credlyId: z.string().optional(),
+});
+
+export async function saveCertification(formData: z.infer<typeof certificationSchema>) {
+  const parsed = certificationSchema.safeParse(formData);
+  if (!parsed.success) return { success: false, message: 'Invalid data' };
+
+  try {
+    const { id, ...data } = parsed.data;
+    const docRef = id ? doc(db, 'certifications', id) : doc(collection(db, 'certifications'));
+    await setDoc(docRef, data, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Certification saved.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to save certification.' };
+  }
+}
+
+export async function deleteCertification(id: string) {
+  try {
+    await deleteDoc(doc(db, 'certifications', id));
+    revalidatePath('/');
+    return { success: true, message: 'Certification deleted.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to delete certification.' };
+  }
+}
+
+// Helper to fetch all pages from Credly
+async function fetchAllCredlyBadges(username: string) {
+  const badges = [];
+  let page = 1;
+  let hasMore = true;
+
+  // Use a sensible limit (e.g., 50 pages) to prevent infinite loops
+  const MAX_PAGES = 50;
+
+  while (hasMore && page <= MAX_PAGES) {
+    try {
+      // Credly uses typical page parameter for pagination
+      const res = await fetch(`https://www.credly.com/users/${username}/badges.json?page=${page}`);
+
+      if (!res.ok) {
+        console.warn(`Failed to fetch Credly page ${page}: ${res.statusText}`);
+        hasMore = false;
+        break;
+      }
+
+      const json = await res.json();
+      const pageData = json.data || [];
+
+      if (pageData.length > 0) {
+        badges.push(...pageData);
+        page++;
+      } else {
+        // If data array is empty, we reached the end
+        hasMore = false;
+      }
+    } catch (e) {
+      console.error(`Error fetching Credly page ${page}:`, e);
+      hasMore = false;
+    }
+  }
+  return badges;
+}
+
+export async function importCredlyBadges(username: string) {
+  try {
+    const badges = await fetchAllCredlyBadges(username);
+
+    if (badges.length === 0) {
+      return { success: false, message: 'No badges found. Check privacy settings or username.' };
+    }
+
+    // Fetch existing certifications to check for duplicates
+    // We'll map them by credlyId (preferred) or name (fallback)
+    const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
+    const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
+
+    // Map for quick lookup
+    const existingMap = new Map();
+    existingCerts.forEach(cert => {
+      if (cert.credlyId) existingMap.set(cert.credlyId, cert.id);
+      else if (cert.name) existingMap.set(cert.name, cert.id); // Fallback to name
+    });
+
+    let added = 0;
+    let updated = 0;
+
+    for (const badge of badges) {
+      const badgeData = {
+        name: badge.badge_template.name,
+        issuer: badge.issuer.entities[0].entity.name,
+        date: badge.issued_at_date,
+        link: `https://www.credly.com/badges/${badge.id}`,
+        image: badge.image.url,
+        credlyId: badge.id // critical for tracking
+      };
+
+      const existingId = existingMap.get(badge.id) || existingMap.get(badgeData.name);
+
+      if (existingId) {
+        // Update existing
+        await setDoc(doc(db, 'certifications', existingId), badgeData, { merge: true });
+        updated++;
+      } else {
+        // Create new
+        await addDoc(collection(db, 'certifications'), badgeData);
+        added++;
+      }
+    }
+
+    revalidatePath('/');
+    return { success: true, message: `Synced badges: ${added} added, ${updated} updated.` };
+  } catch (e) {
+    console.error(e);
+    return { success: false, message: 'Failed to import badges. Check username.' };
+  }
+}
+
+export async function importBadgeByUrl(url: string) {
+  try {
+    if (!url.includes('credly.com')) {
+      return { success: false, message: 'Invalid URL. Must be from Credly.' };
+    }
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch URL');
+    const html = await res.text();
+
+    // Regex to extract OG tags
+    const getMeta = (prop: string) => {
+      const match = html.match(new RegExp(`<meta property="${prop}" content="([^"]*)"`));
+      return match ? match[1] : '';
+    };
+
+    const title = getMeta('og:title');
+    const image = getMeta('og:image');
+    // const description = getMeta('og:description'); // Not strictly needed for listing
+    if (!title) throw new Error('Could not find badge title in metadata');
+
+    // Attempt to extract Issuer from title or description if possible, or default
+    // Often title is "Badge Name was issued by Issuer Name to ..."
+    // Or just "Badge Name"
+    let name = title;
+    let issuer = 'External Provider';
+
+    // Heuristic: "Badge Name was issued by Issuer to User"
+    if (title.includes(' was issued by ')) {
+      const parts = title.split(' was issued by ');
+      name = parts[0];
+      const issuerPart = parts[1].split(' to ')[0];
+      issuer = issuerPart;
+    }
+
+    // Generate a unique ID from the URL or fallback to name
+    // URL: https://www.credly.com/badges/UUID/public_url
+    // Regex for UUID
+    const uuidMatch = url.match(/\/badges\/([a-zA-Z0-9-]+)/);
+    const credlyId = uuidMatch ? uuidMatch[1] : `manual-${Date.now()}`;
+
+    const badgeData = {
+      name,
+      issuer,
+      date: new Date().toISOString().split('T')[0], // Default to today as we can't easily parse different date formats from HTML w/o library
+      link: url,
+      image,
+      credlyId
+    };
+
+    // Upsert logic
+    const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
+    const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
+    const existing = existingCerts.find(c => c.credlyId === credlyId || c.link === url || c.name === name);
+
+    if (existing) {
+      await setDoc(doc(db, 'certifications', existing.id), badgeData, { merge: true });
+      revalidatePath('/');
+      return { success: true, message: `Updated badge: ${name}` };
+    } else {
+      await addDoc(collection(db, 'certifications'), badgeData);
+      revalidatePath('/');
+      return { success: true, message: `Imported badge: ${name}` };
+    }
+
+  } catch (e) {
+    console.error(e);
+    const msg = e instanceof Error ? e.message : 'Unknown error';
+    return { success: false, message: `Import failed: ${msg}` };
+  }
+}
+
+// --- Education Actions ---
+
+const educationSchema = z.object({
+  id: z.string().optional(),
+  school: z.string().min(1, 'School is required'),
+  degree: z.string().min(1, 'Degree is required'),
+  year: z.string().min(1, 'Year is required'),
+  description: z.string().optional(),
+  order: z.number().optional(),
+});
+
+export async function saveEducation(formData: z.infer<typeof educationSchema>) {
+  const parsed = educationSchema.safeParse(formData);
+  if (!parsed.success) return { success: false, message: 'Invalid education data' };
+
+  try {
+    const { id, ...data } = parsed.data;
+    const docRef = id ? doc(db, 'education', id) : doc(collection(db, 'education'));
+    // If new and no order, set timestamp
+    if (!id && data.order === undefined) {
+      data.order = Date.now();
+    }
+    await setDoc(docRef, data, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Education saved.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to save education.' };
+  }
+}
+
+export async function deleteEducation(id: string) {
+  try {
+    await deleteDoc(doc(db, 'education', id));
+    revalidatePath('/');
+    return { success: true, message: 'Education deleted.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to delete education.' };
+  }
+}
+
+// --- Profile Actions ---
+
+const profileSchema = z.object({
+  name: z.string().min(1),
+  tagline: z.string(),
+  summary: z.string(),
+  location: z.string(),
+  email: z.string().email(),
+  phone: z.string(),
+  resume: z.string().optional(),
+  social: z.object({
+    github: z.string(),
+    linkedin: z.string(),
+    website: z.string(),
+    email: z.string()
+  })
+});
+
+export async function saveProfile(formData: z.infer<typeof profileSchema>) {
+  const parsed = profileSchema.safeParse(formData);
+  if (!parsed.success) return { success: false, message: 'Invalid profile data' };
+
+  try {
+    await setDoc(doc(db, 'profile', 'main'), parsed.data, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Profile updated.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to update profile.' };
   }
 }
 
@@ -150,5 +517,54 @@ export async function deleteProject(id: string) {
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
     return { success: false, message: `Failed to delete project: ${errorMessage}` };
+  }
+}
+
+export async function fetchGithubRepos(username: string) {
+  try {
+    const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+    if (!res.ok) {
+      throw new Error(`GitHub API error: ${res.statusText}`);
+    }
+    const repos = await res.json();
+    return {
+      success: true,
+      data: repos.map((repo: any) => ({
+        id: String(repo.id),
+        name: repo.name,
+        description: repo.description || '',
+        html_url: repo.html_url,
+        homepage: repo.homepage || '',
+        topics: repo.topics || [],
+        language: repo.language,
+        stargazers_count: repo.stargazers_count
+      }))
+    };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to fetch GitHub repos: ${errorMessage}` };
+  }
+}
+
+export async function verifyAccessCode(code: string) {
+  const correctCode = process.env.ADMIN_ACCESS_CODE;
+  if (!correctCode) {
+    return { success: false, message: 'Admin access code not configured on server.' };
+  }
+  if (code === correctCode) {
+    return { success: true };
+  }
+  return { success: false, message: 'Invalid access code.' };
+}
+
+export async function extractOgImage(url: string) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch URL');
+    const html = await res.text();
+    const match = html.match(/<meta property="og:image" content="([^"]*)"/);
+    return match ? match[1] : null;
+  } catch (e) {
+    return null;
   }
 }

@@ -150,28 +150,28 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
       toast({ variant: "destructive", title: "Error", description: result.message });
     }
   };
-  
+
   const handleSaveProject = async (values: z.infer<typeof projectSchema>) => {
     const projectData = {
-        ...values,
-        tags: values.tags.split(',').map(s => s.trim()).filter(Boolean),
+      ...values,
+      tags: values.tags.split(',').map(s => s.trim()).filter(Boolean),
     };
     const result = await saveProject(projectData);
     if (result.success) {
-        toast({ title: "Success", description: result.message });
-        setSelectedProject(null);
+      toast({ title: "Success", description: result.message });
+      setSelectedProject(null);
     } else {
-        toast({ variant: "destructive", title: "Error", description: result.message });
+      toast({ variant: "destructive", title: "Error", description: result.message });
     }
   };
 
   const handleDeleteProject = async (id: string) => {
     const result = await deleteProject(id);
     if (result.success) {
-        toast({ title: "Success", description: result.message });
-        setSelectedProject(null);
+      toast({ title: "Success", description: result.message });
+      setSelectedProject(null);
     } else {
-        toast({ variant: "destructive", title: "Error", description: result.message });
+      toast({ variant: "destructive", title: "Error", description: result.message });
     }
   };
 
@@ -194,15 +194,15 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
             <div className="grid grid-cols-3 gap-4 h-full">
               {/* List Column */}
               <div className="col-span-1 overflow-y-auto border-r pr-4">
-                 <Button
-                   onClick={() => {
-                     if (activeTab === "skills") setSelectedSkill(null);
-                     if (activeTab === "projects") setSelectedProject(null);
-                   }}
-                   className="w-full mb-4"
-                 >
-                    <PlusCircle className="mr-2" />
-                    Add New
+                <Button
+                  onClick={() => {
+                    if (activeTab === "skills") setSelectedSkill(null);
+                    if (activeTab === "projects") setSelectedProject(null);
+                  }}
+                  className="w-full mb-4"
+                >
+                  <PlusCircle className="mr-2" />
+                  Add New
                 </Button>
                 <TabsContent value="skills" className="m-0">
                   <ul className="space-y-2">
@@ -237,7 +237,7 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
                           <FormMessage />
                         </FormItem>
                       )} />
-                       <FormField control={skillForm.control} name="icon" render={({ field }) => (
+                      <FormField control={skillForm.control} name="icon" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Icon</FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}>
@@ -272,7 +272,7 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
                     </form>
                   </Form>
                 </TabsContent>
-                 <TabsContent value="projects" className="m-0">
+                <TabsContent value="projects" className="m-0">
                   <h3 className="font-bold text-lg mb-4">{selectedProject ? 'Edit Project' : 'Add New Project'}</h3>
                   <Form {...projectForm}>
                     <form onSubmit={projectForm.handleSubmit(handleSaveProject)} className="space-y-4">
@@ -288,16 +288,16 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
                       <FormField control={projectForm.control} name="tags" render={({ field }) => (
                         <FormItem><FormLabel>Tags (comma-separated)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                       <FormField control={projectForm.control} name="github" render={({ field }) => (
+                      <FormField control={projectForm.control} name="github" render={({ field }) => (
                         <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                       <FormField control={projectForm.control} name="live" render={({ field }) => (
+                      <FormField control={projectForm.control} name="live" render={({ field }) => (
                         <FormItem><FormLabel>Live URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                       <FormField control={projectForm.control} name="aiHint" render={({ field }) => (
+                      <FormField control={projectForm.control} name="aiHint" render={({ field }) => (
                         <FormItem><FormLabel>AI Image Hint</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
-                       <FormField control={projectForm.control} name="order" render={({ field }) => (
+                      <FormField control={projectForm.control} name="order" render={({ field }) => (
                         <FormItem><FormLabel>Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
 
@@ -318,8 +318,9 @@ export default function AdminPanel({ skills, projects }: AdminPanelProps) {
               </div>
             </div>
           </div>
+        </Tabs>
         <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

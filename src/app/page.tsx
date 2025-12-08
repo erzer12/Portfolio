@@ -1,186 +1,85 @@
+'use client';
 
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-import { Button } from '@/components/ui/button';
-import ScrollAnimator from '@/components/scroll-animator';
-import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BrainCircuit, Bot, TerminalSquare } from 'lucide-react';
-import ProjectCarousel from '@/components/project-carousel';
-import ContactForm from '@/components/contact-form';
+import dynamic from 'next/dynamic';
+import QuantumHero from '@/components/quantum/QuantumHero';
+import BentoSection from '@/components/bento/BentoSection';
+import MinimalNav from '@/components/cinematic/MinimalNav';
+import SmoothScroll from '@/components/cinematic/SmoothScroll';
+import PageLoader from '@/components/cinematic/PageLoader';
+import MinimalFooter from '@/components/cinematic/MinimalFooter';
 
-const skills = [
-    {
-      id: 'frontend',
-      icon: <BrainCircuit size={40} className="text-primary" />,
-      title: 'AI & Machine Learning',
-      skills: ['Python', 'TensorFlow', 'Scikit-learn', 'OpenCV', 'NLTK', 'Spacy', 'Generative AI', 'Prompt Engineering'],
-    },
-    {
-      id: 'backend',
-      icon: <TerminalSquare size={40} className="text-primary" />,
-      title: 'App/Web Development',
-      skills: ['Django', 'React', 'Flask', 'FastAPI', 'HTML/CSS', 'JavaScript', 'SQL', 'Firebase', 'REST APIs'],
-    },
-    {
-      id: 'tools',
-      icon: <Bot size={40} className="text-primary" />,
-      title: 'Bot Development & Automation',
-      skills: ['BS4', 'Playwright', 'Scrapy', 'Discord.py', 'Telegram Bot API', 'Web Scraping', 'Automation'],
-    },
-];
 
-const projects = [
-  {
-    title: 'Internshala Job Scraper',
-    description: 'Built a Python script that automates the process of scraping job listings from Internshala.com, extracting key details, and saving the data into a structured Excel file. A simple and efficient tool for collecting job-related information.',
-    image: '/icons8-web-scraper-480.png',
-    aiHint: 'Web scraper',
-    tags: ['Python', 'BeautifulSoup4', 'Pandas', 'Requests', 'Openpyxl'],
-    github: 'https://github.com/erzer12/job-scraper'
-  },
-  {
-    title: 'Discord News Bot',
-    description: 'A modular Discord bot for international news with country/language preferences, onboarding, daily news delivery, and admin configuration. Deployed on Render with Flask for uptime checks.',
-    image: '/icons8-news-480.png',
-    aiHint: 'Utility bot',
-    tags: ['Python', 'Discord.py', 'MongoDB', 'Flask'],
-    github: 'https://github.com/erzer12/NewsHunt-bot'
-  },
-  {
-    title: 'HR Agent',
-    description: 'AI-powered web application that automates resume screening, candidate ranking, and interview scheduling using GPT models. Built with Flask and Python, featuring automated email notifications and smart candidate evaluation.',
-    image: '/icons8-human-resources-480.png',
-    aiHint: 'AI automation app',
-    tags: ['Python', 'Flask', 'OpenAI API', 'GPT', 'Automation'],
-    github: 'https://github.com/erzer12/hr-agent'
-  },
-  {
-    title: 'Personal Portfolio Website',
-    description: 'Personal portfolio website showcasing projects and skills with a minimalist design. Built using Next.js, TypeScript, and Tailwind CSS, integrated with Firebase for backend functionality.',
-    image: '/Logo.png',
-    aiHint: 'Portfolio website',
-    tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Firebase'],
-    github: 'https://github.com/erzer12/my-portfolio',
-    live: 'https://harshilp.codes'
-  },
-  {
-    title: 'NASA Hackathon – Historical Risk Explorer',
-    description: 'Streamlit-based visualization tool developed for the NASA Earth Observation Challenge. Allows users to analyze environmental data, assess risk probabilities, and explore multiple variables interactively.',
-    image: '/icons8-nasa-planet-480.png',
-    aiHint: 'Data visualization app',
-    tags: ['Python', 'Streamlit', 'NumPy', 'Pandas', 'Data Visualization'],
-    github: 'https://github.com/erzer12/Nasa-hacthon',
-    live: 'https://harshil-cloud-busters.share.connect.posit.cloud/'
-  }
-];
+// Dynamic Imports for performance
+const ExperienceTimeline = dynamic(() => import('@/components/cinematic/ExperienceTimeline'));
+const SkillsConstellation = dynamic(() => import('@/components/quantum/SkillsConstellation'), { ssr: false });
+const Certifications = dynamic(() => import('@/components/cinematic/Certifications'));
+const ProjectShowcase = dynamic(() => import('@/components/cinematic/ProjectShowcase'));
+const ContactSection = dynamic(() => import('@/components/cinematic/ContactSection'));
+const Testimonials = dynamic(() => import('@/components/cinematic/Testimonials'));
+import { useProfile } from '@/hooks/use-data';
+import { Github, Linkedin, Mail } from 'lucide-react';
 
+function DynamicSocialLinks() {
+  const { profile } = useProfile();
+  if (!profile || !profile.social) return null;
+  return (
+    <>
+      {profile.social.github && (
+        <a href={profile.social.github} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
+          <Github size={16} /> GitHub
+        </a>
+      )}
+      {profile.social.linkedin && (
+        <a href={profile.social.linkedin} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
+          <Linkedin size={16} /> LinkedIn
+        </a>
+      )}
+
+      {profile.social.email && (
+        <a href={`mailto:${profile.social.email}`} className="hover:opacity-50 transition-opacity flex items-center gap-2">
+          <Mail size={16} /> Email
+        </a>
+      )}
+    </>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 md:px-8">
-        <ScrollAnimator as="section" id="home" className="flex flex-col items-center justify-center text-center">
-            <p className="text-primary font-headline text-2xl md:text-3xl mb-4">Hi, my name is</p>
-            <h1 className="text-5xl md:text-8xl font-bold font-headline glitch-text" data-text="Harshil P">
-              Harshil P
-            </h1>
-            <h2 className="text-4xl md:text-6xl font-bold font-headline text-muted-foreground mt-2 glitch-text" data-text="AI & ml enthusiast">
-              AI & ml enthusiast
+    <PageLoader>
+      <SmoothScroll>
+        <main className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
+          <MinimalNav />
+
+          <QuantumHero />
+          <BentoSection />
+
+          {/* Selected Works */}
+          <ProjectShowcase />
+
+          <ExperienceTimeline />
+          <SkillsConstellation />
+          <Certifications />
+          <Testimonials />
+
+          {/* Footer / Contact */}
+          <section id="contact" className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
+            <p className="text-sm font-inter tracking-[0.2em] uppercase mb-8 opacity-50">Get in Touch</p>
+            <h2 className="text-5xl md:text-8xl font-playfair mb-12">
+              Let's Talk.
             </h2>
-            <p className="mt-6 max-w-xl text-muted-foreground text-lg">
-              Enthusiastic Computer Science undergraduate dedicated to software development, with a focus on app creation, web scraping, bot development, and AI-driven tools.
-            </p>
-            <a href="#projects">
-              <Button size="lg" className="mt-8 font-headline text-xl glitch-hover" data-text="View My Work">
-                  <span>View My Work</span>
-              </Button>
-            </a>
-        </ScrollAnimator>
 
-        <ScrollAnimator as="section" id="about" className="flex flex-col items-center justify-center text-center">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
-            <span className="text-primary">01.</span> About Me
-          </h2>
-          <div className="flex flex-col items-center gap-12">
-            <div className="max-w-3xl text-muted-foreground text-lg space-y-4 text-center">
-              <p>
-                Proficient in Python, prompt engineering, and generative AI. Passionate about tackling challenges and crafting meaningful, user-centric solutions.
-              </p>
-               <p>
-                My journey into the world of AI began with a simple curiosity for how machines learn, which has since evolved into a deep-seated passion for developing intelligent systems that can understand and interact with the world in a meaningful way. I'm particularly interested in the applications of natural language processing and computer vision to solve real-world problems.
-              </p>
-              <p>
-                When I'm not at my computer, I'm usually found exploring the latest in AI research, experimenting with new bot frameworks, or contributing to open-source projects.
-              </p>
+            <ContactSection />
+
+            <div className="mt-20 flex gap-8 text-sm font-inter tracking-widest uppercase items-center justify-center">
+              <DynamicSocialLinks />
             </div>
-            <div className="relative w-64 h-80 mx-auto group">
-              <div className="absolute inset-0 bg-primary/20 rounded-lg transform transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105"></div>
-              <div className="relative z-10 w-full h-full rounded-lg overflow-hidden">
-                 <Image
-                  src="/harshil_image.jpg"
-                  alt="Profile Picture"
-                  width={256}
-                  height={320}
-                  className="object-cover w-full h-full shadow-xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/80 backdrop-blur-[2px] rounded-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center text-sm">
-                  A passionate developer with a love for creating innovative and user-friendly applications.
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollAnimator>
+          </section>
 
-        <ScrollAnimator as="section" id="skills" className="flex flex-col items-center justify-center text-center">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative">
-            <span className="text-primary">02.</span> Technical Skills
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            {skills.map((category) => (
-              <Card key={category.id} className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 group flex flex-col">
-                <CardHeader className="items-center text-center">
-                  {category.icon}
-                  <CardTitle className="font-headline text-3xl mt-4">{category.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {category.skills.map((skill: string) => (
-                      <Badge key={skill} variant="secondary" className="font-body text-sm">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollAnimator>
+          <MinimalFooter />
 
-        <section id="projects" className="flex flex-col items-center justify-center w-full overflow-hidden text-center">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-12 relative container mx-auto px-4 md:px-8">
-            <span className="text-primary">03.</span> Projects
-          </h2>
-          <ProjectCarousel projects={projects} />
-        </section>
-
-
-        <ScrollAnimator as="section" id="contact" className="flex flex-col items-center justify-center text-center">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold mb-4 relative">
-            <span className="text-primary">04.</span> What's Next?
-          </h2>
-          <h3 className="font-headline text-5xl md:text-7xl font-bold mb-8">Get In Touch</h3>
-          <p className="max-w-xl mx-auto text-muted-foreground mb-8">
-            I'm currently looking for new opportunities, my inbox is always open. Whether you have a question or just want to say hi, I'll try my best to get back to you!
-          </p>
-          <div className="w-full max-w-2xl">
-            <ContactForm />
-          </div>
-        </ScrollAnimator>
-      </main>
-      <Footer />
-    </div>
+        </main>
+      </SmoothScroll>
+    </PageLoader>
   );
 }
