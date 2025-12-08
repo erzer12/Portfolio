@@ -1,11 +1,27 @@
-import type {Metadata} from 'next';
-import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import CustomCursor from '@/components/custom-cursor';
+import type { Metadata } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
+import CustomCursor from '@/components/cinematic/CustomCursor';
+import DynamicBackground from '@/components/cinematic/DynamicBackground';
+import AdminTrigger from '@/components/cinematic/AdminTrigger';
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: 'Harshil P | Portfolio',
-  description: 'A personal portfolio with a "Nothing" inspired design.',
+  title: "Harshil P",
+  description: "AI & ML Enthusiast Portfolio",
+  // icons is not needed when using icon.tsx convention
 };
 
 export default function RootLayout({
@@ -15,13 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&family=VT323&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased bg-background text-foreground">
+      <body className={`${playfair.variable} ${inter.variable} font-inter antialiased bg-background text-foreground`}>
         <CustomCursor />
+        <DynamicBackground />
+        <AdminTrigger />
         {children}
         <Toaster />
       </body>
