@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, MessageSquare, Star, User, Mail } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { sendEmail } from '@/app/actions';
 
 export default function ContactSection() {
     const [mode, setMode] = useState<'contact' | 'review'>('contact');
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Form States
     const [name, setName] = useState('');
@@ -21,13 +23,17 @@ export default function ContactSection() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
+        setErrorMessage('');
 
         try {
             if (mode === 'contact') {
-                // TODO: Implement actual email sending or save to 'messages' collection
-                if (process.env.NODE_ENV === 'development') console.log("Sending message:", { name, email, message });
-                // Simulate delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Send email via Resend API
+                const result = await sendEmail({ name, email, message });
+
+                if (!result.success) {
+                    setErrorMessage(result.message || 'Failed to send message. Please try again.');
+                    return;
+                }
             } else {
                 // Submit Review
                 await addDoc(collection(db, 'testimonials'), {
@@ -50,6 +56,7 @@ export default function ContactSection() {
             }, 3000);
         } catch (error) {
             console.error("Error submitting:", error);
+            setErrorMessage('An unexpected error occurred. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -174,6 +181,12 @@ export default function ContactSection() {
                                     required
                                 />
                             </div>
+
+                            {errorMessage && (
+                                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm">
+                                    {errorMessage}
+                                </div>
+                            )}
 
                             <button
                                 type="submit"
