@@ -79,7 +79,7 @@ export default function ProjectDialog({ open, onOpenChange, project, onSave }: P
 
         setIsUploading(true);
         try {
-            console.log("Starting upload...", file.name);
+            if (process.env.NODE_ENV === 'development') console.log("Starting upload...", file.name);
 
             // Create FormData for local API upload
             const formData = new FormData();
@@ -102,7 +102,7 @@ export default function ProjectDialog({ open, onOpenChange, project, onSave }: P
             }
 
             const downloadURL = data.url;
-            console.log("URL retrieved:", downloadURL);
+            if (process.env.NODE_ENV === 'development') console.log("URL retrieved:", downloadURL);
 
             // Force update form state with validation options
             form.setValue('image', downloadURL, {
@@ -110,7 +110,7 @@ export default function ProjectDialog({ open, onOpenChange, project, onSave }: P
                 shouldTouch: true,
                 shouldValidate: true
             });
-            console.log("Form 'image' field updated to:", form.getValues('image'));
+            if (process.env.NODE_ENV === 'development') console.log("Form 'image' field updated to:", form.getValues('image'));
 
             toast({ title: "Success", description: "Image saved to public/images/" });
         } catch (error) {

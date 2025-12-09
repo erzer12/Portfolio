@@ -27,7 +27,7 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
       ...parsedData.data,
       timestamp: serverTimestamp(),
     });
-    console.log("Document written to Firestore with ID: ", docRef.id);
+    if (process.env.NODE_ENV === 'development') console.log("Document written to Firestore with ID: ", docRef.id);
   } catch (e) {
     console.error("Error adding document to Firestore: ", e);
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
@@ -61,7 +61,7 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
       throw new Error(error.message);
     }
 
-    console.log("Email sent successfully via Resend:", data);
+    if (process.env.NODE_ENV === 'development') console.log("Email sent successfully via Resend:", data);
     return { success: true, message: 'Your message has been sent and saved successfully!' };
 
   } catch (e) {
@@ -131,7 +131,7 @@ export async function deleteSkill(id: string) {
 }
 
 export async function saveProject(formData: z.infer<typeof projectSchema>) {
-  console.log("Saving project:", formData);
+  if (process.env.NODE_ENV === 'development') console.log("Saving project:", formData);
   const parsed = projectSchema.safeParse(formData);
   if (!parsed.success) {
     console.error("Validation error:", parsed.error);
@@ -141,7 +141,7 @@ export async function saveProject(formData: z.infer<typeof projectSchema>) {
     const { id, ...projectData } = parsed.data;
     const docRef = id ? doc(db, 'projects', id) : doc(collection(db, 'projects'));
     await setDoc(docRef, projectData, { merge: true });
-    console.log("Project saved to:", docRef.id);
+    if (process.env.NODE_ENV === 'development') console.log("Project saved to:", docRef.id);
     revalidatePath('/');
     return { success: true, message: 'Project saved successfully.' };
   } catch (e) {

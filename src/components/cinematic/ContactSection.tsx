@@ -25,7 +25,7 @@ export default function ContactSection() {
         try {
             if (mode === 'contact') {
                 // TODO: Implement actual email sending or save to 'messages' collection
-                console.log("Sending message:", { name, email, message });
+                if (process.env.NODE_ENV === 'development') console.log("Sending message:", { name, email, message });
                 // Simulate delay
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } else {

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         // Write file to filesystem
         await writeFile(filePath, buffer);
 
-        console.log(`File saved to ${filePath}`);
+        if (process.env.NODE_ENV === 'development') console.log(`File saved to ${filePath}`);
 
         // Return the public URL
         return NextResponse.json({
