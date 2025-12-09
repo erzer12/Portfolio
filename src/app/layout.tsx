@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import CustomCursor from '@/components/cinematic/CustomCursor';
 import DynamicBackground from '@/components/cinematic/DynamicBackground';
 import AdminTrigger from '@/components/cinematic/AdminTrigger';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,11 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${playfair.variable} ${inter.variable} font-inter antialiased bg-background text-foreground`}>
-        <CustomCursor />
-        <DynamicBackground />
-        <AdminTrigger />
-        {children}
-        <Toaster />
+        <ErrorBoundary>
+          <CustomCursor />
+          <DynamicBackground />
+          <AdminTrigger />
+          {children}
+          <Toaster />
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -72,7 +72,7 @@ export default function CertificationDialog({ open, onOpenChange, certification 
 
         setIsUploading(true);
         try {
-            console.log("Starting upload...", file.name);
+            if (process.env.NODE_ENV === 'development') console.log("Starting upload...", file.name);
 
             // Create FormData for local API upload
             const formData = new FormData();
@@ -95,7 +95,7 @@ export default function CertificationDialog({ open, onOpenChange, certification 
             }
 
             const downloadURL = data.url;
-            console.log("URL retrieved:", downloadURL);
+            if (process.env.NODE_ENV === 'development') console.log("URL retrieved:", downloadURL);
 
             // Force update form state with validation options
             setValue('image', downloadURL, {

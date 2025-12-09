@@ -3,38 +3,46 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // NOTE: Since the application uses a custom Access Code system and does not sign in to Firebase Auth,
-    // we must allow public writes. The application logic (Next.js Server Actions) safeguards the database
-    // by only performing writes after verifying the Access Code on the server.
+    // SECURITY: All writes are restricted to server-side only.
+    // The application uses Next.js Server Actions that verify an Access Code before performing writes.
+    // Public reads are allowed for the portfolio display, but direct client writes are blocked.
     
-    // --- Public Content ---
+    // --- Public Content (Read-only from client) ---
     match /projects/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     match /skills/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     match /experience/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     match /certifications/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     match /profile/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     match /education/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     
     // --- Testimonials ---
     match /testimonials/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; // Server-side only
     }
     
     // --- Contact Messages ---
     match /messages/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if true; // Allow public submissions (contact form)
     }
   }
 }

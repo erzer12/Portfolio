@@ -44,8 +44,9 @@ function ProjectShowcaseContent({ projects }: { projects: Project[] }) {
             </div>
 
             {/* Mobile View: Vertical Stack */}
-            <div className="md:hidden flex flex-col gap-12 px-4 py-20">
-                <div className="mb-8">
+            {/* Mobile View: Vertical Stack -> Horizontal Scroll */}
+            <div className="md:hidden flex flex-col py-20">
+                <div className="px-4 mb-8">
                     <h2 className="text-4xl font-playfair text-white mb-4">
                         Selected <br /> <span className="italic text-white/50">Works</span>
                     </h2>
@@ -54,11 +55,15 @@ function ProjectShowcaseContent({ projects }: { projects: Project[] }) {
                     </p>
                 </div>
 
-                {projects.slice(0, 4).map((project, i) => (
-                    <ProjectCardMobile key={project.id} project={project} index={i} />
-                ))}
-
-                <ViewAllCardMobile />
+                {/* Scroll Container */}
+                <div className="flex overflow-x-auto snap-x snap-mandatory px-4 gap-4 pb-8 scrollbar-hide">
+                    {projects.slice(0, 4).map((project, i) => (
+                        <ProjectCardMobile key={project.id} project={project} index={i} />
+                    ))}
+                    <ViewAllCardMobile />
+                    {/* Spacer for right padding */}
+                    <div className="w-4 flex-shrink-0" />
+                </div>
             </div>
         </section>
     );
@@ -100,7 +105,7 @@ function ViewAllCard() {
 
 function ViewAllCardMobile() {
     return (
-        <div className="h-[200px] w-full">
+        <div className="h-[400px] w-[85vw] flex-shrink-0 snap-center">
             <div className="group relative h-full w-full bg-white/5 border border-white/10 rounded-3xl overflow-hidden hover:bg-white/10 transition-colors flex items-center justify-center">
                 <a href="/projects" className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center bg-white text-black">
@@ -185,7 +190,7 @@ function ProjectCard({ project, index }: { project: Project, index: number }) {
 
 function ProjectCardMobile({ project, index }: { project: Project, index: number }) {
     return (
-        <div className="w-full md:w-[50vw] flex-shrink-0">
+        <div className="w-[85vw] md:w-[50vw] flex-shrink-0 snap-center">
             <div className="group relative h-[400px] w-full bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
                 {/* Image or Placeholder */}
                 <div className="absolute inset-0 bg-neutral-800">
