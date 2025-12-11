@@ -205,6 +205,24 @@ export async function updateTestimonialApproval(id: string, approved: boolean) {
   }
 }
 
+export async function submitTestimonial(formData: { name: string; role: string; message: string; rating: number }) {
+  try {
+    const payload = {
+      ...formData,
+      role: formData.role || 'Visitor',
+      approved: false, // Pending approval
+      createdAt: new Date().toISOString()
+    };
+
+    await addDoc(collection(db, 'testimonials'), payload);
+    revalidatePath('/');
+    return { success: true, message: 'Review submitted for approval.' };
+  } catch (e) {
+    console.error('Testimonial submission error:', e);
+    return { success: false, message: 'Failed to submit review.' };
+  }
+}
+
 // --- Experience Actions ---
 
 const experienceSchema = z.object({

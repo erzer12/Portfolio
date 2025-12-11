@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, MessageSquare, Star, User, Mail } from 'lucide-react';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { sendEmail } from '@/app/actions';
+import { sendEmail, submitTestimonial } from '@/app/actions';
 
 export default function ContactSection() {
     const [mode, setMode] = useState<'contact' | 'review'>('contact');
@@ -36,14 +34,17 @@ export default function ContactSection() {
                 }
             } else {
                 // Submit Review
-                await addDoc(collection(db, 'testimonials'), {
+                const result = await submitTestimonial({
                     name,
                     role: role || 'Visitor',
                     message,
-                    rating,
-                    approved: false, // Pending approval
-                    createdAt: serverTimestamp(),
+                    rating
                 });
+
+                if (!result.success) {
+                    setErrorMessage(result.message || 'Failed to submit review. Please try again.');
+                    return;
+                }
             }
             setSuccess(true);
             setTimeout(() => {
