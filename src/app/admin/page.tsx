@@ -15,9 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Github, Trash2, Plus, Save, ExternalLink, Edit, Check, Star, Briefcase, Award, User, Code2, X } from 'lucide-react';
 import {
     verifyAccessCode, fetchGithubRepos, saveProject, deleteProject,
-    saveSkill, deleteSkill, saveProfile, deleteExperience, deleteCertification, deleteEducation
+    saveSkill, deleteSkill, saveProfile, deleteExperience, deleteCertification, deleteEducation,
+    updateTestimonialApproval, deleteTestimonial
 } from '@/app/actions';
-import { collection, onSnapshot, query, orderBy, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ProjectDialog from '@/components/admin/ProjectDialog';
 import SkillDialog from '@/components/admin/SkillDialog';
@@ -254,7 +255,7 @@ export default function AdminPage() {
                 await Promise.all(ids.map(id => deleteCertification(id)));
                 setSelectedCerts([]);
             } else if (category === 'review') {
-                await Promise.all(ids.map(id => deleteDoc(doc(db, 'testimonials', id))));
+                await Promise.all(ids.map(id => deleteTestimonial(id)));
                 setSelectedReviews([]);
             } else if (category === 'skill') {
                 await Promise.all(ids.map(id => deleteSkill(id)));
@@ -319,7 +320,7 @@ export default function AdminPage() {
 
     const toggleTestimonial = async (id: string, currentStatus: boolean) => {
         try {
-            await updateDoc(doc(db, 'testimonials', id), { approved: !currentStatus });
+            await updateTestimonialApproval(id, !currentStatus);
             toast({ title: "Updated", description: "Review status updated." });
         } catch {
             toast({ title: "Error", description: "Failed to update.", variant: "destructive" });
