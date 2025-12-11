@@ -54,11 +54,19 @@ function ProjectGridCard({ project, index }: { project: any, index: number }) {
         <div className="h-[500px]">
             <TiltContainer className="h-full w-full" rotationIntensity={5} scale={1.02}>
                 <div className="group relative h-full w-full bg-white/5 border border-white/10 rounded-3xl overflow-hidden hover:border-white/30 transition-colors flex flex-col">
-                    {/* Placeholder or Image */}
+                    {/* Project Image */}
                     <div className="h-1/2 bg-neutral-800 relative overflow-hidden group-hover:brightness-110 transition-all">
-                        <div className="absolute inset-0 flex items-center justify-center text-6xl font-playfair text-white/5 italic select-none">
-                            {index + 1}
-                        </div>
+                        {project.image ? (
+                            <img
+                                src={project.image}
+                                alt={project.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-6xl font-playfair text-white/5 italic select-none">
+                                {index + 1}
+                            </div>
+                        )}
                         {/* Overlay Gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 to-transparent" />
                     </div>

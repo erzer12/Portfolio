@@ -20,7 +20,7 @@ export default function BentoSection() {
     const socialLinkedIn = profile?.social?.linkedin || RESUME_DATA.contact.social[1].url;
 
     return (
-        <section className="py-20 px-4 md:px-8">
+        <section id="about" className="py-20 px-4 md:px-8">
             <div className="max-w-7xl mx-auto mb-12">
                 <h2 className="text-4xl md:text-6xl font-playfair mb-4">About Me</h2>
                 <p className="text-muted-foreground font-inter max-w-2xl">
