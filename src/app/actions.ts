@@ -195,6 +195,16 @@ export async function deleteTestimonial(id: string) {
   }
 }
 
+export async function updateTestimonialApproval(id: string, approved: boolean) {
+  try {
+    await setDoc(doc(db, 'testimonials', id), { approved }, { merge: true });
+    revalidatePath('/');
+    return { success: true, message: 'Testimonial approval updated.' };
+  } catch (e) {
+    return { success: false, message: 'Failed to update testimonial approval.' };
+  }
+}
+
 // --- Experience Actions ---
 
 const experienceSchema = z.object({
