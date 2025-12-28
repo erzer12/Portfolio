@@ -42,7 +42,20 @@ service cloud.firestore {
     // --- Contact Messages ---
     match /messages/{document} {
       allow read: if true;
-      allow write: if true; // Allow public submissions (contact form)
+      // Only allow create operations with validation
+      allow create: if request.auth == null // Allow anonymous submissions
+        && request.resource.data.keys().hasAll(['name', 'email', 'message', 'timestamp'])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email.size() >= 5
+        && request.resource.data.email.size() <= 255
+        && request.resource.data.message.size() >= 10
+        && request.resource.data.message.size() <= 5000;
+      // Prevent updates and deletes from client
+      allow update, delete: if false;
     }
   }
 }
