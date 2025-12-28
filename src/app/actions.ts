@@ -2,8 +2,8 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 import { revalidatePath } from 'next/cache';
 
@@ -23,9 +23,9 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
 
   // 1. Save to Firestore
   try {
-    const docRef = await addDoc(collection(db, "messages"), {
+    const docRef = await adminDb.collection("messages").add({
       ...parsedData.data,
-      timestamp: serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
     });
     if (process.env.NODE_ENV === 'development') console.log("Document written to Firestore with ID: ", docRef.id);
   } catch (e) {
@@ -110,8 +110,11 @@ export async function saveSkill(formData: z.infer<typeof skillSchema>) {
   }
   try {
     const { id, ...skillData } = parsed.data;
-    const docRef = id ? doc(db, 'skills', id) : doc(collection(db, 'skills'));
-    await setDoc(docRef, skillData, { merge: true });
+    if (id) {
+      await adminDb.collection('skills').doc(id).set(skillData, { merge: true });
+    } else {
+      await adminDb.collection('skills').add(skillData);
+    }
     revalidatePath('/');
     return { success: true, message: 'Skill saved successfully.' };
   } catch (e) {
@@ -124,7 +127,7 @@ export async function deleteSkill(id: string) {
   // ... (keep existing)
   try {
     if (!id) throw new Error("Document ID is required for deletion.");
-    await deleteDoc(doc(db, 'skills', id));
+    await adminDb.collection('skills').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Skill deleted successfully.' };
   } catch (e) {
@@ -142,9 +145,13 @@ export async function saveProject(formData: z.infer<typeof projectSchema>) {
   }
   try {
     const { id, ...projectData } = parsed.data;
-    const docRef = id ? doc(db, 'projects', id) : doc(collection(db, 'projects'));
-    await setDoc(docRef, projectData, { merge: true });
-    if (process.env.NODE_ENV === 'development') console.log("Project saved to:", docRef.id);
+    if (id) {
+      await adminDb.collection('projects').doc(id).set(projectData, { merge: true });
+      if (process.env.NODE_ENV === 'development') console.log("Project updated:", id);
+    } else {
+      const docRef = await adminDb.collection('projects').add(projectData);
+      if (process.env.NODE_ENV === 'development') console.log("Project created:", docRef.id);
+    }
     revalidatePath('/');
     return { success: true, message: 'Project saved successfully.' };
   } catch (e) {
@@ -171,7 +178,6 @@ export async function saveTestimonial(formData: z.infer<typeof testimonialSchema
 
   try {
     const { id, ...data } = parsed.data;
-    const docRef = id ? doc(db, 'testimonials', id) : doc(collection(db, 'testimonials'));
 
     const payload = {
       ...data,
@@ -180,7 +186,11 @@ export async function saveTestimonial(formData: z.infer<typeof testimonialSchema
     // Remove undefined keys
     Object.keys(payload).forEach(key => payload[key as keyof typeof payload] === undefined && delete payload[key as keyof typeof payload]);
 
-    await setDoc(docRef, payload, { merge: true });
+    if (id) {
+      await adminDb.collection('testimonials').doc(id).set(payload, { merge: true });
+    } else {
+      await adminDb.collection('testimonials').add(payload);
+    }
     revalidatePath('/');
     return { success: true, message: 'Recommendation saved.' };
   } catch (e) {
@@ -190,7 +200,7 @@ export async function saveTestimonial(formData: z.infer<typeof testimonialSchema
 
 export async function deleteTestimonial(id: string) {
   try {
-    await deleteDoc(doc(db, 'testimonials', id));
+    await adminDb.collection('testimonials').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Recommendation deleted.' };
   } catch (e) {
@@ -200,7 +210,7 @@ export async function deleteTestimonial(id: string) {
 
 export async function updateTestimonialApproval(id: string, approved: boolean) {
   try {
-    await setDoc(doc(db, 'testimonials', id), { approved }, { merge: true });
+    await adminDb.collection('testimonials').doc(id).set({ approved }, { merge: true });
     revalidatePath('/');
     return { success: true, message: 'Testimonial approval updated.' };
   } catch (e) {
@@ -217,7 +227,7 @@ export async function submitTestimonial(formData: { name: string; role: string; 
       createdAt: new Date().toISOString()
     };
 
-    await addDoc(collection(db, 'testimonials'), payload);
+    await adminDb.collection('testimonials').add(payload);
     revalidatePath('/');
     return { success: true, message: 'Review submitted for approval.' };
   } catch (e) {
@@ -244,12 +254,15 @@ export async function saveExperience(formData: z.infer<typeof experienceSchema>)
 
   try {
     const { id, ...data } = parsed.data;
-    const docRef = id ? doc(db, 'experience', id) : doc(collection(db, 'experience'));
-    // If it's new and order is missing, maybe set a default timestamp as order or handle in UI
     if (!id && data.order === undefined) {
       data.order = Date.now();
     }
-    await setDoc(docRef, data, { merge: true });
+
+    if (id) {
+      await adminDb.collection('experience').doc(id).set(data, { merge: true });
+    } else {
+      await adminDb.collection('experience').add(data);
+    }
     revalidatePath('/');
     return { success: true, message: 'Experience saved.' };
   } catch (e) {
@@ -259,7 +272,7 @@ export async function saveExperience(formData: z.infer<typeof experienceSchema>)
 
 export async function deleteExperience(id: string) {
   try {
-    await deleteDoc(doc(db, 'experience', id));
+    await adminDb.collection('experience').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Experience deleted.' };
   } catch (e) {
@@ -285,8 +298,11 @@ export async function saveCertification(formData: z.infer<typeof certificationSc
 
   try {
     const { id, ...data } = parsed.data;
-    const docRef = id ? doc(db, 'certifications', id) : doc(collection(db, 'certifications'));
-    await setDoc(docRef, data, { merge: true });
+    if (id) {
+      await adminDb.collection('certifications').doc(id).set(data, { merge: true });
+    } else {
+      await adminDb.collection('certifications').add(data);
+    }
     revalidatePath('/');
     return { success: true, message: 'Certification saved.' };
   } catch (e) {
@@ -296,7 +312,7 @@ export async function saveCertification(formData: z.infer<typeof certificationSc
 
 export async function deleteCertification(id: string) {
   try {
-    await deleteDoc(doc(db, 'certifications', id));
+    await adminDb.collection('certifications').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Certification deleted.' };
   } catch (e) {
@@ -352,8 +368,8 @@ export async function importCredlyBadges(username: string) {
 
     // Fetch existing certifications to check for duplicates
     // We'll map them by credlyId (preferred) or name (fallback)
-    const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
-    const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
+    const snapshot = await adminDb.collection('certifications').get();
+    const existingCerts = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as any));
 
     // Map for quick lookup
     const existingMap = new Map();
@@ -379,11 +395,11 @@ export async function importCredlyBadges(username: string) {
 
       if (existingId) {
         // Update existing
-        await setDoc(doc(db, 'certifications', existingId), badgeData, { merge: true });
+        await adminDb.collection('certifications').doc(existingId).set(badgeData, { merge: true });
         updated++;
       } else {
         // Create new
-        await addDoc(collection(db, 'certifications'), badgeData);
+        await adminDb.collection('certifications').add(badgeData);
         added++;
       }
     }
@@ -466,16 +482,16 @@ export async function importBadgeByUrl(url: string) {
       };
 
       // Upsert logic
-      const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
-      const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
+      const snapshot = await adminDb.collection('certifications').get();
+      const existingCerts: any[] = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       const existing = existingCerts.find(c => c.credlyId === credlyId || c.link === url || c.name === name);
 
       if (existing) {
-        await setDoc(doc(db, 'certifications', existing.id), badgeData, { merge: true });
+        await adminDb.collection('certifications').doc(existing.id).set(badgeData, { merge: true });
         revalidatePath('/');
         return { success: true, message: `Updated badge: ${name}` };
       } else {
-        await addDoc(collection(db, 'certifications'), badgeData);
+        await adminDb.collection('certifications').add(badgeData);
         revalidatePath('/');
         return { success: true, message: `Imported badge: ${name}` };
       }
@@ -517,12 +533,16 @@ export async function saveEducation(formData: z.infer<typeof educationSchema>) {
 
   try {
     const { id, ...data } = parsed.data;
-    const docRef = id ? doc(db, 'education', id) : doc(collection(db, 'education'));
-    // If new and no order, set timestamp
+
     if (!id && data.order === undefined) {
       data.order = Date.now();
     }
-    await setDoc(docRef, data, { merge: true });
+
+    if (id) {
+      await adminDb.collection('education').doc(id).set(data, { merge: true });
+    } else {
+      await adminDb.collection('education').add(data);
+    }
     revalidatePath('/');
     return { success: true, message: 'Education saved.' };
   } catch (e) {
@@ -532,7 +552,7 @@ export async function saveEducation(formData: z.infer<typeof educationSchema>) {
 
 export async function deleteEducation(id: string) {
   try {
-    await deleteDoc(doc(db, 'education', id));
+    await adminDb.collection('education').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Education deleted.' };
   } catch (e) {
@@ -563,7 +583,7 @@ export async function saveProfile(formData: z.infer<typeof profileSchema>) {
   if (!parsed.success) return { success: false, message: 'Invalid profile data' };
 
   try {
-    await setDoc(doc(db, 'profile', 'main'), parsed.data, { merge: true });
+    await adminDb.collection('profile').doc('main').set(parsed.data, { merge: true });
     revalidatePath('/');
     return { success: true, message: 'Profile updated.' };
   } catch (e) {
@@ -574,7 +594,7 @@ export async function saveProfile(formData: z.infer<typeof profileSchema>) {
 export async function deleteProject(id: string) {
   try {
     if (!id) throw new Error("Document ID is required for deletion.");
-    await deleteDoc(doc(db, 'projects', id));
+    await adminDb.collection('projects').doc(id).delete();
     revalidatePath('/');
     return { success: true, message: 'Project deleted successfully.' };
   } catch (e) {

@@ -1,248 +1,196 @@
-# Portfolio - Harshil P
+# 🚀 Portfolio - Next.js Application
 
-A modern, cinematic portfolio website built with Next.js 15, React 19, and Firebase. Features a stunning dark theme with smooth animations, custom cursor effects, and a full-featured admin panel for content management.
+A modern, secure portfolio website built with Next.js 16, Firebase, and featuring enterprise-grade security.
 
-## 🌟 Features
+## ✨ Features
 
-### Frontend
-- **Cinematic Design**: Dark theme with glassmorphism, smooth animations, and custom cursor effects
-- **Responsive Layout**: Fully responsive design optimized for all devices
-- **Dynamic Background**: Animated particle effects and interactive visuals
-- **Project Showcase**: Horizontal scrolling carousel on desktop, vertical stack on mobile
-- **Certifications**: Automatic Credly badge import with carousel display
-- **Work Experience**: Timeline-based experience visualization
-- **Contact Form**: Dual-mode form (contact messages + testimonial reviews)
-- **Admin Panel**: Hidden keyboard shortcut for content management
-
-### Backend
-- **Firebase Firestore**: Real-time NoSQL database for all portfolio content
-- **Server Actions**: Type-safe server-side operations with Zod validation
-- **Image Management**: Local file uploads to `public/images/` with smart URL resolution
-- **Email Integration**: Contact form emails via Resend API
-- **Security**: Server-side only database writes, access code protection
-
-### Developer Experience
-- **TypeScript**: Strict mode for complete type safety
-- **Next.js 15**: Latest App Router with Turbopack
-- **React 19**: Latest React features
-- **Prettier**: Consistent code formatting
-- **Error Boundaries**: Graceful error handling in production
-- **Environment Validation**: Startup checks for required variables
+- 🎨 **Cinematic UI/UX** - Modern, dynamic design with smooth animations
+- 🔐 **Enterprise Security** - Comprehensive security headers, session management, and protected APIs
+- 📱 **Fully Responsive** - Optimized for all devices
+- 🎯 **Admin Panel** - Complete content management system
+- 📬 **Contact Form** - Email integration with Resend
+- 🏆 **Certifications** - Automatic Credly badge import
+- 📊 **GitHub Integration** - Showcase your repositories
 
 ## 🛠️ Tech Stack
 
-### Core
-- **Framework**: [Next.js 15.5.7](https://nextjs.org/)
-- **Runtime**: [React 19](https://react.dev/)
-- **Language**: [TypeScript 5](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Framework:** Next.js 16 (with Turbopack)
+- **Database:** Firebase Firestore
+- **Storage:** Firebase Storage
+- **Authentication:** Server-side session management
+- **Email:** Resend API
+- **Styling:** Tailwind CSS + Vanilla CSS
+- **Security:** Firebase Admin SDK, HTTP security headers, CSRF protection
 
-### UI & Animation
-- **Components**: [Shadcn/ui](https://ui.shadcn.com/) + [Radix UI](https://www.radix-ui.com/)
-- **Animation**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Smooth Scroll**: [Lenis](https://lenis.studiofreight.com/)
+## 📦 Installation
 
-### Backend & Data
-- **Database**: [Firebase Firestore](https://firebase.google.com/products/firestore)
-- **Storage**: Local filesystem (`public/images/`)
-- **Email**: [Resend](https://resend.com/)
-- **Validation**: [Zod](https://zod.dev/)
-- **Forms**: [React Hook Form](https://react-hook-form.com/)
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Firebase project ([Create one](https://console.firebase.google.com/))
-- (Optional) Resend account for contact form emails
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/portfolio.git
-   cd portfolio
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   # Firebase Configuration
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
-
-   # Email Service (Optional)
-   RESEND_API_KEY=re_your_api_key
-
-   # Admin Access
-   ADMIN_ACCESS_CODE=your_secure_code_here
-   ```
-
-4. **Configure Firebase**
-   - Create a Firestore database
-   - Deploy security rules:
-     ```bash
-     firebase deploy --only firestore:rules
-     ```
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-   
-   Open [http://localhost:9002](http://localhost:9002)
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── actions.ts         # Server actions
-│   ├── api/               # API routes
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/
-│   ├── admin/             # Admin panel components
-│   ├── cinematic/         # Main portfolio components
-│   ├── quantum/           # Special effect components
-│   ├── bento/             # Bento grid components
-│   ├── ui/                # Shadcn UI components
-│   └── ErrorBoundary.tsx  # Error handling
-├── hooks/                 # Custom React hooks
-│   ├── use-data.ts       # Firebase data hooks
-│   └── use-mobile.tsx    # Mobile detection
-├── lib/                   # Utilities
-│   ├── firebase.ts       # Firebase config
-│   ├── env.ts            # Environment validation
-│   └── utils.ts          # Helper functions
-└── data/                  # Static/seed data
-```
-
-## 🎨 Admin Panel
-
-### Access
-1. Navigate to your portfolio
-2. Press `Shift + A + D`
-3. Enter your `ADMIN_ACCESS_CODE`
-
-### Features
-- **Projects**: Add, edit, delete projects with image uploads
-- **Skills**: Manage skill categories and items
-- **Experience**: Edit work history
-- **Education**: Update educational background
-- **Certifications**: Import from Credly or add manually
-- **Testimonials**: Approve and manage reviews
-
-### Image Uploads
-- **Local Storage**: Files saved to `public/images/`
-- **Smart URL Resolver**: Automatically extracts direct image URLs from hosting page links
-- **Supported Sources**: Direct URLs, Firebase Storage, ibb.co, Credly
-- **Recommended Resolution**: 1920x1080 (16:9) for projects
-
-## 📧 Contact Form Setup
-
-1. **Sign up for Resend**: https://resend.com
-2. **Verify your domain** or use their testing domain
-3. **Create API key** in Resend dashboard
-4. **Add to `.env`**: `RESEND_API_KEY=re_your_key`
-5. **Update email addresses** in `src/app/actions.ts`:
-   ```typescript
-   from: 'Portfolio <noreply@yourdomain.com>',
-   to: ['your-email@example.com'],
-   ```
-
-## 🔒 Security
-
-- **Database**: All writes restricted to server-side only (Firestore rules)
-- **Admin Access**: Protected by access code verification
-- **Image Domains**: Whitelisted sources only (no wildcards)
-- **Type Safety**: Strict TypeScript + Zod validation
-- **Environment Validation**: Startup checks for required variables
-
-## 📦 Build & Deploy
-
-### Build for Production
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/portfolio.git
+cd portfolio
+
+# Install dependencies
+npm install
+
+# Set up environment variables (see below)
+cp .env.example .env
+# Edit .env with your actual values
+
+# Run development server
+npm run dev
+```
+
+## 🔑 Environment Variables
+
+### Required Variables
+
+Create a `.env` file in the project root with these variables:
+
+#### Firebase Configuration
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+#### Firebase Service Account (CRITICAL for Server Actions)
+```bash
+# Get from: Firebase Console → Project Settings → Service Accounts → Generate New Private Key
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}'
+```
+
+#### Admin Access
+```bash
+ADMIN_ACCESS_CODE=your-secure-admin-password
+NEXT_PUBLIC_ADMIN_CODE=your-secure-admin-password  # Optional: for client-side fallback
+```
+
+### Optional Variables
+
+#### Email (Resend)
+```bash
+RESEND_API_KEY=re_xxxxxxxxxxxx
+EMAIL_FROM="Portfolio <noreply@yourdomain.com>"
+EMAIL_TO="your-email@example.com"
+```
+
+#### GitHub API
+```bash
+GITHUB_TOKEN=ghp_xxxxxxxxxxxx  # For higher rate limits
+```
+
+See `.env.example` for a complete template.
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. **Add Environment Variables** to Vercel:
+   - Go to Project Settings → Environment Variables
+   - Add ALL variables from your `.env` file
+   - **Important:** Add `FIREBASE_SERVICE_ACCOUNT_KEY` for production
+
+2. **Deploy Firestore Rules**:
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
+3. **Push to Git**:
+   ```bash
+   git push origin main
+   ```
+
+Vercel will auto-deploy your site.
+
+### Production Checklist
+
+- [ ] All environment variables added to Vercel
+- [ ] `FIREBASE_SERVICE_ACCOUNT_KEY` configured
+- [ ] Firestore security rules deployed
+- [ ] Admin access code is strong (16+ characters)
+- [ ] Test admin panel functionality
+- [ ] Verify contact form works
+
+## 🔒 Security Features
+
+This application implements enterprise-grade security:
+
+- ✅ **Firebase Admin SDK** - Server-side operations bypass client rules
+- ✅ **Strict Firestore Rules** - Client-side writes are blocked
+- ✅ **Session Timeout** - 30-minute automatic logout
+- ✅ **Security Headers** - HSTS, X-Frame-Options, CSP, etc.
+- ✅ **Protected File Uploads** - Authentication required
+- ✅ **SSRF Protection** - Validated external URL fetching
+- ✅ **Security Event Logging** - Track authentication events
+
+## 📝 Admin Panel
+
+Access the admin panel at `/admin` with your access code.
+
+**Features:**
+- Manage projects, skills, certifications
+- Update work experience and education
+- Review and approve testimonials
+- Import Credly badges automatically
+- Upload images securely
+
+## 🐛 Troubleshooting
+
+### "PERMISSION_DENIED" Error in Production
+
+**Cause:** Missing Firebase service account key.
+
+**Solution:**
+1. Generate service account key from Firebase Console
+2. Add `FIREBASE_SERVICE_ACCOUNT_KEY` to Vercel environment variables
+3. Redeploy
+
+### Build Errors
+
+```bash
+# Clear cache and rebuild
+rm -rf .next
+npm install
 npm run build
 ```
 
-### Run Production Build Locally
-```bash
-npm run start
-```
+### Admin Panel Not Working
 
-### Deploy to Vercel
-1. Push to GitHub
-2. Import project in Vercel
-3. Add environment variables
-4. Deploy
+1. Verify `ADMIN_ACCESS_CODE` is set in environment variables
+2. Check Firestore rules are deployed
+3. Ensure `FIREBASE_SERVICE_ACCOUNT_KEY` is configured
 
-**Important**: Local file upload (`/api/upload`) is development-only. For production on serverless platforms like Vercel, use Firebase Storage or a cloud CDN.
+## 📚 Documentation
 
-### Deploy Firestore Rules
-```bash
-firebase deploy --only firestore:rules
-```
+- [Security Analysis Report](./docs/security_analysis_report.md)
+- [Security Fixes Walkthrough](./docs/security_fixes_walkthrough.md)
+- [Production Troubleshooting](./docs/production_troubleshooting.md)
+- [Environment Variables Guide](./ENV_VARIABLES.md)
 
-## 🧪 Scripts
+## 🔄 NPM Scripts
 
 ```bash
-npm run dev        # Start development server (port 9002)
-npm run build      # Create production build
-npm run start      # Start production server
-npm run typecheck  # Run TypeScript type checking
-npm run lint       # Lint code
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
 ```
 
-## 🎯 Key Features by Component
+## 📄 License
 
-### `MinimalNav.tsx`
-Sticky glassmorphism navbar with smooth scroll navigation
+MIT License - feel free to use this for your own portfolio!
 
-### `ProjectShowcase.tsx`
-Responsive project carousel with image rendering and modal details
+## 🙏 Acknowledgments
 
-### `ContactSection.tsx`
-Dual-mode form (contact/review) with Resend email integration
-
-### `AdminDataPanel.tsx`
-Full CRUD operations for all content types with real-time updates
-
-### `Certifications.tsx`
-Auto-import Credly badges with carousel display
-
-### `CustomCursor.tsx`
-Desktop-only custom cursor with hover effects (hidden on mobile)
-
-## 🐛 Known Issues & Limitations
-
-- **Local Uploads**: Not compatible with serverless deployment (use Firebase Storage for production)
-- **Environment Variables**: Must be set for build to succeed
-- **Custom Cursor**: Only works on desktop (touch devices show native cursor)
-
-## 📝 License
-
-Private - All Rights Reserved
-
-## 👤 Author
-
-**Harshil P**
-- Portfolio: [harshilp.codes](https://harshilp.codes)
-- Email: harshilp1234@gmail.com
+- Next.js team for the amazing framework
+- Firebase for backend services
+- Vercel for hosting
+- All open-source contributors
 
 ---
 
-Built with ❤️ using Next.js 15 and React 19
+**⚡ Built with Next.js 16 + Firebase + Security First**
