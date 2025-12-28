@@ -20,6 +20,7 @@ import {
 } from '@/app/actions';
 import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { logSecurityEvent, isSessionValid, clearAdminSession } from '@/lib/security';
 import ProjectDialog from '@/components/admin/ProjectDialog';
 import SkillDialog from '@/components/admin/SkillDialog';
 import ExperienceDialog from '@/components/admin/ExperienceDialog';
@@ -30,6 +31,7 @@ import SeedDataButton from '@/components/admin/SeedDataButton';
 import CredlyImport from '@/components/admin/CredlyImport';
 import DeleteConfirmDialog from '@/components/admin/DeleteConfirmDialog';
 import { useProjects, useSkills, useExperience, useCertifications, useEducation, useProfile, Project, Skill, Experience, Certification, Education, Profile } from '@/hooks/use-data';
+
 
 // --- Types ---
 type Testimonial = {
@@ -200,12 +202,32 @@ export default function AdminPage() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteConfig, setDeleteConfig] = useState<{ type: 'single' | 'bulk', category: 'project' | 'cert' | 'review' | 'skill' | 'exp' | 'edu', ids: string[] }>({ type: 'single', category: 'project', ids: [] });
 
-    // Auth Check
+    // Auth Check with Session Timeout
     useEffect(() => {
         const auth = sessionStorage.getItem('admin_auth');
-        if (auth === 'true') setIsAuthenticated(true);
+        const loginTime = sessionStorage.getItem('admin_login_time');
+
+        if (auth === 'true' && loginTime) {
+            const now = Date.now();
+            const elapsed = now - parseInt(loginTime);
+            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+            if (elapsed > SESSION_TIMEOUT) {
+                // Session expired
+                sessionStorage.removeItem('admin_auth');
+                sessionStorage.removeItem('admin_login_time');
+                toast({
+                    title: 'Session Expired',
+                    description: 'Please log in again.',
+                    variant: 'destructive'
+                });
+                setIsAuthenticated(false);
+            } else {
+                setIsAuthenticated(true);
+            }
+        }
         setIsLoading(false);
-    }, []);
+    }, [toast]);
 
     // Testimonials Listener
     useEffect(() => {
@@ -221,13 +243,33 @@ export default function AdminPage() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
+        logSecurityEvent({
+            type: 'login_attempt',
+            timestamp: Date.now(),
+        });
+
         const res = await verifyAccessCode(accessCode);
         setIsLoading(false);
+
         if (res.success) {
             setIsAuthenticated(true);
             sessionStorage.setItem('admin_auth', 'true');
+            sessionStorage.setItem('admin_login_time', Date.now().toString());
+
+            logSecurityEvent({
+                type: 'login_success',
+                timestamp: Date.now(),
+            });
+
             toast({ title: 'Welcome back!', description: 'You are now logged in.' });
         } else {
+            logSecurityEvent({
+                type: 'login_failure',
+                timestamp: Date.now(),
+                details: { reason: res.message },
+            });
+
             toast({ title: 'Access Denied', description: res.message, variant: 'destructive' });
         }
     };
@@ -353,7 +395,12 @@ export default function AdminPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold font-headline text-gradient">Dashboard</h1>
                 <div className="flex gap-4">
-                    <Button variant="outline" onClick={() => { setIsAuthenticated(false); sessionStorage.removeItem('admin_auth'); }}>Logout</Button>
+                    <Button variant="outline" onClick={() => {
+                        setIsAuthenticated(false);
+                        sessionStorage.removeItem('admin_auth');
+                        sessionStorage.removeItem('admin_login_time');
+                        toast({ title: 'Logged out', description: 'You have been logged out successfully.' });
+                    }}>Logout</Button>
                 </div>
             </div>
 

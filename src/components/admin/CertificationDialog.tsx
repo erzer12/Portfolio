@@ -78,9 +78,17 @@ export default function CertificationDialog({ open, onOpenChange, certification 
             const formData = new FormData();
             formData.append('file', file);
 
-            // Send to local API
+            // Get access code from sessionStorage (admin should be authenticated)
+            const accessCode = sessionStorage.getItem('admin_auth') === 'true'
+                ? process.env.NEXT_PUBLIC_ADMIN_CODE || prompt('Enter access code:')
+                : prompt('Enter access code:');
+
+            // Send to local API with authentication
             const response = await fetch('/api/upload', {
                 method: 'POST',
+                headers: {
+                    'x-access-code': accessCode || '',
+                },
                 body: formData,
             });
 

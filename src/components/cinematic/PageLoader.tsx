@@ -62,14 +62,7 @@ export default function PageLoader({ children }: { children: React.ReactNode }) 
                             />
                         </div>
 
-                        <motion.div
-                            className="absolute bottom-10 left-10 text-white/50 font-mono text-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1 }}
-                        >
-                            INITIALIZING SYSTEM...
-                        </motion.div>
+
                     </motion.div>
                 )}
             </AnimatePresence>

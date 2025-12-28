@@ -44,9 +44,12 @@ export async function sendEmail(formData: z.infer<typeof contactSchema>) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
+    const emailFrom = process.env.EMAIL_FROM || 'Portfolio Notifier <noreply@harshilp.codes>';
+    const emailTo = process.env.EMAIL_TO || 'harshilp1234@gmail.com';
+
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Notifier <noreply@harshilp.codes>', // IMPORTANT: Replace with your verified domain
-      to: ['harshilp1234@gmail.com'], // IMPORTANT: Replace with your actual email
+      from: emailFrom,
+      to: [emailTo],
       subject: `New Message from ${parsedData.data.name}`,
       html: `
         <p>You received a new message from your portfolio contact form:</p>
@@ -395,73 +398,105 @@ export async function importCredlyBadges(username: string) {
 
 export async function importBadgeByUrl(url: string) {
   try {
-    if (!url.includes('credly.com')) {
-      return { success: false, message: 'Invalid URL. Must be from Credly.' };
+    // Strict URL validation
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (e) {
+      return { success: false, message: 'Invalid URL format.' };
     }
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch URL');
-    const html = await res.text();
-
-    // Regex to extract OG tags
-    const getMeta = (prop: string) => {
-      const match = html.match(new RegExp(`<meta property="${prop}" content="([^"]*)"`));
-      return match ? match[1] : '';
-    };
-
-    const title = getMeta('og:title');
-    const image = getMeta('og:image');
-    // const description = getMeta('og:description'); // Not strictly needed for listing
-    if (!title) throw new Error('Could not find badge title in metadata');
-
-    // Attempt to extract Issuer from title or description if possible, or default
-    // Often title is "Badge Name was issued by Issuer Name to ..."
-    // Or just "Badge Name"
-    let name = title;
-    let issuer = 'External Provider';
-
-    // Heuristic: "Badge Name was issued by Issuer to User"
-    if (title.includes(' was issued by ')) {
-      const parts = title.split(' was issued by ');
-      name = parts[0];
-      const issuerPart = parts[1].split(' to ')[0];
-      issuer = issuerPart;
+    // Validate hostname exactly
+    if (parsedUrl.hostname !== 'www.credly.com' && parsedUrl.hostname !== 'credly.com') {
+      return { success: false, message: 'Invalid URL. Must be from credly.com' };
     }
 
-    // Generate a unique ID from the URL or fallback to name
-    // URL: https://www.credly.com/badges/UUID/public_url
-    // Regex for UUID
-    const uuidMatch = url.match(/\/badges\/([a-zA-Z0-9-]+)/);
-    const credlyId = uuidMatch ? uuidMatch[1] : `manual-${Date.now()}`;
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const badgeData = {
-      name,
-      issuer,
-      date: new Date().toISOString().split('T')[0], // Default to today as we can't easily parse different date formats from HTML w/o library
-      link: url,
-      image,
-      credlyId
-    };
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Portfolio-App/1.0' }
+      });
+      clearTimeout(timeoutId);
 
-    // Upsert logic
-    const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
-    const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
-    const existing = existingCerts.find(c => c.credlyId === credlyId || c.link === url || c.name === name);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = await res.text();
 
-    if (existing) {
-      await setDoc(doc(db, 'certifications', existing.id), badgeData, { merge: true });
-      revalidatePath('/');
-      return { success: true, message: `Updated badge: ${name}` };
-    } else {
-      await addDoc(collection(db, 'certifications'), badgeData);
-      revalidatePath('/');
-      return { success: true, message: `Imported badge: ${name}` };
+      // Regex to extract OG tags
+      const getMeta = (prop: string) => {
+        const match = html.match(new RegExp(`<meta property="${prop}" content="([^"]*)"`));
+        return match ? match[1] : '';
+      };
+
+      const title = getMeta('og:title');
+      const image = getMeta('og:image');
+      // const description = getMeta('og:description'); // Not strictly needed for listing
+      if (!title) throw new Error('Could not find badge title in metadata');
+
+      // Attempt to extract Issuer from title or description if possible, or default
+      // Often title is "Badge Name was issued by Issuer Name to ..."
+      // Or just "Badge Name"
+      let name = title;
+      let issuer = 'External Provider';
+
+      // Heuristic: "Badge Name was issued by Issuer to User"
+      if (title.includes(' was issued by ')) {
+        const parts = title.split(' was issued by ');
+        name = parts[0];
+        const issuerPart = parts[1].split(' to ')[0];
+        issuer = issuerPart;
+      }
+
+      // Generate a unique ID from the URL or fallback to name
+      // URL: https://www.credly.com/badges/UUID/public_url
+      // Regex for UUID
+      const uuidMatch = url.match(/\/badges\/([a-zA-Z0-9-]+)/);
+      const credlyId = uuidMatch ? uuidMatch[1] : `manual-${Date.now()}`;
+
+      const badgeData = {
+        name,
+        issuer,
+        date: new Date().toISOString().split('T')[0], // Default to today as we can't easily parse different date formats from HTML w/o library
+        link: url,
+        image,
+        credlyId
+      };
+
+      // Upsert logic
+      const { docs } = await import('firebase/firestore').then(mod => mod.getDocs(collection(db, 'certifications')));
+      const existingCerts = docs.map(d => ({ id: d.id, ...d.data() } as any));
+      const existing = existingCerts.find(c => c.credlyId === credlyId || c.link === url || c.name === name);
+
+      if (existing) {
+        await setDoc(doc(db, 'certifications', existing.id), badgeData, { merge: true });
+        revalidatePath('/');
+        return { success: true, message: `Updated badge: ${name}` };
+      } else {
+        await addDoc(collection(db, 'certifications'), badgeData);
+        revalidatePath('/');
+        return { success: true, message: `Imported badge: ${name}` };
+      }
+
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error(fetchError);
+      if (fetchError instanceof Error) {
+        if (fetchError.name === 'AbortError') {
+          return { success: false, message: 'Request timeout. Please try again.' };
+        }
+        return { success: false, message: `Import failed: ${fetchError.message}` };
+      }
+      return { success: false, message: 'Import failed: Unknown error' };
     }
-
   } catch (e) {
     console.error(e);
-    const msg = e instanceof Error ? e.message : 'Unknown error';
-    return { success: false, message: `Import failed: ${msg}` };
+    if (e instanceof Error) {
+      return { success: false, message: `Import failed: ${e.message}` };
+    }
+    return { success: false, message: 'Import failed: Unknown error' };
   }
 }
 
