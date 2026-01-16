@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import CustomCursor from '@/components/cinematic/CustomCursor';
@@ -39,6 +40,7 @@ export default function RootLayout({
           <AdminTrigger />
           {children}
           <Toaster />
+          <Analytics />
         </ErrorBoundary>
       </body>
     </html>
