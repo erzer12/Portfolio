@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,10 +16,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Github, Trash2, Plus, Save, ExternalLink, Edit, Check, Star, Briefcase, Award, User, Code2, X } from 'lucide-react';
 import {
-    verifyAccessCode, fetchGithubRepos, saveProject, deleteProject,
+    verifyAccessCode, fetchGithubRepos, saveProject, deleteProject, reorderProjects,
     saveSkill, deleteSkill, saveProfile, deleteExperience, deleteCertification, deleteEducation,
     updateTestimonialApproval, deleteTestimonial
 } from '@/app/actions';
+import { SortableProjectCard } from '@/components/admin/SortableProjectCard';
 import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { logSecurityEvent, isSessionValid, clearAdminSession } from '@/lib/security';
@@ -201,6 +204,33 @@ export default function AdminPage() {
     // Delete Dialog State
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleteConfig, setDeleteConfig] = useState<{ type: 'single' | 'bulk', category: 'project' | 'cert' | 'review' | 'skill' | 'exp' | 'edu', ids: string[] }>({ type: 'single', category: 'project', ids: [] });
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    // DnD Handler
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = projects.findIndex(p => p.id === active.id);
+        const newIndex = projects.findIndex(p => p.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            const newOrder = arrayMove(projects, oldIndex, newIndex);
+            const orderedIds = newOrder.map(p => p.id);
+
+            const res = await reorderProjects(orderedIds);
+            if (res.success) {
+                toast({ title: 'Reordered', description: 'Project order updated.' });
+            } else {
+                toast({ title: 'Error', description: res.message, variant: 'destructive' });
+            }
+        }
+    };
 
     // Auth Check with Session Timeout
     useEffect(() => {
@@ -435,35 +465,29 @@ export default function AdminPage() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <Card className="glass-card border-dashed border-2 flex flex-col items-center justify-center min-h-[300px] cursor-pointer hover:bg-white/5 transition-colors gap-4">
-                            <div onClick={() => { setSelectedProject(undefined); setIsProjectDialogOpen(true); }} className="text-center w-full h-full flex flex-col items-center justify-center">
-                                <Plus className="mx-auto h-12 w-12 text-white/50" />
-                                <h3>Add Project</h3>
-                            </div>
-                            <SeedDataButton contentType="projects" className="z-10" />
-                        </Card>
-                        {projects.map(project => (
-                            <Card key={project.id} className={`glass-card flex flex-col group relative overflow-hidden transition-all duration-200 ${selectedProjects.includes(project.id) ? 'ring-2 ring-primary bg-primary/10' : ''}`}>
-                                {project.image && <div className="h-40 w-full overflow-hidden"><img src={project.image} alt="" className="w-full h-full object-cover" /></div>}
-
-                                <div className="absolute top-2 left-2 z-20">
-                                    <Checkbox
-                                        checked={selectedProjects.includes(project.id)}
-                                        onCheckedChange={() => toggleSelection(project.id, selectedProjects, setSelectedProjects)}
-                                        className="bg-black/50 border-white/50 data-[state=checked]:bg-primary"
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={projects.map(p => p.id)} strategy={rectSortingStrategy}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Card className="glass-card border-dashed border-2 flex flex-col items-center justify-center min-h-[300px] cursor-pointer hover:bg-white/5 transition-colors gap-4">
+                                    <div onClick={() => { setSelectedProject(undefined); setIsProjectDialogOpen(true); }} className="text-center w-full h-full flex flex-col items-center justify-center">
+                                        <Plus className="mx-auto h-12 w-12 text-white/50" />
+                                        <h3>Add Project</h3>
+                                    </div>
+                                    <SeedDataButton contentType="projects" className="z-10" />
+                                </Card>
+                                {projects.map(project => (
+                                    <SortableProjectCard
+                                        key={project.id}
+                                        project={project}
+                                        isSelected={selectedProjects.includes(project.id)}
+                                        onToggleSelect={() => toggleSelection(project.id, selectedProjects, setSelectedProjects)}
+                                        onEdit={() => { setSelectedProject(project); setIsProjectDialogOpen(true); }}
+                                        onDelete={() => handleDeleteProject(project.id)}
                                     />
-                                </div>
-
-                                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                    <Button size="icon" variant="secondary" onClick={(e) => { e.stopPropagation(); setSelectedProject(project); setIsProjectDialogOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                                    <Button size="icon" variant="destructive" onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id); }}><Trash2 className="h-4 w-4" /></Button>
-                                </div>
-                                <CardHeader><CardTitle>{project.title}</CardTitle></CardHeader>
-                                <CardContent><p className="line-clamp-3 text-sm text-white/70">{project.description}</p></CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
                 </TabsContent>
 
                 {/* --- Skills Tab --- */}

@@ -603,6 +603,22 @@ export async function deleteProject(id: string) {
   }
 }
 
+export async function reorderProjects(orderedIds: string[]) {
+  try {
+    const batch = adminDb.batch();
+    orderedIds.forEach((id, index) => {
+      const ref = adminDb.collection('projects').doc(id);
+      batch.update(ref, { order: index });
+    });
+    await batch.commit();
+    revalidatePath('/');
+    return { success: true, message: 'Projects reordered.' };
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, message: `Failed to reorder projects: ${errorMessage}` };
+  }
+}
+
 export async function fetchGithubRepos(username: string) {
   try {
     const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);

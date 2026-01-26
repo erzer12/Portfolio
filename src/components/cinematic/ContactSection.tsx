@@ -134,7 +134,7 @@ export default function ContactSection() {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             className="w-full bg-black/20 border border-white/10 rounded-xl p-4 pl-12 text-white focus:outline-none focus:border-white/30 transition-colors"
-                                            placeholder="John Doe"
+                                            placeholder="What's your name?"
                                             required
                                         />
                                     </div>
@@ -150,7 +150,7 @@ export default function ContactSection() {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl p-4 pl-12 text-white focus:outline-none focus:border-white/30 transition-colors"
-                                                placeholder="john@example.com"
+                                                placeholder="Your email address"
                                                 required
                                             />
                                         </div>
@@ -165,7 +165,7 @@ export default function ContactSection() {
                                                 value={role}
                                                 onChange={(e) => setRole(e.target.value)}
                                                 className="w-full bg-black/20 border border-white/10 rounded-xl p-4 pl-12 text-white focus:outline-none focus:border-white/30 transition-colors"
-                                                placeholder="Developer @ Tech"
+                                                placeholder="What's your role?"
                                             />
                                         </div>
                                     </div>
