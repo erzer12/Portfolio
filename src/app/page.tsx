@@ -1,85 +1,149 @@
-'use client';
+import { CertsList } from '@/components/resume/CertsList';
+import { ContactSection } from '@/components/resume/ContactSection';
+import { EducationList } from '@/components/resume/EducationList';
+import { ExperienceList } from '@/components/resume/ExperienceList';
+import { FeaturedProjects } from '@/components/resume/FeaturedProjects';
+import { Header } from '@/components/resume/Header';
+import { MinimalFooter } from '@/components/layout/MinimalFooter';
+import { MinimalNav } from '@/components/layout/MinimalNav';
+import { ProfileSummary } from '@/components/resume/ProfileSummary';
+import { SectionLabel } from '@/components/resume/SectionLabel';
+import { SectionRule } from '@/components/resume/SectionRule';
+import { SkillsTable } from '@/components/resume/SkillsTable';
 
-import dynamic from 'next/dynamic';
-import QuantumHero from '@/components/quantum/QuantumHero';
-import BentoSection from '@/components/bento/BentoSection';
-import MinimalNav from '@/components/cinematic/MinimalNav';
-import SmoothScroll from '@/components/cinematic/SmoothScroll';
-import PageLoader from '@/components/cinematic/PageLoader';
-import MinimalFooter from '@/components/cinematic/MinimalFooter';
+const profile = {
+  name: 'Harshil P',
+  tagline: 'Third-year CS student focused on AI, ML, and practical product work.',
+  location: 'Kerala, India',
+  status: 'Open to work',
+  socialLinks: [
+    { label: 'GitHub', href: 'https://github.com/erzer12' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/harshil-p' },
+    { label: 'Email', href: 'mailto:harshilp1234@gmail.com' },
+  ],
+};
 
+const summary =
+  'I build lightweight products that make technical ideas easy to understand and easy to use. My focus is on AI-assisted workflows, clean interfaces, and shipping useful tools that help people work faster.';
 
-// Dynamic Imports for performance
-const ExperienceTimeline = dynamic(() => import('@/components/cinematic/ExperienceTimeline'));
-const SkillsConstellation = dynamic(() => import('@/components/quantum/SkillsConstellation'), { ssr: false });
-const Certifications = dynamic(() => import('@/components/cinematic/Certifications'));
-const ProjectShowcase = dynamic(() => import('@/components/cinematic/ProjectShowcase'));
-const ContactSection = dynamic(() => import('@/components/cinematic/ContactSection'));
-const Testimonials = dynamic(() => import('@/components/cinematic/Testimonials'));
-import { useProfile } from '@/hooks/use-data';
-import { Github, Linkedin, Mail } from 'lucide-react';
+const skills = [
+  { category: 'Languages', skills: ['Python', 'JavaScript', 'TypeScript'] },
+  { category: 'Frontend', skills: ['React', 'Next.js'] },
+  { category: 'Backend', skills: ['Flask', 'Supabase'] },
+  { category: 'AI / ML', skills: ['OpenAI', 'Prompting'] },
+  { category: 'Tools', skills: ['Git', 'Figma'] },
+];
 
-function DynamicSocialLinks() {
-  const { profile } = useProfile();
-  if (!profile || !profile.social) return null;
-  return (
-    <>
-      {profile.social.github && (
-        <a href={profile.social.github} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Github size={16} /> GitHub
-        </a>
-      )}
-      {profile.social.linkedin && (
-        <a href={profile.social.linkedin} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Linkedin size={16} /> LinkedIn
-        </a>
-      )}
+const experience = [
+  {
+    company: 'Company Name',
+    role: 'Software Engineer Intern',
+    dateRange: 'Jan 2025 – Present',
+    bullets: ['Built internal tooling that reduced repetitive work for the team.', 'Shipped production UI improvements with measurable speedups.'],
+    tags: ['React', 'TypeScript', 'APIs'],
+  },
+];
 
-      {profile.social.email && (
-        <a href={`mailto:${profile.social.email}`} className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Mail size={16} /> Email
-        </a>
-      )}
-    </>
-  );
-}
+const projects = [
+  {
+    name: 'NewsHunt',
+    year: '2025',
+    description: 'A focused news automation project that collects and surfaces relevant updates quickly.',
+    tags: ['Python', 'MongoDB', 'Flask'],
+    href: '/projects',
+  },
+  {
+    name: 'HR Agent',
+    year: '2025',
+    description: 'An assistant workflow for screening and organizing hiring tasks with less friction.',
+    tags: ['Python', 'GPT', 'Flask'],
+    href: '/projects',
+  },
+  {
+    name: 'Portfolio Rebuild',
+    year: '2026',
+    description: 'This new structure-first portfolio implementation is the base for the full redesign.',
+    tags: ['Next.js', 'Design System', 'Supabase'],
+    href: '/projects',
+  },
+];
+
+const education = [
+  {
+    school: 'College of Engineering',
+    year: '2027',
+    degree: 'B.Tech Computer Science (AI & ML) · 7.91 CGPA',
+  },
+  {
+    school: "Bhavan's Vidya Mandir",
+    year: '2023',
+    degree: 'Class 12 · 90.4%',
+  },
+];
+
+const certs = [
+  { name: 'AWS ML Foundations', issuer: 'Amazon' },
+  { name: 'AI Fundamentals', issuer: 'IBM' },
+  { name: 'Python MOOC', issuer: 'University of Helsinki' },
+  { name: 'Next.js Essentials', issuer: 'Self-directed' },
+];
 
 export default function Home() {
   return (
-    <PageLoader>
-      <SmoothScroll>
-        <main className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
-          <MinimalNav />
+    <main className="mx-auto min-h-screen max-w-[760px] px-4 py-6 text-sm text-neutral-900">
+      <MinimalNav name="HP." email="harshilp1234@gmail.com" github="https://github.com/erzer12" />
 
-          <QuantumHero />
-          <BentoSection />
+      <div className="space-y-12 py-10">
+        <Header {...profile} />
 
-          {/* Selected Works */}
-          <ProjectShowcase />
+        <section>
+          <SectionLabel>Profile Summary</SectionLabel>
+          <SectionRule />
+          <ProfileSummary summary={summary} />
+        </section>
 
-          <ExperienceTimeline />
-          <SkillsConstellation />
-          <Certifications />
-          <Testimonials />
+        <section>
+          <SectionLabel>Skills</SectionLabel>
+          <SectionRule />
+          <SkillsTable items={skills} />
+        </section>
 
-          {/* Footer / Contact */}
-          <section id="contact" className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
-            <p className="text-sm font-inter tracking-[0.2em] uppercase mb-8 opacity-50">Get in Touch</p>
-            <h2 className="text-5xl md:text-8xl font-playfair mb-12">
-              Let's Talk.
-            </h2>
+        <section>
+          <SectionLabel>Experience</SectionLabel>
+          <SectionRule />
+          <ExperienceList items={experience} />
+        </section>
 
-            <ContactSection />
+        <section>
+          <SectionLabel>Projects</SectionLabel>
+          <SectionRule />
+          <FeaturedProjects items={projects} viewAllHref="/projects" />
+        </section>
 
-            <div className="mt-20 flex gap-8 text-sm font-inter tracking-widest uppercase items-center justify-center">
-              <DynamicSocialLinks />
-            </div>
-          </section>
+        <section>
+          <SectionLabel>Education</SectionLabel>
+          <SectionRule />
+          <EducationList items={education} />
+        </section>
 
-          <MinimalFooter />
+        <section>
+          <SectionLabel>Certifications</SectionLabel>
+          <SectionRule />
+          <CertsList items={certs} />
+        </section>
 
-        </main>
-      </SmoothScroll>
-    </PageLoader>
+        <section>
+          <SectionLabel>Contact</SectionLabel>
+          <SectionRule />
+          <ContactSection
+            email="harshilp1234@gmail.com"
+            github="https://github.com/erzer12"
+            linkedin="https://www.linkedin.com/in/harshil-p"
+          />
+        </section>
+      </div>
+
+      <MinimalFooter />
+    </main>
   );
 }
