@@ -1,8 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
 :root {
   --bg: #fafaf8;
   --ink: #1a1a18;
   --ink-muted: #6b6b66;
+  --ink-faint: #a0a09a;
   --rule: #e4e4df;
+  --tag-border: #d0d0cb;
+  --tag-text: #3a3a38;
+  --font-display: 'EB Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+  --max-width: 760px;
+  --section-gap: 4rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412;
+    --ink: #f0f0ec;
+    --ink-muted: #9a9a94;
+    --ink-faint: #5a5a56;
+    --rule: #2a2a26;
+    --tag-border: #363630;
+    --tag-text: #c0c0bc;
+  }
+}
+
+/* ─── Base Reset ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html,
@@ -11,15 +45,99 @@ body {
   min-height: 100%;
   background: var(--bg);
   color: var(--ink);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
   color: inherit;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.18em;
 }
 
-* {
-  box-sizing: border-box;
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 400;
+}
+
+p {
+  margin: 0;
+}
+
+/* ─── Typography helpers ────────────────────────────────────── */
+.font-serif {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Admin UI utilities ────────────────────────────────────── */
+.admin-input {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 6px 0;
+  outline: none;
+  transition: border-color 150ms;
+  resize: vertical;
+}
+
+.admin-input:focus {
+  border-bottom-color: var(--ink);
+}
+
+.admin-btn {
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.admin-btn:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn-sm {
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+  white-space: nowrap;
+}
+
+.admin-btn-sm:hover {
+  border-color: var(--ink);
+  color: var(--ink);
 }

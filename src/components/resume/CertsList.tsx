@@ -1,27 +1,52 @@
+'use client';
+
+import { useState } from 'react';
+import type { Certification } from '@/types';
+
 type CertsListProps = {
-  items: Array<{
-    name: string;
-    issuer: string;
-  }>;
+  items: Certification[];
+  maxVisible?: number;
 };
 
-export function CertsList({ items }: CertsListProps) {
+export function CertsList({ items, maxVisible = 5 }: CertsListProps) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? items : items.slice(0, maxVisible);
+  const hiddenCount = items.length - maxVisible;
+
   return (
-    <div className="divide-y divide-neutral-200 border-y border-neutral-200">
-      {items.map((item) => (
+    <div className="divide-y divide-[--rule] border-y border-[--rule]">
+      {visible.map((item) => (
         <a
-          key={item.name}
-          href="#"
-          className="flex items-center justify-between gap-4 px-0 py-3 text-[14px] text-neutral-800 transition-colors hover:bg-neutral-100"
+          key={item.id}
+          href={item.link ?? '#'}
+          target={item.link ? '_blank' : undefined}
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-4 py-3 text-[14px] text-[--ink] transition-colors hover:bg-[--rule]/30"
         >
           <span>{item.name}</span>
-          <span className="font-mono text-xs text-neutral-500">{item.issuer}</span>
+          <span className="font-mono text-xs text-[--ink-muted]">{item.issuer}</span>
         </a>
       ))}
 
-      <button type="button" className="w-full py-3 font-mono text-xs text-neutral-500">
-        + more
-      </button>
+      {!expanded && hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="w-full py-3 font-mono text-xs text-[--ink-muted] hover:text-[--ink] transition-colors"
+        >
+          + {hiddenCount} more
+        </button>
+      )}
+
+      {expanded && hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="w-full py-3 font-mono text-xs text-[--ink-muted] hover:text-[--ink] transition-colors"
+        >
+          Show less
+        </button>
+      )}
     </div>
   );
 }
