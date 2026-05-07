@@ -47,6 +47,18 @@ export async function deleteProject(id: string) {
   if (error) throw error;
 }
 
+export async function updateProjectsOrder(updates: { id: string; order: number }[]) {
+  // Supabase doesn't have a great bulk update via JS, so we do it in a loop
+  // For small numbers, this is fine
+  for (const update of updates) {
+    const { error } = await supabaseAdmin
+      .from('projects')
+      .update({ order: update.order })
+      .eq('id', update.id);
+    if (error) throw error;
+  }
+}
+
 export async function getAllProjectSlugs(): Promise<string[]> {
   const { data, error } = await supabase.from('projects').select('slug');
   if (error) return [];

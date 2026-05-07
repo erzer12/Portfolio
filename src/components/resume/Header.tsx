@@ -3,10 +3,11 @@ type HeaderProps = {
   tagline: string;
   location: string;
   status: string;
+  image?: string;
   socialLinks: Array<{ label: string; href: string }>;
 };
 
-export function Header({ name, tagline, location, status, socialLinks }: HeaderProps) {
+export function Header({ name, tagline, location, status, image, socialLinks }: HeaderProps) {
   return (
     <section className="grid gap-6 md:grid-cols-[1fr_120px] md:items-start">
       <div className="space-y-4">
@@ -28,7 +29,15 @@ export function Header({ name, tagline, location, status, socialLinks }: HeaderP
         </div>
       </div>
 
-      <div className="h-[120px] w-[120px] border border-[--rule] bg-[--bg]" aria-hidden="true" />
+      {image ? (
+        <img
+          src={image}
+          alt={name}
+          className="h-[120px] w-[120px] border border-[--rule] object-cover"
+        />
+      ) : (
+        <div className="h-[120px] w-[120px] border border-[--rule] bg-[--bg]" aria-hidden="true" />
+      )}
     </section>
   );
 }

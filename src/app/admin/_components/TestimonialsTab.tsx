@@ -1,22 +1,89 @@
 'use client';
 
-import { useTransition } from 'react';
-import { approveTestimonialAction, deleteTestimonialAction } from '@/app/actions';
+import { useState, useTransition, useEffect } from 'react';
+import { approveTestimonialAction, deleteTestimonialAction, updateTestimonialsOrderAction, saveSiteSettingsAction } from '@/app/actions';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { Testimonial, SiteSettings } from '@/types';
-import { saveSiteSettingsAction } from '@/app/actions';
 
 type Props = { testimonials: Testimonial[]; settings: SiteSettings };
+
+function SortableTestimonialCard({
+  testimonial,
+  onDelete,
+}: {
+  testimonial: Testimonial;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: testimonial.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-start gap-4 border border-[--rule] p-4 bg-[--bg]">
+      <div {...attributes} {...listeners} className="cursor-grab text-[--ink-faint] hover:text-[--ink] active:cursor-grabbing pt-1">
+        ☰
+      </div>
+      <div className="flex-1 space-y-2">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[14px] font-medium text-[--ink]">{testimonial.name}</p>
+            <p className="font-mono text-xs text-[--ink-muted]">{testimonial.role}</p>
+          </div>
+          <button onClick={onDelete} className="admin-btn-sm !border-red-300 !text-red-600">
+            Delete
+          </button>
+        </div>
+        <p className="text-[13px] leading-6 text-[--ink]">&ldquo;{testimonial.message}&rdquo;</p>
+      </div>
+    </div>
+  );
+}
 
 export function TestimonialsTab({ testimonials, settings }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const pending = testimonials.filter((t) => !t.approved);
-  const approved = testimonials.filter((t) => t.approved);
+  const initialApproved = testimonials.filter((t) => t.approved);
+
+  const [approvedItems, setApprovedItems] = useState(initialApproved);
+
+  useEffect(() => { setApprovedItems(initialApproved); }, [testimonials]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = approvedItems.findIndex((i) => i.id === active.id);
+      const newIndex = approvedItems.findIndex((i) => i.id === over.id);
+      const newItems = arrayMove(approvedItems, oldIndex, newIndex);
+      setApprovedItems(newItems);
+
+      const updates = newItems.map((item, index) => ({ id: item.id, order: index }));
+      startTransition(() => { updateTestimonialsOrderAction(updates); });
+    }
+  }
 
   function handleToggle() {
-    startTransition(() =>
-      saveSiteSettingsAction({ show_testimonials: !settings.show_testimonials }),
-    );
+    startTransition(() => saveSiteSettingsAction({ show_testimonials: !settings.show_testimonials }));
   }
 
   return (
@@ -53,13 +120,23 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
           </p>
           <div className="space-y-3">
             {pending.map((t) => (
-              <TestimonialCard
-                key={t.id}
-                testimonial={t}
-                onApprove={() => startTransition(() => approveTestimonialAction(t.id))}
-                onDelete={() => startTransition(() => deleteTestimonialAction(t.id))}
-                pending
-              />
+              <div key={t.id} className="space-y-2 border border-[--rule] p-4 bg-[--bg]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[14px] font-medium text-[--ink]">{t.name}</p>
+                    <p className="font-mono text-xs text-[--ink-muted]">{t.role}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => startTransition(() => approveTestimonialAction(t.id))} className="admin-btn-sm !border-green-400 !text-green-700">
+                      Approve
+                    </button>
+                    <button onClick={() => startTransition(() => deleteTestimonialAction(t.id))} className="admin-btn-sm !border-red-300 !text-red-600">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[13px] leading-6 text-[--ink]">&ldquo;{t.message}&rdquo;</p>
+              </div>
             ))}
           </div>
         </div>
@@ -68,57 +145,26 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
       {/* Approved */}
       <div>
         <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
-          Published ({approved.length})
+          Published ({approvedItems.length})
         </p>
-        {approved.length === 0 ? (
+        {approvedItems.length === 0 ? (
           <p className="font-mono text-xs text-[#A0A09A]">No approved testimonials yet.</p>
         ) : (
-          <div className="space-y-3">
-            {approved.map((t) => (
-              <TestimonialCard
-                key={t.id}
-                testimonial={t}
-                onDelete={() => startTransition(() => deleteTestimonialAction(t.id))}
-              />
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={approvedItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-3">
+                {approvedItems.map((t) => (
+                  <SortableTestimonialCard
+                    key={t.id}
+                    testimonial={t}
+                    onDelete={() => startTransition(() => deleteTestimonialAction(t.id))}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
-    </div>
-  );
-}
-
-function TestimonialCard({
-  testimonial,
-  onApprove,
-  onDelete,
-  pending,
-}: {
-  testimonial: Testimonial;
-  onApprove?: () => void;
-  onDelete: () => void;
-  pending?: boolean;
-}) {
-  return (
-    <div className="space-y-2 border border-[--rule] p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[14px] font-medium text-[--ink]">{testimonial.name}</p>
-          <p className="font-mono text-xs text-[--ink-muted]">{testimonial.role}</p>
-        </div>
-        <div className="flex gap-2">
-          {pending && onApprove && (
-            <button onClick={onApprove} className="admin-btn-sm !border-green-400 !text-green-700">
-              Approve
-            </button>
-          )}
-          <button onClick={onDelete} className="admin-btn-sm !border-red-300 !text-red-600">
-            Delete
-          </button>
-        </div>
-      </div>
-      <p className="text-[13px] leading-6 text-[--ink]">&ldquo;{testimonial.message}&rdquo;</p>
-      <p className="font-mono text-xs text-[#A0A09A]">{'★'.repeat(testimonial.rating)}</p>
     </div>
   );
 }

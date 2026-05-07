@@ -7,7 +7,9 @@ import { SkillsTab } from './SkillsTab';
 import { ExperienceTab } from './ExperienceTab';
 import { EducationTab } from './EducationTab';
 import { CertificationsTab } from './CertificationsTab';
+import { AchievementsTab } from './AchievementsTab';
 import { TestimonialsTab } from './TestimonialsTab';
+import { FooterLinksTab } from './FooterLinksTab';
 import type {
   Profile,
   Project,
@@ -15,8 +17,10 @@ import type {
   Experience,
   Education,
   Certification,
+  Achievement,
   Testimonial,
   SiteSettings,
+  FooterLink,
 } from '@/types';
 
 const TABS = [
@@ -26,7 +30,9 @@ const TABS = [
   'Experience',
   'Education',
   'Certifications',
+  'Achievements',
   'Testimonials',
+  'Footer Links',
 ] as const;
 
 type Tab = (typeof TABS)[number];
@@ -38,8 +44,10 @@ type Props = {
   experience: Experience[];
   education: Education[];
   certifications: Certification[];
+  achievements: Achievement[];
   testimonials: Testimonial[];
   settings: SiteSettings;
+  footerLinks: FooterLink[];
 };
 
 export function AdminShell({
@@ -49,8 +57,10 @@ export function AdminShell({
   experience,
   education,
   certifications,
+  achievements,
   testimonials,
   settings,
+  footerLinks,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('Profile');
 
@@ -88,9 +98,11 @@ export function AdminShell({
         {activeTab === 'Experience' && <ExperienceTab experience={experience} />}
         {activeTab === 'Education' && <EducationTab education={education} />}
         {activeTab === 'Certifications' && <CertificationsTab certifications={certifications} />}
+        {activeTab === 'Achievements' && <AchievementsTab achievements={achievements} />}
         {activeTab === 'Testimonials' && (
           <TestimonialsTab testimonials={testimonials} settings={settings} />
         )}
+        {activeTab === 'Footer Links' && <FooterLinksTab links={footerLinks} />}
       </div>
     </div>
   );

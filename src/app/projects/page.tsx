@@ -1,13 +1,13 @@
 import { getProjects } from '@/lib/data/projects';
+import { getFooterLinks } from '@/lib/data/footer';
 import { MinimalFooter } from '@/components/layout/MinimalFooter';
 import { MinimalNav } from '@/components/layout/MinimalNav';
 import { SectionRule } from '@/components/resume/SectionRule';
 
 export const dynamic = 'force-dynamic';
 
-
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  const [projects, footerLinks] = await Promise.all([getProjects(), getFooterLinks()]);
 
   return (
     <main className="mx-auto min-h-screen max-w-[760px] px-4 py-6 text-sm text-[--ink]">
@@ -84,7 +84,7 @@ export default async function ProjectsPage() {
         )}
       </div>
 
-      <MinimalFooter />
+      <MinimalFooter links={footerLinks} />
     </main>
   );
 }

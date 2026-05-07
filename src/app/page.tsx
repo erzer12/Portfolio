@@ -1,11 +1,13 @@
 import { getProfile } from '@/lib/data/profile';
-import { getFeaturedProjects } from '@/lib/data/projects';
+import { getFeaturedProjects, getProjects } from '@/lib/data/projects';
 import { getSkills } from '@/lib/data/skills';
 import { getExperience } from '@/lib/data/experience';
 import { getEducation } from '@/lib/data/education';
 import { getCertifications } from '@/lib/data/certifications';
+import { getAchievements } from '@/lib/data/achievements';
 import { getApprovedTestimonials } from '@/lib/data/testimonials';
 import { getSiteSettings } from '@/lib/data/settings';
+import { getFooterLinks } from '@/lib/data/footer';
 import { Header } from '@/components/resume/Header';
 import { ProfileSummary } from '@/components/resume/ProfileSummary';
 import { SkillsTable } from '@/components/resume/SkillsTable';
@@ -13,6 +15,7 @@ import { ExperienceList } from '@/components/resume/ExperienceList';
 import { FeaturedProjects } from '@/components/resume/FeaturedProjects';
 import { EducationList } from '@/components/resume/EducationList';
 import { CertsList } from '@/components/resume/CertsList';
+import { AchievementsSection } from '@/components/resume/AchievementsSection';
 import { ContactSection } from '@/components/resume/ContactSection';
 import { TestimonialsSection } from '@/components/resume/TestimonialsSection';
 import { SectionLabel } from '@/components/resume/SectionLabel';
@@ -26,21 +29,27 @@ export default async function Home() {
   const [
     profile,
     featuredProjects,
+    allProjects,
     skills,
     experience,
     education,
     certifications,
+    achievements,
     testimonials,
     settings,
+    footerLinks,
   ] = await Promise.all([
     getProfile(),
     getFeaturedProjects(),
+    getProjects(),
     getSkills(),
     getExperience(),
     getEducation(),
     getCertifications(),
+    getAchievements(),
     getApprovedTestimonials(),
     getSiteSettings(),
+    getFooterLinks(),
   ]);
 
   return (
@@ -58,10 +67,12 @@ export default async function Home() {
           tagline={profile?.tagline ?? ''}
           location={profile?.location ?? 'Kerala, India'}
           status="Open to work"
+          image={profile?.image}
           socialLinks={[
             { label: 'GitHub', href: profile?.social?.github ?? 'https://github.com/erzer12' },
             { label: 'LinkedIn', href: profile?.social?.linkedin ?? 'https://linkedin.com/in/harshil-p' },
             { label: 'Email', href: `mailto:${profile?.email ?? 'harshilp1234@gmail.com'}` },
+            ...(profile?.resume ? [{ label: 'Resume', href: profile.resume }] : []),
           ]}
         />
 
@@ -88,7 +99,7 @@ export default async function Home() {
           <section>
             <SectionLabel>Experience</SectionLabel>
             <SectionRule />
-            <ExperienceList items={experience} />
+            <ExperienceList items={experience} projects={allProjects} />
           </section>
         )}
 
@@ -108,7 +119,16 @@ export default async function Home() {
           </section>
         )}
 
-        {/* §7 Certifications */}
+        {/* §7 Achievements */}
+        {achievements.length > 0 && (
+          <section>
+            <SectionLabel>Achievements</SectionLabel>
+            <SectionRule />
+            <AchievementsSection items={achievements} />
+          </section>
+        )}
+
+        {/* §8 Certifications */}
         {certifications.length > 0 && (
           <section>
             <SectionLabel>Certifications</SectionLabel>
@@ -117,7 +137,7 @@ export default async function Home() {
           </section>
         )}
 
-        {/* §8 Testimonials — conditionally shown via CMS toggle */}
+        {/* §9 Testimonials — conditionally shown via CMS toggle */}
         {settings.show_testimonials && testimonials.length > 0 && (
           <section>
             <SectionLabel>Testimonials</SectionLabel>
@@ -126,19 +146,15 @@ export default async function Home() {
           </section>
         )}
 
-        {/* §9 Contact */}
+        {/* §10 Contact */}
         <section>
           <SectionLabel>Contact</SectionLabel>
           <SectionRule />
-          <ContactSection
-            email={profile?.email ?? 'harshilp1234@gmail.com'}
-            github={profile?.social?.github ?? 'https://github.com/erzer12'}
-            linkedin={profile?.social?.linkedin ?? 'https://linkedin.com/in/harshil-p'}
-          />
+          <ContactSection />
         </section>
       </div>
 
-      <MinimalFooter />
+      <MinimalFooter links={footerLinks} />
     </main>
   );
 }

@@ -14,7 +14,7 @@ export function CertsList({ items, maxVisible = 5 }: CertsListProps) {
   const hiddenCount = items.length - maxVisible;
 
   return (
-    <div className="divide-y divide-[--rule] border-y border-[--rule]">
+    <div className="divide-y divide-[--rule]">
       {visible.map((item) => (
         <a
           key={item.id}

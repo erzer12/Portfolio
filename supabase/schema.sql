@@ -5,6 +5,7 @@
 
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
 
 -- ─── Profile ────────────────────────────────────────────────
 create table if not exists profile (
@@ -15,23 +16,11 @@ create table if not exists profile (
   location text,
   email text,
   phone text,
+  image text,
   resume text,
   social jsonb default '{}'::jsonb,
   updated_at timestamptz default now()
 );
-
--- Seed default row
-insert into profile (id, name, tagline, summary, location, email, social)
-values (
-  'main',
-  'Harshil P',
-  'Third-year CS student focused on AI, ML, and practical product work.',
-  'I build lightweight products that make technical ideas easy to understand and easy to use. My focus is on AI-assisted workflows, clean interfaces, and shipping useful tools that help people work faster.',
-  'Kerala, India',
-  'harshilp1234@gmail.com',
-  '{"github": "https://github.com/erzer12", "linkedin": "https://www.linkedin.com/in/harshil-p"}'::jsonb
-)
-on conflict (id) do nothing;
 
 -- ─── Projects ───────────────────────────────────────────────
 create table if not exists projects (
@@ -51,22 +40,6 @@ create table if not exists projects (
   created_at timestamptz default now()
 );
 
--- Seed sample projects
-insert into projects (title, slug, description, long_description, tags, github, category, date, featured, "order")
-values
-  ('NewsHunt', 'newshunt', 'A Discord bot that automates news collection and delivers focused updates on demand.', 'NewsHunt is a Discord bot built to solve information overload. It monitors multiple RSS feeds and news sources, filters by topic relevance, and delivers clean summaries directly to Discord channels on a schedule or on-demand.
-
-Built with Python, discord.py, Flask, and MongoDB. Deployed on Render.', '{"Python","discord.py","Flask","MongoDB","Render"}', 'https://github.com/erzer12', 'Discord Bot', 'May 2025', true, 1),
-
-  ('HR Agent', 'hr-agent', 'An AI-assisted workflow for organizing hiring tasks and screening candidate information.', 'HR Agent is a lightweight tool that uses GPT to parse resumes, generate structured summaries, and help organize interview pipelines without heavy ATS overhead.
-
-Built with Python, OpenAI API, and Flask. Designed to run locally or on any server.', '{"Python","OpenAI","Flask","GPT"}', 'https://github.com/erzer12', 'AI Workflow', '2025', true, 2),
-
-  ('Portfolio', 'portfolio', 'Resume-first personal portfolio built with Next.js 16 and Supabase as a CMS backend.', 'This portfolio itself is the project — a full rewrite from a cinematic, animation-heavy site to a clean, typographically-driven resume format.
-
-Built with Next.js 16, TypeScript, Supabase (PostgreSQL), and vanilla CSS design tokens. Fully server-rendered with ISR. The admin panel acts as a headless CMS.', '{"Next.js","TypeScript","Supabase","CSS"}', 'https://github.com/erzer12/Portfolio', 'Web App', '2026', true, 3)
-on conflict (slug) do nothing;
-
 -- ─── Skills ─────────────────────────────────────────────────
 create table if not exists skills (
   id uuid primary key default gen_random_uuid(),
@@ -75,24 +48,24 @@ create table if not exists skills (
   "order" int default 0
 );
 
-insert into skills (category, skills, "order") values
-  ('Languages', '{"Python","JavaScript","TypeScript"}', 1),
-  ('Frontend', '{"React","Next.js"}', 2),
-  ('Backend', '{"Flask","Supabase","PostgreSQL"}', 3),
-  ('AI / ML', '{"OpenAI API","Prompting","LangChain"}', 4),
-  ('Tools', '{"Git","Figma","VS Code"}', 5)
-on conflict do nothing;
+alter table skills drop constraint if exists skills_category_unique;
+alter table skills add constraint skills_category_unique unique (category);
 
 -- ─── Experience ─────────────────────────────────────────────
 create table if not exists experience (
   id uuid primary key default gen_random_uuid(),
   company text not null,
   role text not null,
+  employment_type text,
   start_date text not null,
   end_date text,
   description text not null default '',
   bullets text[] default '{}',
   tags text[] default '{}',
+  certificate_url text,
+  recommendation_url text,
+  repo_url text,
+  related_projects text[] default '{}',
   "order" int default 0
 );
 
@@ -106,10 +79,8 @@ create table if not exists education (
   "order" int default 0
 );
 
-insert into education (school, degree, year, "order") values
-  ('College of Engineering', 'B.Tech Computer Science (AI & ML) · 7.91 CGPA', '2027', 2),
-  ('Bhavan''s Vidya Mandir', 'Class 12 · 90.4%', '2023', 1)
-on conflict do nothing;
+alter table education drop constraint if exists education_unique;
+alter table education add constraint education_unique unique (school, degree, year);
 
 -- ─── Certifications ─────────────────────────────────────────
 create table if not exists certifications (
@@ -119,14 +90,22 @@ create table if not exists certifications (
   date text not null,
   link text,
   image text,
-  credly_id text unique
+  credly_id text unique,
+  "order" int default 0
 );
 
-insert into certifications (name, issuer, date) values
-  ('AWS ML Foundations', 'Amazon', '2024'),
-  ('AI Fundamentals', 'IBM', '2024'),
-  ('Python MOOC', 'University of Helsinki', '2023')
-on conflict do nothing;
+alter table certifications drop constraint if exists certifications_unique;
+alter table certifications add constraint certifications_unique unique (name, issuer, date);
+
+-- ─── Achievements ───────────────────────────────────────────
+create table if not exists achievements (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  date text,
+  url text,
+  "order" int default 0
+);
 
 -- ─── Testimonials ───────────────────────────────────────────
 create table if not exists testimonials (
@@ -136,7 +115,8 @@ create table if not exists testimonials (
   message text not null,
   rating int default 5,
   approved boolean default false,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  "order" int default 0
 );
 
 -- ─── Site Settings ──────────────────────────────────────────
@@ -148,32 +128,121 @@ create table if not exists site_settings (
 insert into site_settings (id, show_testimonials) values ('main', true)
 on conflict (id) do nothing;
 
+-- ─── Footer Links ───────────────────────────────────────────
+create table if not exists footer_links (
+  id uuid primary key default gen_random_uuid(),
+  category text not null,
+  label text not null,
+  url text not null,
+  "order" int default 0
+);
+
 -- ============================================================
 -- Row Level Security
 -- ============================================================
 
--- Enable RLS on all tables
 alter table profile enable row level security;
 alter table projects enable row level security;
 alter table skills enable row level security;
 alter table experience enable row level security;
 alter table education enable row level security;
 alter table certifications enable row level security;
+alter table achievements enable row level security;
 alter table testimonials enable row level security;
 alter table site_settings enable row level security;
+alter table footer_links enable row level security;
 
 -- Public read policies
+drop policy if exists "public_read_profile" on profile;
 create policy "public_read_profile" on profile for select using (true);
+
+drop policy if exists "public_read_projects" on projects;
 create policy "public_read_projects" on projects for select using (true);
+
+drop policy if exists "public_read_skills" on skills;
 create policy "public_read_skills" on skills for select using (true);
+
+drop policy if exists "public_read_experience" on experience;
 create policy "public_read_experience" on experience for select using (true);
+
+drop policy if exists "public_read_education" on education;
 create policy "public_read_education" on education for select using (true);
+
+drop policy if exists "public_read_certifications" on certifications;
 create policy "public_read_certifications" on certifications for select using (true);
+
+drop policy if exists "public_read_achievements" on achievements;
+create policy "public_read_achievements" on achievements for select using (true);
+
+drop policy if exists "public_read_approved_testimonials" on testimonials;
 create policy "public_read_approved_testimonials" on testimonials for select using (approved = true);
+
+drop policy if exists "public_read_settings" on site_settings;
 create policy "public_read_settings" on site_settings for select using (true);
 
--- Public can insert testimonials (pending approval)
+drop policy if exists "public_read_footer_links" on footer_links;
+create policy "public_read_footer_links" on footer_links for select using (true);
+
+drop policy if exists "public_submit_testimonials" on testimonials;
 create policy "public_submit_testimonials" on testimonials for insert with check (approved = false);
 
--- All writes require service role key (enforced by using supabaseAdmin in server actions)
--- No anon update/delete permitted on any table
+-- ============================================================
+-- Storage: portfolio_media bucket
+-- ============================================================
+
+insert into storage.buckets (id, name, public)
+values ('portfolio_media', 'portfolio_media', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public Access to Media" on storage.objects;
+create policy "Public Access to Media" on storage.objects for select using (bucket_id = 'portfolio_media');
+
+drop policy if exists "Admin Insert Media" on storage.objects;
+create policy "Admin Insert Media" on storage.objects for insert with check (bucket_id = 'portfolio_media');
+
+drop policy if exists "Admin Update Media" on storage.objects;
+create policy "Admin Update Media" on storage.objects for update using (bucket_id = 'portfolio_media');
+
+drop policy if exists "Admin Delete Media" on storage.objects;
+create policy "Admin Delete Media" on storage.objects for delete using (bucket_id = 'portfolio_media');
+
+-- ============================================================
+-- Migrations (safe to re-run on existing databases)
+-- ============================================================
+
+-- V2
+alter table testimonials add column if not exists "order" int default 0;
+
+-- V3
+alter table certifications add column if not exists "order" int default 0;
+
+update certifications set "order" = sub.rn - 1
+from (
+  select id, row_number() over (order by date desc) as rn
+  from certifications
+) as sub
+where certifications.id = sub.id
+  and certifications."order" = 0;
+
+alter table experience add column if not exists employment_type text;
+alter table experience add column if not exists certificate_url text;
+alter table experience add column if not exists recommendation_url text;
+alter table profile add column if not exists image text;
+
+-- V4
+alter table experience add column if not exists repo_url text;
+alter table experience add column if not exists related_projects text[] default '{}';
+
+create table if not exists achievements (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  date text,
+  url text,
+  "order" int default 0
+);
+
+alter table achievements enable row level security;
+
+drop policy if exists "public_read_achievements" on achievements;
+create policy "public_read_achievements" on achievements for select using (true);

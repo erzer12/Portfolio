@@ -6,7 +6,7 @@ export async function getExperience(): Promise<Experience[]> {
   const { data, error } = await supabase
     .from('experience')
     .select('*')
-    .order('order', { ascending: false });
+    .order('order', { ascending: true });
   if (error) return [];
   return data as Experience[];
 }
@@ -24,4 +24,14 @@ export async function saveExperience(exp: Partial<Experience>) {
 export async function deleteExperience(id: string) {
   const { error } = await supabaseAdmin.from('experience').delete().eq('id', id);
   if (error) throw error;
+}
+
+export async function updateExperienceOrder(updates: { id: string; order: number }[]) {
+  for (const update of updates) {
+    const { error } = await supabaseAdmin
+      .from('experience')
+      .update({ order: update.order })
+      .eq('id', update.id);
+    if (error) throw error;
+  }
 }

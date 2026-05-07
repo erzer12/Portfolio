@@ -6,7 +6,7 @@ export async function getCertifications(): Promise<Certification[]> {
   const { data, error } = await supabase
     .from('certifications')
     .select('*')
-    .order('date', { ascending: false });
+    .order('order', { ascending: true });
   if (error) return [];
   return data as Certification[];
 }
@@ -24,4 +24,14 @@ export async function saveCertification(cert: Partial<Certification>) {
 export async function deleteCertification(id: string) {
   const { error } = await supabaseAdmin.from('certifications').delete().eq('id', id);
   if (error) throw error;
+}
+
+export async function updateCertificationsOrder(updates: { id: string; order: number }[]) {
+  for (const update of updates) {
+    const { error } = await supabaseAdmin
+      .from('certifications')
+      .update({ order: update.order })
+      .eq('id', update.id);
+    if (error) throw error;
+  }
 }

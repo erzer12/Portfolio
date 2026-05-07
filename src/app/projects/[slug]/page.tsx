@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getAllProjectSlugs, getProjectBySlug } from '@/lib/data/projects';
+import { getFooterLinks } from '@/lib/data/footer';
 import { MinimalFooter } from '@/components/layout/MinimalFooter';
 import { MinimalNav } from '@/components/layout/MinimalNav';
 import type { Metadata } from 'next';
@@ -26,7 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, footerLinks] = await Promise.all([
+    getProjectBySlug(slug),
+    getFooterLinks(),
+  ]);
 
   if (!project) notFound();
 
@@ -117,7 +121,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         </div>
       </article>
 
-      <MinimalFooter />
+      <MinimalFooter links={footerLinks} />
     </main>
   );
 }

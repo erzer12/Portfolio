@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { saveCertificationAction, deleteCertificationAction, updateCertificationsOrderAction } from '@/app/actions';
+import { saveAchievementAction, deleteAchievementAction, updateAchievementsOrderAction } from '@/app/actions';
 import {
   DndContext,
   closestCenter,
@@ -19,20 +19,24 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Certification } from '@/types';
+import type { Achievement } from '@/types';
 
-type Props = { certifications: Certification[] };
+type Props = { achievements: Achievement[] };
 
-const EMPTY: Partial<Certification> = {
-  name: '',
-  issuer: '',
+const EMPTY: Partial<Achievement> = {
+  title: '',
+  description: '',
   date: '',
-  link: '',
+  url: '',
   order: 0,
 };
 
-function SortableCertificationItem({ cert, onEdit, onDelete }: { cert: Certification; onEdit: (cert: Certification) => void; onDelete: (id: string) => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: cert.id });
+function SortableAchievementItem({ item, onEdit, onDelete }: {
+  item: Achievement;
+  onEdit: (item: Achievement) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
@@ -42,25 +46,27 @@ function SortableCertificationItem({ cert, onEdit, onDelete }: { cert: Certifica
           ☰
         </div>
         <div>
-          <p className="text-[14px] font-medium text-[--ink]">{cert.name}</p>
-          <p className="font-mono text-xs text-[--ink-muted]">{cert.issuer} · {cert.date}</p>
+          <p className="text-[14px] font-medium text-[--ink]">{item.title}</p>
+          <p className="font-mono text-xs text-[--ink-muted]">
+            {item.date}{item.description ? ` · ${item.description}` : ''}
+          </p>
         </div>
       </div>
       <div className="flex gap-2">
-        <button onClick={() => onEdit(cert)} className="admin-btn-sm">Edit</button>
-        <button onClick={() => onDelete(cert.id)} className="admin-btn-sm !border-red-300 !text-red-600">Del</button>
+        <button onClick={() => onEdit(item)} className="admin-btn-sm">Edit</button>
+        <button onClick={() => onDelete(item.id)} className="admin-btn-sm !border-red-300 !text-red-600">Del</button>
       </div>
     </div>
   );
 }
 
-export function CertificationsTab({ certifications }: Props) {
-  const [items, setItems] = useState(certifications);
-  const [editing, setEditing] = useState<Partial<Certification> | null>(null);
+export function AchievementsTab({ achievements }: Props) {
+  const [items, setItems] = useState(achievements);
+  const [editing, setEditing] = useState<Partial<Achievement> | null>(null);
   const [isPending, startTransition] = useTransition();
   const [msg, setMsg] = useState('');
 
-  useEffect(() => { setItems(certifications); }, [certifications]);
+  useEffect(() => { setItems(achievements); }, [achievements]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -74,15 +80,14 @@ export function CertificationsTab({ certifications }: Props) {
       const newIndex = items.findIndex((i) => i.id === over.id);
       const newItems = arrayMove(items, oldIndex, newIndex);
       setItems(newItems);
-
       const updates = newItems.map((item, index) => ({ id: item.id, order: index }));
-      startTransition(() => { updateCertificationsOrderAction(updates); });
+      startTransition(() => { updateAchievementsOrderAction(updates); });
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
-    setEditing((prev) => prev ? { ...prev, [name]: name === 'order' ? Number(value) : value } : prev);
+    setEditing((prev) => prev ? { ...prev, [name]: value } : prev);
   }
 
   function handleSave(e: React.FormEvent) {
@@ -90,7 +95,7 @@ export function CertificationsTab({ certifications }: Props) {
     if (!editing) return;
     startTransition(async () => {
       try {
-        await saveCertificationAction(editing);
+        await saveAchievementAction(editing);
         setMsg('Saved.');
         setEditing(null);
       } catch { setMsg('Error saving.'); }
@@ -98,37 +103,47 @@ export function CertificationsTab({ certifications }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Delete this certification?')) return;
-    startTransition(async () => { await deleteCertificationAction(id); });
+    if (!confirm('Delete this achievement?')) return;
+    startTransition(async () => { await deleteAchievementAction(id); });
   }
 
   return (
     <div className="space-y-6">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2">
-            {items.map((cert) => (
-              <SortableCertificationItem key={cert.id} cert={cert} onEdit={(cert) => { setEditing(cert); setMsg(''); }} onDelete={handleDelete} />
+          <div className="divide-y divide-[--rule]">
+            {items.map((item) => (
+              <SortableAchievementItem
+                key={item.id}
+                item={item}
+                onEdit={(item) => { setEditing(item); setMsg(''); }}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         </SortableContext>
       </DndContext>
 
-      <button onClick={() => { setEditing({ ...EMPTY, order: items.length }); setMsg(''); }} className="admin-btn">+ Add Certification</button>
+      <button onClick={() => { setEditing({ ...EMPTY, order: items.length }); setMsg(''); }} className="admin-btn">
+        + Add Achievement
+      </button>
 
       {editing && (
         <form onSubmit={handleSave} className="space-y-4 border-t border-[--rule] pt-6">
           {[
-            { label: 'Name', name: 'name' },
-            { label: 'Issuer', name: 'issuer' },
-            { label: 'Date', name: 'date' },
-            { label: 'Verification URL', name: 'link' },
+            { label: 'Title', name: 'title', required: true },
+            { label: 'Date (e.g. Mar 2025)', name: 'date' },
+            { label: 'Proof / Link URL', name: 'url' },
           ].map(({ label, name }) => (
             <div key={name}>
               <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">{label}</label>
-              <input name={name} value={editing[name as keyof Certification] as string ?? ''} onChange={handleChange} className="admin-input" />
+              <input name={name} value={editing[name as keyof Achievement] as string ?? ''} onChange={handleChange} className="admin-input" />
             </div>
           ))}
+          <div>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">Description</label>
+            <textarea name="description" value={editing.description ?? ''} onChange={handleChange} rows={2} className="admin-input" />
+          </div>
           <div className="flex items-center gap-4">
             <button type="submit" disabled={isPending} className="admin-btn">{isPending ? 'Saving…' : 'Save'}</button>
             <button type="button" onClick={() => setEditing(null)} className="admin-btn-sm">Cancel</button>

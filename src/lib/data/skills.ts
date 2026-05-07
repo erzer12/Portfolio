@@ -25,3 +25,13 @@ export async function deleteSkill(id: string) {
   const { error } = await supabaseAdmin.from('skills').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function updateSkillsOrder(updates: { id: string; order: number }[]) {
+  for (const update of updates) {
+    const { error } = await supabaseAdmin
+      .from('skills')
+      .update({ order: update.order })
+      .eq('id', update.id);
+    if (error) throw error;
+  }
+}

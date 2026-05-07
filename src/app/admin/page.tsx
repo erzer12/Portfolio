@@ -8,6 +8,8 @@ import { getEducation } from '@/lib/data/education';
 import { getCertifications } from '@/lib/data/certifications';
 import { getAllTestimonials } from '@/lib/data/testimonials';
 import { getSiteSettings } from '@/lib/data/settings';
+import { getFooterLinks } from '@/lib/data/footer';
+import { getAchievements } from '@/lib/data/achievements';
 import { AdminShell } from './_components/AdminShell';
 import { logoutAction } from '@/app/actions';
 
@@ -15,7 +17,7 @@ export default async function AdminPage() {
   const authed = await isAdminAuthenticated();
   if (!authed) redirect('/admin/login');
 
-  const [profile, projects, skills, experience, education, certifications, testimonials, settings] =
+  const [profile, projects, skills, experience, education, certifications, achievements, testimonials, settings, footerLinks] =
     await Promise.all([
       getProfile(),
       getProjects(),
@@ -23,8 +25,10 @@ export default async function AdminPage() {
       getExperience(),
       getEducation(),
       getCertifications(),
+      getAchievements(),
       getAllTestimonials(),
       getSiteSettings(),
+      getFooterLinks(),
     ]);
 
   return (
@@ -51,8 +55,10 @@ export default async function AdminPage() {
           experience={experience}
           education={education}
           certifications={certifications}
+          achievements={achievements}
           testimonials={testimonials}
           settings={settings}
+          footerLinks={footerLinks}
         />
       </div>
     </main>

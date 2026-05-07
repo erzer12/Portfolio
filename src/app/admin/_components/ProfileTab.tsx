@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { saveProfileAction } from '@/app/actions';
+import { FileUpload } from '@/components/ui/FileUpload';
 import type { Profile } from '@/types';
 
 type Props = { profile: Profile | null };
@@ -10,18 +11,28 @@ export function ProfileTab({ profile }: Props) {
   const [isPending, startTransition] = useTransition();
   const [msg, setMsg] = useState('');
 
-  const [form, setForm] = useState({
+    const [form, setForm] = useState({
     name: profile?.name ?? '',
     tagline: profile?.tagline ?? '',
     summary: profile?.summary ?? '',
     location: profile?.location ?? '',
     email: profile?.email ?? '',
+    resume: profile?.resume ?? '',
+    image: profile?.image ?? '',
     github: profile?.social?.github ?? '',
     linkedin: profile?.social?.linkedin ?? '',
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  function handleResumeUploadSuccess(url: string) {
+    setForm((prev) => ({ ...prev, resume: url }));
+  }
+
+  function handleImageUploadSuccess(url: string) {
+    setForm((prev) => ({ ...prev, image: url }));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -35,6 +46,8 @@ export function ProfileTab({ profile }: Props) {
           summary: form.summary,
           location: form.location,
           email: form.email,
+          resume: form.resume,
+          image: form.image,
           social: { github: form.github, linkedin: form.linkedin },
         });
         setMsg('Saved.');
@@ -63,6 +76,44 @@ export function ProfileTab({ profile }: Props) {
           />
         </Field>
       ))}
+
+      <Field label="Profile Image Link">
+        <div className="flex gap-4 items-start">
+          <input
+            name="image"
+            value={form.image}
+            onChange={handleChange}
+            placeholder="https://..."
+            className="admin-input flex-1"
+          />
+          <div className="w-48 shrink-0">
+            <FileUpload 
+              onUploadSuccess={handleImageUploadSuccess} 
+              accept="image/*" 
+              label="Upload Image" 
+            />
+          </div>
+        </div>
+      </Field>
+
+      <Field label="Resume Link or PDF">
+        <div className="flex gap-4 items-start">
+          <input
+            name="resume"
+            value={form.resume}
+            onChange={handleChange}
+            placeholder="https://..."
+            className="admin-input flex-1"
+          />
+          <div className="w-48 shrink-0">
+            <FileUpload 
+              onUploadSuccess={handleResumeUploadSuccess} 
+              accept="application/pdf,image/*" 
+              label="Upload PDF" 
+            />
+          </div>
+        </div>
+      </Field>
 
       <Field label="Summary">
         <textarea
