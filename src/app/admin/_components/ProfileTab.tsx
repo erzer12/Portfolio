@@ -78,7 +78,7 @@ export function ProfileTab({ profile }: Props) {
         <button type="submit" disabled={isPending} className="admin-btn">
           {isPending ? 'Saving…' : 'Save Profile'}
         </button>
-        {msg && <p className="font-mono text-xs text-[#6B6B66]">{msg}</p>}
+        {msg && <p className="font-mono text-xs text-[--ink-muted]">{msg}</p>}
       </div>
     </form>
   );
@@ -87,7 +87,7 @@ export function ProfileTab({ profile }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">
+      <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
         {label}
       </label>
       {children}

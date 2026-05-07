@@ -22,10 +22,10 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
   return (
     <div className="space-y-8">
       {/* Global toggle */}
-      <div className="flex items-center justify-between gap-4 rounded border border-[#E4E4DF] p-4">
+      <div className="flex items-center justify-between gap-4 rounded border border-[--rule] p-4">
         <div>
-          <p className="text-[14px] font-medium text-[#1A1A18]">Show Testimonials Section</p>
-          <p className="font-mono text-xs text-[#6B6B66]">
+          <p className="text-[14px] font-medium text-[--ink]">Show Testimonials Section</p>
+          <p className="font-mono text-xs text-[--ink-muted]">
             Toggle whether the testimonials section appears on the public portfolio.
           </p>
         </div>
@@ -33,7 +33,7 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
           onClick={handleToggle}
           disabled={isPending}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            settings.show_testimonials ? 'bg-[#1A1A18]' : 'bg-[#D0D0CB]'
+            settings.show_testimonials ? 'bg-[--ink]' : 'bg-[--tag-border]'
           }`}
           aria-label="Toggle testimonials"
         >
@@ -48,7 +48,7 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
       {/* Pending approvals */}
       {pending.length > 0 && (
         <div>
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
             Pending ({pending.length})
           </p>
           <div className="space-y-3">
@@ -67,7 +67,7 @@ export function TestimonialsTab({ testimonials, settings }: Props) {
 
       {/* Approved */}
       <div>
-        <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">
+        <p className="mb-3 font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
           Published ({approved.length})
         </p>
         {approved.length === 0 ? (
@@ -100,11 +100,11 @@ function TestimonialCard({
   pending?: boolean;
 }) {
   return (
-    <div className="space-y-2 border border-[#E4E4DF] p-4">
+    <div className="space-y-2 border border-[--rule] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[14px] font-medium text-[#1A1A18]">{testimonial.name}</p>
-          <p className="font-mono text-xs text-[#6B6B66]">{testimonial.role}</p>
+          <p className="text-[14px] font-medium text-[--ink]">{testimonial.name}</p>
+          <p className="font-mono text-xs text-[--ink-muted]">{testimonial.role}</p>
         </div>
         <div className="flex gap-2">
           {pending && onApprove && (
@@ -117,7 +117,7 @@ function TestimonialCard({
           </button>
         </div>
       </div>
-      <p className="text-[13px] leading-6 text-[#1A1A18]">&ldquo;{testimonial.message}&rdquo;</p>
+      <p className="text-[13px] leading-6 text-[--ink]">&ldquo;{testimonial.message}&rdquo;</p>
       <p className="font-mono text-xs text-[#A0A09A]">{'★'.repeat(testimonial.rating)}</p>
     </div>
   );

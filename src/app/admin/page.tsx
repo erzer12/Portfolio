@@ -28,15 +28,15 @@ export default async function AdminPage() {
     ]);
 
   return (
-    <main className="min-h-screen bg-[#FAFAF8]">
-      <nav className="sticky top-0 z-10 border-b border-[#E4E4DF] bg-[#FAFAF8] px-4 py-3">
+    <main className="min-h-screen bg-[--bg]">
+      <nav className="sticky top-0 z-10 border-b border-[--rule] bg-[--bg] px-4 py-3">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#6B6B66]">Admin · </span>
-            <a href="/" className="font-serif text-lg italic text-[#1A1A18]">HP.</a>
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-muted]">Admin · </span>
+            <a href="/" className="font-serif text-lg italic text-[--ink]">HP.</a>
           </div>
           <form action={logoutAction}>
-            <button type="submit" className="font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66] hover:text-[#1A1A18]">
+            <button type="submit" className="font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted] hover:text-[--ink]">
               Sign out
             </button>
           </form>

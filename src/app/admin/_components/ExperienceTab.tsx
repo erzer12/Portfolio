@@ -59,11 +59,11 @@ export function ExperienceTab({ experience }: Props) {
         {experience.map((ex) => (
           <div
             key={ex.id}
-            className="flex items-start justify-between gap-4 border-b border-[#E4E4DF] py-2"
+            className="flex items-start justify-between gap-4 border-b border-[--rule] py-2"
           >
             <div>
-              <p className="text-[14px] font-medium text-[#1A1A18]">{ex.company}</p>
-              <p className="font-mono text-xs text-[#6B6B66]">
+              <p className="text-[14px] font-medium text-[--ink]">{ex.company}</p>
+              <p className="font-mono text-xs text-[--ink-muted]">
                 {ex.role} · {ex.start_date}–{ex.end_date ?? 'Present'}
               </p>
             </div>
@@ -83,7 +83,7 @@ export function ExperienceTab({ experience }: Props) {
       </button>
 
       {editing && (
-        <form onSubmit={handleSave} className="space-y-4 border-t border-[#E4E4DF] pt-6">
+        <form onSubmit={handleSave} className="space-y-4 border-t border-[--rule] pt-6">
           {[
             { label: 'Company', name: 'company' },
             { label: 'Role', name: 'role' },
@@ -91,26 +91,26 @@ export function ExperienceTab({ experience }: Props) {
             { label: 'End Date (leave blank for Present)', name: 'end_date' },
           ].map(({ label, name }) => (
             <div key={name}>
-              <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">{label}</label>
+              <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">{label}</label>
               <input name={name} value={editing[name as keyof Experience] as string ?? ''} onChange={handleChange} className="admin-input" />
             </div>
           ))}
           <div>
-            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">Bullet Points (one per line)</label>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">Bullet Points (one per line)</label>
             <textarea name="bullets" value={(editing.bullets ?? []).join('\n')} onChange={handleChange} rows={4} className="admin-input" />
           </div>
           <div>
-            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">Tags (one per line)</label>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">Tags (one per line)</label>
             <textarea name="tags" value={(editing.tags ?? []).join('\n')} onChange={handleChange} rows={3} className="admin-input" />
           </div>
           <div>
-            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">Sort Order (higher = more recent)</label>
+            <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">Sort Order (higher = more recent)</label>
             <input name="order" type="number" value={editing.order ?? 0} onChange={handleChange} className="admin-input" />
           </div>
           <div className="flex items-center gap-4">
             <button type="submit" disabled={isPending} className="admin-btn">{isPending ? 'Saving…' : 'Save'}</button>
             <button type="button" onClick={() => setEditing(null)} className="admin-btn-sm">Cancel</button>
-            {msg && <p className="font-mono text-xs text-[#6B6B66]">{msg}</p>}
+            {msg && <p className="font-mono text-xs text-[--ink-muted]">{msg}</p>}
           </div>
         </form>
       )}

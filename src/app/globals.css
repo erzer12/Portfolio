@@ -8,11 +8,11 @@
 :root {
   --bg: #fafaf8;
   --ink: #1a1a18;
-  --ink-muted: #6b6b66;
-  --ink-faint: #a0a09a;
+  --ink-muted: #3a3a38;
+  --ink-faint: #5a5a58;
   --rule: #e4e4df;
   --tag-border: #d0d0cb;
-  --tag-text: #3a3a38;
+  --tag-text: #2a2a28;
   --font-display: 'EB Garamond', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
@@ -24,11 +24,11 @@
   :root {
     --bg: #141412;
     --ink: #f0f0ec;
-    --ink-muted: #9a9a94;
-    --ink-faint: #5a5a56;
+    --ink-muted: #cececa;
+    --ink-faint: #a0a09a;
     --rule: #2a2a26;
     --tag-border: #363630;
-    --tag-text: #c0c0bc;
+    --tag-text: #e0e0dc;
   }
 }
 

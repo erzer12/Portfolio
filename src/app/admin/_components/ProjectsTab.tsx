@@ -83,11 +83,11 @@ export function ProjectsTab({ projects }: Props) {
         {projects.map((p) => (
           <div
             key={p.id}
-            className="flex items-center justify-between gap-4 border-b border-[#E4E4DF] py-2"
+            className="flex items-center justify-between gap-4 border-b border-[--rule] py-2"
           >
             <div>
-              <p className="text-[14px] font-medium text-[#1A1A18]">{p.title}</p>
-              <p className="font-mono text-xs text-[#6B6B66]">
+              <p className="text-[14px] font-medium text-[--ink]">{p.title}</p>
+              <p className="font-mono text-xs text-[--ink-muted]">
                 {p.featured ? '★ Featured · ' : ''}
                 {p.category} · {p.date}
               </p>
@@ -115,9 +115,9 @@ export function ProjectsTab({ projects }: Props) {
       {editing && (
         <form
           onSubmit={handleSave}
-          className="space-y-4 border-t border-[#E4E4DF] pt-6"
+          className="space-y-4 border-t border-[--rule] pt-6"
         >
-          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">
+          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
             {editing.id ? 'Edit Project' : 'New Project'}
           </p>
 
@@ -178,7 +178,7 @@ export function ProjectsTab({ projects }: Props) {
             />
           </AdminField>
 
-          <label className="flex items-center gap-2 font-mono text-xs text-[#1A1A18]">
+          <label className="flex items-center gap-2 font-mono text-xs text-[--ink]">
             <input
               name="featured"
               type="checkbox"
@@ -195,7 +195,7 @@ export function ProjectsTab({ projects }: Props) {
             <button type="button" onClick={() => setEditing(null)} className="admin-btn-sm">
               Cancel
             </button>
-            {msg && <p className="font-mono text-xs text-[#6B6B66]">{msg}</p>}
+            {msg && <p className="font-mono text-xs text-[--ink-muted]">{msg}</p>}
           </div>
         </form>
       )}
@@ -206,7 +206,7 @@ export function ProjectsTab({ projects }: Props) {
 function AdminField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[#6B6B66]">
+      <label className="mb-1 block font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
         {label}
       </label>
       {children}

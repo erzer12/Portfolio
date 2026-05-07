@@ -57,21 +57,21 @@ export function AdminShell({
   return (
     <div className="space-y-8">
       <div>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#6B6B66]">CMS</p>
-        <h1 className="mt-1 font-serif text-3xl italic text-[#1A1A18]">Content Manager</h1>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-muted]">CMS</p>
+        <h1 className="mt-1 font-serif text-3xl italic text-[--ink]">Content Manager</h1>
       </div>
 
       {/* Tab navigation */}
       <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-1 border-b border-[#E4E4DF] pb-0">
+        <div className="flex min-w-max gap-1 border-b border-[--rule] pb-0">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 pb-2 font-mono text-xs uppercase tracking-[0.12em] transition-colors ${
                 activeTab === tab
-                  ? 'border-b-2 border-[#1A1A18] text-[#1A1A18]'
-                  : 'text-[#6B6B66] hover:text-[#1A1A18]'
+                  ? 'border-b-2 border-[--ink] text-[--ink]'
+                  : 'text-[--ink-muted] hover:text-[--ink]'
               }`}
             >
               {tab}
