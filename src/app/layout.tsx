@@ -1,48 +1,21 @@
-import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import CustomCursor from '@/components/cinematic/CustomCursor';
-import DynamicBackground from '@/components/cinematic/DynamicBackground';
-import AdminTrigger from '@/components/cinematic/AdminTrigger';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Harshil P",
-  description: "AI & ML Enthusiast Portfolio",
-  // icons is not needed when using icon.tsx convention
+  title: 'Harshil P — CS Student, Builder',
+  description:
+    'Third-year CS student focused on AI, ML, and practical product work. Portfolio of projects, experience, and certifications.',
+  openGraph: {
+    title: 'Harshil P',
+    description: 'Third-year CS student focused on AI, ML, and practical product work.',
+    type: 'website',
+  },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${playfair.variable} ${inter.variable} font-inter antialiased bg-background text-foreground`}>
-        <ErrorBoundary>
-          <CustomCursor />
-          <DynamicBackground />
-          <AdminTrigger />
-          {children}
-          <Toaster />
-          <Analytics />
-        </ErrorBoundary>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,85 +1,160 @@
-'use client';
+import { getProfile } from '@/lib/data/profile';
+import { getFeaturedProjects, getProjects } from '@/lib/data/projects';
+import { getSkills } from '@/lib/data/skills';
+import { getExperience } from '@/lib/data/experience';
+import { getEducation } from '@/lib/data/education';
+import { getCertifications } from '@/lib/data/certifications';
+import { getAchievements } from '@/lib/data/achievements';
+import { getApprovedTestimonials } from '@/lib/data/testimonials';
+import { getSiteSettings } from '@/lib/data/settings';
+import { getFooterLinks } from '@/lib/data/footer';
+import { Header } from '@/components/resume/Header';
+import { ProfileSummary } from '@/components/resume/ProfileSummary';
+import { SkillsTable } from '@/components/resume/SkillsTable';
+import { ExperienceList } from '@/components/resume/ExperienceList';
+import { FeaturedProjects } from '@/components/resume/FeaturedProjects';
+import { EducationList } from '@/components/resume/EducationList';
+import { CertsList } from '@/components/resume/CertsList';
+import { AchievementsSection } from '@/components/resume/AchievementsSection';
+import { ContactSection } from '@/components/resume/ContactSection';
+import { TestimonialsSection } from '@/components/resume/TestimonialsSection';
+import { SectionLabel } from '@/components/resume/SectionLabel';
+import { SectionRule } from '@/components/resume/SectionRule';
+import { MinimalNav } from '@/components/layout/MinimalNav';
+import { MinimalFooter } from '@/components/layout/MinimalFooter';
 
-import dynamic from 'next/dynamic';
-import QuantumHero from '@/components/quantum/QuantumHero';
-import BentoSection from '@/components/bento/BentoSection';
-import MinimalNav from '@/components/cinematic/MinimalNav';
-import SmoothScroll from '@/components/cinematic/SmoothScroll';
-import PageLoader from '@/components/cinematic/PageLoader';
-import MinimalFooter from '@/components/cinematic/MinimalFooter';
+export const dynamic = 'force-dynamic';
 
+export default async function Home() {
+  const [
+    profile,
+    featuredProjects,
+    allProjects,
+    skills,
+    experience,
+    education,
+    certifications,
+    achievements,
+    testimonials,
+    settings,
+    footerLinks,
+  ] = await Promise.all([
+    getProfile(),
+    getFeaturedProjects(),
+    getProjects(),
+    getSkills(),
+    getExperience(),
+    getEducation(),
+    getCertifications(),
+    getAchievements(),
+    getApprovedTestimonials(),
+    getSiteSettings(),
+    getFooterLinks(),
+  ]);
 
-// Dynamic Imports for performance
-const ExperienceTimeline = dynamic(() => import('@/components/cinematic/ExperienceTimeline'));
-const SkillsConstellation = dynamic(() => import('@/components/quantum/SkillsConstellation'), { ssr: false });
-const Certifications = dynamic(() => import('@/components/cinematic/Certifications'));
-const ProjectShowcase = dynamic(() => import('@/components/cinematic/ProjectShowcase'));
-const ContactSection = dynamic(() => import('@/components/cinematic/ContactSection'));
-const Testimonials = dynamic(() => import('@/components/cinematic/Testimonials'));
-import { useProfile } from '@/hooks/use-data';
-import { Github, Linkedin, Mail } from 'lucide-react';
-
-function DynamicSocialLinks() {
-  const { profile } = useProfile();
-  if (!profile || !profile.social) return null;
   return (
-    <>
-      {profile.social.github && (
-        <a href={profile.social.github} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Github size={16} /> GitHub
-        </a>
-      )}
-      {profile.social.linkedin && (
-        <a href={profile.social.linkedin} target="_blank" rel="noreferrer" className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Linkedin size={16} /> LinkedIn
-        </a>
-      )}
+    <main className="mx-auto min-h-screen max-w-[760px] px-4 py-6 text-sm text-[--ink]">
+      <MinimalNav
+        name="HP."
+        email={profile?.email ?? 'harshilp1234@gmail.com'}
+        github={profile?.social?.github ?? 'https://github.com/erzer12'}
+      />
 
-      {profile.social.email && (
-        <a href={`mailto:${profile.social.email}`} className="hover:opacity-50 transition-opacity flex items-center gap-2">
-          <Mail size={16} /> Email
-        </a>
-      )}
-    </>
-  );
-}
+      <div className="space-y-12 py-10">
+        {/* §1 Header */}
+        <Header
+          name={profile?.name ?? 'Harshil P'}
+          tagline={profile?.tagline ?? ''}
+          location={profile?.location ?? 'Kerala, India'}
+          status="Open to work"
+          image={profile?.image}
+          socialLinks={[
+            { label: 'GitHub', href: profile?.social?.github ?? 'https://github.com/erzer12' },
+            { label: 'LinkedIn', href: profile?.social?.linkedin ?? 'https://linkedin.com/in/harshil-p' },
+            { label: 'Email', href: `mailto:${profile?.email ?? 'harshilp1234@gmail.com'}` },
+            ...(profile?.resume ? [{ label: 'Resume', href: profile.resume }] : []),
+          ]}
+        />
 
-export default function Home() {
-  return (
-    <PageLoader>
-      <SmoothScroll>
-        <main className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
-          <MinimalNav />
-
-          <QuantumHero />
-          <BentoSection />
-
-          {/* Selected Works */}
-          <ProjectShowcase />
-
-          <ExperienceTimeline />
-          <SkillsConstellation />
-          <Certifications />
-          <Testimonials />
-
-          {/* Footer / Contact */}
-          <section id="contact" className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
-            <p className="text-sm font-inter tracking-[0.2em] uppercase mb-8 opacity-50">Get in Touch</p>
-            <h2 className="text-5xl md:text-8xl font-playfair mb-12">
-              Let's Talk.
-            </h2>
-
-            <ContactSection />
-
-            <div className="mt-20 flex gap-8 text-sm font-inter tracking-widest uppercase items-center justify-center">
-              <DynamicSocialLinks />
-            </div>
+        {/* §2 Profile Summary */}
+        {profile?.summary && (
+          <section>
+            <SectionLabel>Profile</SectionLabel>
+            <SectionRule />
+            <ProfileSummary summary={profile.summary} />
           </section>
+        )}
 
-          <MinimalFooter />
+        {/* §3 Skills */}
+        {skills.length > 0 && (
+          <section>
+            <SectionLabel>Skills</SectionLabel>
+            <SectionRule />
+            <SkillsTable items={skills} />
+          </section>
+        )}
 
-        </main>
-      </SmoothScroll>
-    </PageLoader>
+        {/* §4 Experience */}
+        {experience.length > 0 && (
+          <section>
+            <SectionLabel>Experience</SectionLabel>
+            <SectionRule />
+            <ExperienceList items={experience} projects={allProjects} />
+          </section>
+        )}
+
+        {/* §5 Projects — top 3 featured */}
+        <section>
+          <SectionLabel>Projects</SectionLabel>
+          <SectionRule />
+          <FeaturedProjects items={featuredProjects} viewAllHref="/projects" />
+        </section>
+
+        {/* §6 Education */}
+        {education.length > 0 && (
+          <section>
+            <SectionLabel>Education</SectionLabel>
+            <SectionRule />
+            <EducationList items={education} />
+          </section>
+        )}
+
+        {/* §7 Achievements */}
+        {achievements.length > 0 && (
+          <section>
+            <SectionLabel>Achievements</SectionLabel>
+            <SectionRule />
+            <AchievementsSection items={achievements} />
+          </section>
+        )}
+
+        {/* §8 Certifications */}
+        {certifications.length > 0 && (
+          <section>
+            <SectionLabel>Certifications</SectionLabel>
+            <SectionRule />
+            <CertsList items={certifications} />
+          </section>
+        )}
+
+        {/* §9 Testimonials — conditionally shown via CMS toggle */}
+        {settings.show_testimonials && testimonials.length > 0 && (
+          <section>
+            <SectionLabel>Testimonials</SectionLabel>
+            <SectionRule />
+            <TestimonialsSection items={testimonials} />
+          </section>
+        )}
+
+        {/* §10 Contact */}
+        <section>
+          <SectionLabel>Contact</SectionLabel>
+          <SectionRule />
+          <ContactSection />
+        </section>
+      </div>
+
+      <MinimalFooter links={footerLinks} />
+    </main>
   );
 }

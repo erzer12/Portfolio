@@ -1,196 +1,73 @@
-# 🚀 Portfolio - Next.js Application
+# Personal Portfolio & Headless CMS
 
-A modern, secure portfolio website built with Next.js 16, Firebase, and featuring enterprise-grade security.
+A minimalist, typography-driven personal portfolio built with **Next.js** and a custom **Supabase Headless CMS**. Designed to be a resume-first experience that is blazing fast, easy to maintain, and simple to update on the fly.
 
-## ✨ Features
+## 🚀 Features
 
-- 🎨 **Cinematic UI/UX** - Modern, dynamic design with smooth animations
-- 🔐 **Enterprise Security** - Comprehensive security headers, session management, and protected APIs
-- 📱 **Fully Responsive** - Optimized for all devices
-- 🎯 **Admin Panel** - Complete content management system
-- 📬 **Contact Form** - Email integration with Resend
-- 🏆 **Certifications** - Automatic Credly badge import
-- 📊 **GitHub Integration** - Showcase your repositories
+- **Resume-First Design:** Clean, distraction-free UI focused on content, typography, and professional presentation.
+- **Custom Admin Panel (`/admin`):** A fully authenticated headless CMS built directly into the app to manage all content.
+- **Drag & Drop Reordering:** Organize your projects, experience, and approved testimonials visually using `@dnd-kit`.
+- **GitHub Importer:** Instantly add projects to your portfolio by pasting a GitHub repository URL—automatically fetches the title, description, and tags.
+- **Media Management:** Securely upload project thumbnails and resume PDFs directly to Supabase Storage from the admin dashboard.
+- **Public Testimonials:** Visitors can submit testimonials via the Contact section, which are held in a "Pending" state until approved from the admin panel.
+- **Next.js Server Actions:** All data mutations run securely on the server with instant cache revalidation for real-time updates.
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Next.js 16 (with Turbopack)
-- **Database:** Firebase Firestore
-- **Storage:** Firebase Storage
-- **Authentication:** Server-side session management
-- **Email:** Resend API
-- **Styling:** Tailwind CSS + Vanilla CSS
-- **Security:** Firebase Admin SDK, HTTP security headers, CSRF protection
+- **Framework:** Next.js 15+ (App Router)
+- **Language:** TypeScript
+- **Styling:** Vanilla CSS (Custom Design Tokens & CSS Variables)
+- **Database & Auth:** Supabase (PostgreSQL, Row Level Security, Supabase Auth)
+- **Storage:** Supabase Storage (for images and PDFs)
+- **Drag & Drop:** `@dnd-kit`
 
-## 📦 Installation
+## 🚦 Getting Started
 
+### 1. Clone the repository
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/portfolio.git
-cd portfolio
+git clone https://github.com/erzer12/Portfolio.git
+cd Portfolio
+```
 
-# Install dependencies
+### 2. Install dependencies
+```bash
 npm install
+```
 
-# Set up environment variables (see below)
-cp .env.example .env
-# Edit .env with your actual values
+### 3. Setup Supabase
+1. Create a new project on [Supabase](https://supabase.com).
+2. Go to the **SQL Editor** in your Supabase dashboard.
+3. Copy the contents of `supabase/schema.sql` and run it to set up all tables, Row Level Security (RLS) policies, and the `portfolio_media` storage bucket.
 
-# Run development server
+### 4. Environment Variables
+Create a `.env.local` file in the root directory and add the following keys from your Supabase project:
+
+```env
+# Your Supabase Project URL
+NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
+
+# Your Supabase Anon Key (for public reads)
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbG..."
+
+# Your Supabase Service Role Key (for admin writes - NEVER share this)
+SUPABASE_SERVICE_ROLE_KEY="eyJhbG..."
+
+# A secret passcode of your choice to access the /admin page
+ADMIN_ACCESS_CODE="your-super-secret-password"
+```
+
+### 5. Run the Development Server
+```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) to view the portfolio.
 
-## 🔑 Environment Variables
+## 🛡️ Accessing the Admin Panel
 
-### Required Variables
+1. Navigate to `/admin` in your browser.
+2. Enter the passcode you defined in `ADMIN_ACCESS_CODE`.
+3. You now have full access to add, edit, reorder, and delete any content on your site!
 
-Create a `.env` file in the project root with these variables:
+## 📝 License
 
-#### Firebase Configuration
-```bash
-NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
-```
-
-#### Firebase Service Account (CRITICAL for Server Actions)
-```bash
-# Get from: Firebase Console → Project Settings → Service Accounts → Generate New Private Key
-FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}'
-```
-
-#### Admin Access
-```bash
-ADMIN_ACCESS_CODE=your-secure-admin-password
-NEXT_PUBLIC_ADMIN_CODE=your-secure-admin-password  # Optional: for client-side fallback
-```
-
-### Optional Variables
-
-#### Email (Resend)
-```bash
-RESEND_API_KEY=re_xxxxxxxxxxxx
-EMAIL_FROM="Portfolio <noreply@yourdomain.com>"
-EMAIL_TO="your-email@example.com"
-```
-
-#### GitHub API
-```bash
-GITHUB_TOKEN=ghp_xxxxxxxxxxxx  # For higher rate limits
-```
-
-See `.env.example` for a complete template.
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. **Add Environment Variables** to Vercel:
-   - Go to Project Settings → Environment Variables
-   - Add ALL variables from your `.env` file
-   - **Important:** Add `FIREBASE_SERVICE_ACCOUNT_KEY` for production
-
-2. **Deploy Firestore Rules**:
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-
-3. **Push to Git**:
-   ```bash
-   git push origin main
-   ```
-
-Vercel will auto-deploy your site.
-
-### Production Checklist
-
-- [ ] All environment variables added to Vercel
-- [ ] `FIREBASE_SERVICE_ACCOUNT_KEY` configured
-- [ ] Firestore security rules deployed
-- [ ] Admin access code is strong (16+ characters)
-- [ ] Test admin panel functionality
-- [ ] Verify contact form works
-
-## 🔒 Security Features
-
-This application implements enterprise-grade security:
-
-- ✅ **Firebase Admin SDK** - Server-side operations bypass client rules
-- ✅ **Strict Firestore Rules** - Client-side writes are blocked
-- ✅ **Session Timeout** - 30-minute automatic logout
-- ✅ **Security Headers** - HSTS, X-Frame-Options, CSP, etc.
-- ✅ **Protected File Uploads** - Authentication required
-- ✅ **SSRF Protection** - Validated external URL fetching
-- ✅ **Security Event Logging** - Track authentication events
-
-## 📝 Admin Panel
-
-Access the admin panel at `/admin` with your access code.
-
-**Features:**
-- Manage projects, skills, certifications
-- Update work experience and education
-- Review and approve testimonials
-- Import Credly badges automatically
-- Upload images securely
-
-## 🐛 Troubleshooting
-
-### "PERMISSION_DENIED" Error in Production
-
-**Cause:** Missing Firebase service account key.
-
-**Solution:**
-1. Generate service account key from Firebase Console
-2. Add `FIREBASE_SERVICE_ACCOUNT_KEY` to Vercel environment variables
-3. Redeploy
-
-### Build Errors
-
-```bash
-# Clear cache and rebuild
-rm -rf .next
-npm install
-npm run build
-```
-
-### Admin Panel Not Working
-
-1. Verify `ADMIN_ACCESS_CODE` is set in environment variables
-2. Check Firestore rules are deployed
-3. Ensure `FIREBASE_SERVICE_ACCOUNT_KEY` is configured
-
-## 📚 Documentation
-
-- [Security Analysis Report](./docs/security_analysis_report.md)
-- [Security Fixes Walkthrough](./docs/security_fixes_walkthrough.md)
-- [Production Troubleshooting](./docs/production_troubleshooting.md)
-- [Environment Variables Guide](./ENV_VARIABLES.md)
-
-## 🔄 NPM Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-```
-
-## 📄 License
-
-MIT License - feel free to use this for your own portfolio!
-
-## 🙏 Acknowledgments
-
-- Next.js team for the amazing framework
-- Firebase for backend services
-- Vercel for hosting
-- All open-source contributors
-
----
-
-**⚡ Built with Next.js 16 + Firebase + Security First**
+MIT License - feel free to clone, modify, and use this for your own personal portfolio!
