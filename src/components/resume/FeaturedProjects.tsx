@@ -1,4 +1,5 @@
 import type { Project } from '@/types';
+import { displayText } from '@/lib/utils';
 
 type FeaturedProjectsProps = {
   items: Project[];
@@ -27,13 +28,13 @@ export function FeaturedProjects({ items, viewAllHref }: FeaturedProjectsProps) 
               <div>
                 <h3 className="text-[15px] font-medium text-[--ink]">
                   <a href={`/projects/${item.slug}`} className="hover:underline underline-offset-4">
-                    {item.title} ↗
+                    {displayText(item.title)} ↗
                   </a>
                 </h3>
-                <p className="text-[14px] leading-7 text-[--ink-muted]">{item.description}</p>
+                <p className="text-[14px] leading-7 text-[--ink-muted]">{displayText(item.description)}</p>
               </div>
-              <p className="font-mono text-xs text-[--ink-faint]">
-                {item.date ?? item.created_at?.slice(0, 4)}
+              <p className="font-mono text-xs text-[--ink-muted]">
+                {displayText(item.date ?? item.created_at?.slice(0, 4))}
               </p>
             </div>
 
@@ -43,7 +44,7 @@ export function FeaturedProjects({ items, viewAllHref }: FeaturedProjectsProps) 
                   key={tag}
                   className="rounded border border-[--tag-border] px-2 py-0.5 text-[--tag-text]"
                 >
-                  {tag}
+                  {displayText(tag)}
                 </span>
               ))}
             </div>

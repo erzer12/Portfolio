@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Certification } from '@/types';
+import { displayText } from '@/lib/utils';
 
 type CertsListProps = {
   items: Certification[];
@@ -23,8 +24,8 @@ export function CertsList({ items, maxVisible = 5 }: CertsListProps) {
           rel="noopener noreferrer"
           className="flex items-center justify-between gap-4 py-3 text-[14px] text-[--ink] transition-colors hover:bg-[--rule]/30"
         >
-          <span>{item.name}</span>
-          <span className="font-mono text-xs text-[--ink-muted]">{item.issuer}</span>
+          <span>{displayText(item.name)}</span>
+          <span className="font-mono text-xs text-[--ink-muted]">{displayText(item.issuer)}</span>
         </a>
       ))}
 

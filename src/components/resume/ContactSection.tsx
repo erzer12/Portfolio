@@ -58,29 +58,40 @@ export function ContactSection() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-4 border-b border-[--rule] pb-2 font-mono text-xs uppercase tracking-[0.14em]">
+      <div className="flex gap-4 border-b border-[--rule] pb-2 font-mono text-xs uppercase tracking-[0.14em]" role="tablist" aria-label="Contact options">
         <button 
+          type="button"
           onClick={() => { setActiveTab('contact'); setMsg(''); }}
-          className={`transition-colors ${activeTab === 'contact' ? 'text-[--ink]' : 'text-[--ink-faint] hover:text-[--ink-muted]'}`}
+          className={`transition-colors ${activeTab === 'contact' ? 'text-[--ink]' : 'text-[--ink-muted] hover:text-[--ink]'}`}
+          role="tab"
+          aria-selected={activeTab === 'contact'}
+          aria-controls="contact-panel"
         >
           Contact me
         </button>
-        <span className="text-[--ink-faint]">|</span>
+        <span className="text-[--ink-muted]">|</span>
         <button 
+          type="button"
           onClick={() => { setActiveTab('testimonial'); setMsg(''); }}
-          className={`transition-colors ${activeTab === 'testimonial' ? 'text-[--ink]' : 'text-[--ink-faint] hover:text-[--ink-muted]'}`}
+          className={`transition-colors ${activeTab === 'testimonial' ? 'text-[--ink]' : 'text-[--ink-muted] hover:text-[--ink]'}`}
+          role="tab"
+          aria-selected={activeTab === 'testimonial'}
+          aria-controls="testimonial-panel"
         >
           Testimonial
         </button>
       </div>
 
       {activeTab === 'contact' ? (
-        <form onSubmit={handleContactSubmit} className="space-y-4">
+        <form onSubmit={handleContactSubmit} className="space-y-4" id="contact-panel" role="tabpanel">
           <div className="grid gap-4 md:grid-cols-2">
-            <input name="name" disabled={isPending} className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Name" />
-            <input name="email" type="email" disabled={isPending} className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Email" />
+            <label htmlFor="contact-name" className="sr-only">Name</label>
+            <input id="contact-name" name="name" disabled={isPending} className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Name" />
+            <label htmlFor="contact-email" className="sr-only">Email</label>
+            <input id="contact-email" name="email" type="email" disabled={isPending} className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Email" />
           </div>
-          <textarea name="message" disabled={isPending} className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Message" />
+          <label htmlFor="contact-message" className="sr-only">Message</label>
+          <textarea id="contact-message" name="message" disabled={isPending} className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Message" />
           <div className="flex items-center gap-4">
             <button type="submit" disabled={isPending} className="border border-[--ink] px-4 py-2 font-mono text-xs uppercase tracking-[0.14em] hover:bg-[--ink] hover:text-[--bg] transition-colors disabled:opacity-50">
               {isPending ? 'Sending...' : 'Send'}
@@ -89,12 +100,15 @@ export function ContactSection() {
           </div>
         </form>
       ) : (
-        <form onSubmit={handleTestimonialSubmit} className="space-y-4">
+        <form onSubmit={handleTestimonialSubmit} className="space-y-4" id="testimonial-panel" role="tabpanel">
           <div className="grid gap-4 md:grid-cols-2">
-            <input name="name" className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Name" disabled={isPending} />
-            <input name="role" className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Role / Company" disabled={isPending} />
+            <label htmlFor="testimonial-name" className="sr-only">Your Name</label>
+            <input id="testimonial-name" name="name" className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Name" disabled={isPending} />
+            <label htmlFor="testimonial-role" className="sr-only">Your Role / Company</label>
+            <input id="testimonial-role" name="role" className="border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Role / Company" disabled={isPending} />
           </div>
-          <textarea name="message" className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Testimonial" disabled={isPending} />
+          <label htmlFor="testimonial-message" className="sr-only">Your Testimonial</label>
+          <textarea id="testimonial-message" name="message" className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none" placeholder="Your Testimonial" disabled={isPending} />
           <div className="flex items-center gap-4">
             <button type="submit" disabled={isPending} className="border border-[--ink] px-4 py-2 font-mono text-xs uppercase tracking-[0.14em] hover:bg-[--ink] hover:text-[--bg] transition-colors disabled:opacity-50">
               {isPending ? 'Sending...' : 'Submit Testimonial'}

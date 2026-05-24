@@ -10,6 +10,7 @@ import { CertificationsTab } from './CertificationsTab';
 import { AchievementsTab } from './AchievementsTab';
 import { TestimonialsTab } from './TestimonialsTab';
 import { FooterLinksTab } from './FooterLinksTab';
+import SeedDataButton from '@/components/admin/SeedDataButton';
 import type {
   Profile,
   Project,
@@ -69,11 +70,14 @@ export function AdminShell({
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-muted]">CMS</p>
         <h1 className="mt-1 font-serif text-3xl italic text-[--ink]">Content Manager</h1>
+        <div className="mt-4">
+          <SeedDataButton />
+        </div>
       </div>
 
       {/* Tab navigation */}
-      <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-1 border-b border-[--rule] pb-0">
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap gap-1 border-b border-[--rule] pb-0">
           {TABS.map((tab) => (
             <button
               key={tab}

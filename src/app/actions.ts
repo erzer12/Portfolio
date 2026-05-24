@@ -14,6 +14,7 @@ import { approveTestimonial, deleteTestimonial, submitTestimonial, updateTestimo
 import { saveSiteSettings } from '@/lib/data/settings';
 import { saveFooterLink, deleteFooterLink, updateFooterLinksOrder } from '@/lib/data/footer';
 import { saveAchievement, deleteAchievement, updateAchievementsOrder } from '@/lib/data/achievements';
+import { reseedPortfolioData } from '@/lib/data/seed';
 import { Resend } from 'resend';
 import type {
   Profile,
@@ -263,6 +264,14 @@ export async function updateAchievementsOrderAction(updates: { id: string; order
   await updateAchievementsOrder(updates);
   revalidatePath('/');
   revalidatePath('/admin');
+}
+
+export async function reseedPortfolioDataAction() {
+  await requireAdminAuth();
+  await reseedPortfolioData();
+  revalidatePath('/');
+  revalidatePath('/admin');
+  revalidatePath('/projects');
 }
 
 // ─── Media Upload ────────────────────────────────────────────────────────────

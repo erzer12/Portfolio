@@ -31,7 +31,7 @@ export default async function ProjectsPage() {
           <section key={project.id}>
             <div className="grid gap-4 md:grid-cols-[2.5rem_1fr] md:gap-6">
               {/* Index number */}
-              <div className="font-mono text-xs text-[--ink-faint]">
+              <div className="font-mono text-xs text-[--ink-muted]">
                 {String(index + 1).padStart(2, '0')}
               </div>
 
