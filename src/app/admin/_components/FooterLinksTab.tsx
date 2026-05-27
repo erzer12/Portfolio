@@ -136,12 +136,36 @@ export function FooterLinksTab({ links }: Props) {
               {/* Links in this category */}
               <div className="pl-2 divide-y divide-[--rule]/50">
                 {grouped[category].map((link) => (
-                  <SortableLinkRow
-                    key={link.id}
-                    link={link}
-                    onEdit={(link) => { setEditing(link); setMsg(''); }}
-                    onDelete={handleDelete}
-                  />
+                  editing && editing.id === link.id ? (
+                    <form key={link.id} onSubmit={handleSave} className="flex items-center gap-3 py-1.5 bg-[--bg]">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex gap-3">
+                          <input name="label" value={editing.label ?? ''} onChange={handleChange} className="admin-input" placeholder="Label" />
+                          <input name="url" value={editing.url ?? ''} onChange={handleChange} className="admin-input" placeholder="https://..." />
+                        </div>
+                        {editing.id && (
+                          <div className="mt-1">
+                            <select name="category" value={editing.category ?? ''} onChange={handleChange} className="admin-input">
+                              {categories.map((cat) => (
+                                <option key={cat} value={cat}>{cat}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <button type="submit" className="admin-btn-sm">Save</button>
+                        <button type="button" onClick={() => setEditing(null)} className="admin-btn-sm">Cancel</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <SortableLinkRow
+                      key={link.id}
+                      link={link}
+                      onEdit={(link) => { setEditing(link); setMsg(''); }}
+                      onDelete={handleDelete}
+                    />
+                  )
                 ))}
               </div>
             </div>

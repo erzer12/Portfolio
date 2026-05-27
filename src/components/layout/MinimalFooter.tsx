@@ -24,7 +24,7 @@ export function MinimalFooter({ links }: Props) {
     <footer className="mt-16 border-t border-[--rule]">
       {hasLinks && (
         <div className="py-12">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:[grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
             {categories.map((category) => (
               <div key={category} className="space-y-4">
                 <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-[--ink]">

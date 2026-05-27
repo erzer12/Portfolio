@@ -1,4 +1,5 @@
 import type { Experience, Project } from '@/types';
+import { displayText } from '@/lib/utils';
 
 type ExperienceListProps = {
   items: Experience[];
@@ -16,14 +17,14 @@ export function ExperienceList({ items, projects }: ExperienceListProps) {
         return (
           <article key={item.id} className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <h3 className="text-[15px] font-medium text-[--ink]">{item.company}</h3>
+              <h3 className="text-[15px] font-medium text-[--ink]">{displayText(item.company)}</h3>
               <p className="font-mono text-xs text-[--ink-muted]">
-                {item.start_date}–{item.end_date ?? 'Present'}
+                {displayText(item.start_date)}–{displayText(item.end_date ?? 'Present')}
               </p>
             </div>
 
             <p className="text-[14px] italic text-[--ink-muted]">
-              {item.role}{item.employment_type ? ` · ${item.employment_type}` : ''}
+              {displayText(item.role)}{item.employment_type ? ` · ${displayText(item.employment_type)}` : ''}
             </p>
 
             {/* External links */}
@@ -61,7 +62,7 @@ export function ExperienceList({ items, projects }: ExperienceListProps) {
             {/* Linked portfolio projects */}
             {linkedProjects.length > 0 && (
               <div className="pt-1 space-y-1">
-                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[--ink-faint]">Related Projects</p>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">Related Projects</p>
                 <div className="flex flex-wrap gap-2">
                   {linkedProjects.map((project) => (
                     <a
@@ -69,7 +70,7 @@ export function ExperienceList({ items, projects }: ExperienceListProps) {
                       href={`/projects/${project.slug}`}
                       className="inline-flex items-center gap-1 border border-[--tag-border] px-3 py-1 font-mono text-xs text-[--tag-text] hover:border-[--ink] hover:text-[--ink] transition-colors"
                     >
-                      {project.title} ↗
+                        {displayText(project.title)} ↗
                     </a>
                   ))}
                 </div>
@@ -82,7 +83,7 @@ export function ExperienceList({ items, projects }: ExperienceListProps) {
                   key={tag}
                   className="rounded border border-[--tag-border] px-2 py-0.5 text-[--tag-text]"
                 >
-                  {tag}
+                  {displayText(tag)}
                 </span>
               ))}
             </div>

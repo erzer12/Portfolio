@@ -14,6 +14,8 @@ export type Profile = {
     github?: string;
     linkedin?: string;
     twitter?: string;
+    imageMeta?: { x?: number; y?: number; scale?: number };
+    imageCrop?: { left: number; top: number; size: number };
   };
 };
 

@@ -3,5 +3,5 @@ type SectionLabelProps = {
 };
 
 export function SectionLabel({ children }: SectionLabelProps) {
-  return <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-faint]">{children}</h2>;
+  return <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-bright]">{children}</h2>;
 }
