@@ -1,3 +1,3 @@
 export default function CredlyImport() {
-  return null;
+	return null;
 }

@@ -1,7 +1,7 @@
 type SectionRuleProps = {
-  className?: string;
+	className?: string;
 };
 
 export function SectionRule({ className }: SectionRuleProps) {
-  return <div className={['my-3 h-px bg-[--rule]', className].filter(Boolean).join(' ')} />;
+	return <div className={['my-3 h-px bg-[--rule]', className].filter(Boolean).join(' ')} />;
 }

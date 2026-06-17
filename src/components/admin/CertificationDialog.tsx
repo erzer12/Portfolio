@@ -1,3 +1,3 @@
 export default function CertificationDialog() {
-  return null;
+	return null;
 }

@@ -1,3 +1,3 @@
 export function validateEnv() {
-  return true;
+	return true;
 }

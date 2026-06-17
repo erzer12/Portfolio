@@ -1,3 +1,3 @@
 export default function EducationDialog() {
-  return null;
+	return null;
 }
