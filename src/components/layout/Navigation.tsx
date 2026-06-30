@@ -1,5 +1,3 @@
-'use client';
-
 type MinimalNavProps = {
 	name: string;
 	email: string;

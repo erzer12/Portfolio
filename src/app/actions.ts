@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Resend } from 'resend';
 import { requireAdminAuth } from '@/lib/auth';
@@ -342,13 +342,63 @@ export async function fetchGithubRepoAction(url: string) {
 	}
 }
 
-// ─── Contact Email ───────────────────────────────────────────────────────────
+const contactRateLimits = new Map<string, { count: number; lastReset: number }>();
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function sendContactEmailAction(data: {
 	name: string;
 	email: string;
 	message: string;
 }) {
+	// 1. Server-side validation
+	if (
+		!data.name ||
+		typeof data.name !== 'string' ||
+		data.name.trim().length === 0 ||
+		data.name.length > 20
+	) {
+		throw new Error('Name must be between 1 and 20 characters.');
+	}
+
+	if (
+		!data.email ||
+		typeof data.email !== 'string' ||
+		data.email.trim().length === 0 ||
+		data.email.length > 254 ||
+		!EMAIL_REGEX.test(data.email)
+	) {
+		throw new Error('Please enter a valid email address.');
+	}
+
+	if (
+		!data.message ||
+		typeof data.message !== 'string' ||
+		data.message.trim().length === 0 ||
+		data.message.length > 5000
+	) {
+		throw new Error('Message must be between 1 and 5000 characters.');
+	}
+
+	// 2. Rate limiting
+	const headerList = await headers();
+	const ip =
+		headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || '127.0.0.1';
+	const now = Date.now();
+	const limitWindow = 10 * 60 * 1000; // 10 minutes
+	const maxRequests = 3;
+
+	const record = contactRateLimits.get(ip);
+	if (!record) {
+		contactRateLimits.set(ip, { count: 1, lastReset: now });
+	} else if (now - record.lastReset > limitWindow) {
+		record.count = 1;
+		record.lastReset = now;
+	} else if (record.count >= maxRequests) {
+		throw new Error('Too many requests. Please try again after 10 minutes.');
+	} else {
+		record.count += 1;
+	}
+
 	const apiKey = process.env.RESEND_API_KEY;
 	if (!apiKey) {
 		throw new Error('Resend API key is not configured.');
@@ -356,12 +406,23 @@ export async function sendContactEmailAction(data: {
 
 	const resend = new Resend(apiKey);
 
+	const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+	const emailTo = process.env.EMAIL_TO;
+
+	if (!emailTo) {
+		throw new Error('Recipient email (EMAIL_TO) is not configured in environment variables.');
+	}
+
+	// Clean the name to prevent any header parsing/formatting issues
+	const cleanName = data.name.replace(/["\\]/g, '');
+	const fromField = `New Contact "${cleanName}" <${emailFrom}>`;
+
 	// Try sending the email. If the user hasn't verified their domain in Resend,
 	// they can only send emails to the email address associated with their Resend account
 	// from an 'onboarding@resend.dev' address.
 	const { error } = await resend.emails.send({
-		from: 'Portfolio Contact <onboarding@resend.dev>',
-		to: 'cek23am024@cekottarakkara.ac.in', // Send to portfolio owner
+		from: fromField,
+		to: emailTo,
 		subject: `New Contact from ${data.name} via Portfolio`,
 		text: `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`,
 	});

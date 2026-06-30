@@ -2,68 +2,86 @@ import type { Metadata } from 'next';
 import './base.css';
 import './components.css';
 import './app.css';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
-export const metadata: Metadata = {
-	title: {
-		default: 'Harshil P — CS Student & Builder',
-		template: '%s | Harshil P',
-	},
-	description:
-		'Computer Science student specialized in AI/ML products and production software development. Exploring client-side intelligence, sequence models, and full-stack architecture.',
-	keywords: [
-		'Harshil P',
-		'Harshil Praveen',
-		'Software Engineer Portfolio',
-		'AI/ML Developer',
-		'Next.js Developer',
-		'TypeScript Developer',
-		'Client-Side AI Products',
-		'Full-Stack Builder',
-		'Computer Science Student',
-	],
-	metadataBase: new URL('https://harshilp.codes'),
-	alternates: {
-		canonical: '/',
-	},
-	authors: [{ name: 'Harshil P' }],
+import { getProfile } from '@/lib/data/profile';
 
-	openGraph: {
-		title: 'Harshil P — CS Student & Builder',
+export async function generateMetadata(): Promise<Metadata> {
+	const profile = await getProfile();
+	const name = profile?.name ?? 'Harshil P';
+	const tagline = profile?.tagline ?? 'CS Student & Builder';
+	const ogImageUrl = profile?.image;
+
+	return {
+		title: {
+			default: `${name} — CS Student & Builder`,
+			template: `%s | ${name}`,
+		},
 		description:
-			'Computer Science student building at the intersection of AI/ML and production web applications.',
-		url: 'https://harshilp.codes',
-		siteName: 'Harshil P Portfolio',
-		images: [
-			{
-				url: '/og-image.png',
-				width: 1200,
-				height: 630,
-				alt: 'Harshil P — Portfolio Preview',
-			},
+			profile?.summary ||
+			'Computer Science student specialized in AI/ML products and production software development.',
+		keywords: [
+			name,
+			'Harshil Praveen',
+			'Software Engineer Portfolio',
+			'AI/ML Developer',
+			'Next.js Developer',
+			'TypeScript Developer',
+			'Client-Side AI Products',
+			'Full-Stack Builder',
+			'Computer Science Student',
 		],
-		locale: 'en_IN',
-		type: 'profile',
-		username: 'harshilp1',
-		firstName: 'Harshil',
-		lastName: 'P',
-	},
+		metadataBase: new URL('https://harshilp.codes'),
+		alternates: {
+			canonical: '/',
+		},
+		authors: [{ name }],
 
-	robots: {
-		index: true,
-		follow: true,
-	},
-};
+		openGraph: {
+			title: `${name} — CS Student & Builder`,
+			description: tagline,
+			url: 'https://harshilp.codes',
+			siteName: `${name} Portfolio`,
+			images: ogImageUrl
+				? [
+						{
+							url: ogImageUrl,
+							width: 1200,
+							height: 630,
+							alt: `${name} — Portfolio Preview`,
+						},
+					]
+				: undefined,
+			locale: 'en_IN',
+			type: 'profile',
+			username: 'harshilp1',
+			firstName: name.split(' ')[0] || 'Harshil',
+			lastName: name.split(' ')[1] || 'P',
+		},
+
+		twitter: {
+			card: 'summary_large_image',
+			title: `${name} — CS Student & Builder`,
+			description: tagline,
+			images: ogImageUrl ? [ogImageUrl] : undefined,
+		},
+
+		robots: {
+			index: true,
+			follow: true,
+		},
+	};
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        {children}
-        <SpeedInsights />
-        <Analytics />
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<body>
+				{children}
+				<SpeedInsights />
+				<Analytics />
+			</body>
+		</html>
+	);
 }
