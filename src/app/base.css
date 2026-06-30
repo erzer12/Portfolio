@@ -1,0 +1,195 @@
+@import "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap";
+
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
+@tailwind base;
+
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
+@tailwind components;
+
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
+@tailwind utilities;
+
+/* base.css */
+
+/* stylelint-disable color-no-hex */
+
+/* Color System */
+:root {
+	--wall: #fafaf8;
+	--wall-dark: #e4e4df;
+	--ink: #1a1a18;
+	--ink-muted: #3a3a38;
+	--ink-faint: #5a5a58;
+	--accent: #ffb300;
+	--error: #e74c3c;
+	--warning: #ffdc00;
+	--rule: #e4e4df;
+	--tag-border: #d0d0cb;
+	--tag-text: #2a2a28;
+	--ink-bright: var(--ink);
+
+	/* Typography */
+	--font-display: "DM Sans", "Segoe UI", Arial, sans-serif;
+	--font-body: "DM Sans", "Segoe UI", Arial, sans-serif;
+	--font-mono: "DM Sans", "Segoe UI", Arial, sans-serif;
+
+	/* Spacing */
+	--spacing-1: 0.5rem;
+	--spacing-2: 1rem;
+	--spacing-4: 1.5rem;
+	--section-gap: 4rem;
+
+	/* Layout */
+	--max-width: 760px;
+}
+
+@media (width >= 960px) {
+	:root {
+		--max-width: 960px;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--wall: #141412;
+		--wall-dark: #2a2a26;
+		--ink: #cececa;
+		--ink-muted: #a0a09a;
+		--ink-faint: #70706a;
+		--rule: #2a2a26;
+		--tag-border: #363630;
+		--tag-text: #e0e0dc;
+		--ink-bright: #fff;
+	}
+}
+
+/* stylelint-enable color-no-hex */
+
+/* Base reset */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+/* Typography defaults */
+html,
+body {
+	font-family: var(--font-body);
+	background: var(--wall);
+	color: var(--ink);
+	min-height: 100%;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Links */
+a {
+	color: inherit;
+	text-decoration: none;
+	text-underline-offset: 0.2em;
+	text-decoration-thickness: 1px;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Headings & Paragraph resets */
+h1,
+h2,
+h3,
+h4 {
+	margin: 0;
+	font-weight: 400;
+}
+
+p {
+	margin: 0;
+}
+
+/* Typography Scale Elements */
+h1 {
+	font-size: 2.5rem;
+	line-height: 1.2;
+	font-weight: 400;
+}
+
+h2 {
+	font-size: 1.8rem;
+	line-height: 1.4;
+	font-weight: 500;
+}
+
+body {
+	font-size: 1rem;
+	line-height: 1.6;
+	font-weight: 400;
+}
+
+code {
+	font-size: 0.9rem;
+	line-height: 1.1;
+	font-weight: 600;
+}
+
+/* Layout helpers */
+.container {
+	width: 100%;
+	max-width: var(--max-width);
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--spacing-2);
+	padding-right: var(--spacing-2);
+}
+
+/* Utility classes */
+.text-center {
+	text-align: center;
+}
+
+.text-left {
+	text-align: left;
+}
+
+.text-right {
+	text-align: right;
+}
+
+.mt-1 {
+	margin-top: var(--spacing-1);
+}
+
+.mb-1 {
+	margin-bottom: var(--spacing-1);
+}
+
+.mt-2 {
+	margin-top: var(--spacing-2);
+}
+
+.mb-2 {
+	margin-bottom: var(--spacing-2);
+}
+
+.mt-4 {
+	margin-top: var(--spacing-4);
+}
+
+.mb-4 {
+	margin-bottom: var(--spacing-4);
+}
+
+.gap-1 {
+	gap: var(--spacing-1);
+}
+
+.gap-2 {
+	gap: var(--spacing-2);
+}
+
+.gap-4 {
+	gap: var(--spacing-4);
+}
