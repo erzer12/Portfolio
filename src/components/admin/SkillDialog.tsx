@@ -1,3 +1,3 @@
 export default function SkillDialog() {
-  return null;
+	return null;
 }

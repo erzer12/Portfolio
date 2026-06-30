@@ -1,3 +1,3 @@
 export default function ProjectDialog() {
-  return null;
+	return null;
 }

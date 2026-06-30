@@ -1,0 +1,126 @@
+/* components.css */
+
+/* ─── Buttons ───────────────────────────────────────────────── */
+button {
+	--btn-bg: var(--analytics-btn-bg, transparent);
+	--btn-text: var(--analytics-btn-text, var(--ink));
+
+	background-color: var(--btn-bg);
+	color: var(--btn-text);
+	border: 1px solid transparent;
+	font-family: var(--font-mono);
+	transition:
+		background 150ms,
+		color 150ms,
+		border-color 150ms;
+	cursor: pointer;
+}
+
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+	--btn-bg: var(--analytics-btn-hover, var(--ink));
+	--btn-text: var(--analytics-btn-hover-text, var(--wall));
+}
+
+/* Admin Button */
+.admin-btn {
+	--analytics-btn-bg: transparent;
+	--analytics-btn-text: var(--ink);
+	--analytics-btn-hover: var(--ink);
+	--analytics-btn-hover-text: var(--wall);
+
+	border: 1px solid var(--ink);
+	font-size: 11px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	padding: 6px 14px;
+}
+
+/* Small Admin Button */
+.admin-btn-sm {
+	--analytics-btn-bg: transparent;
+	--analytics-btn-text: var(--ink-muted);
+	--analytics-btn-hover: var(--ink);
+	--analytics-btn-hover-text: var(--ink-bright, var(--ink));
+
+	border: 1px solid var(--rule);
+	font-size: 10px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	padding: 3px 8px;
+	white-space: nowrap;
+}
+
+.admin-btn-sm:hover:not(:disabled) {
+	border-color: var(--ink);
+}
+
+/* ─── Inputs ────────────────────────────────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+	--input-bg: transparent;
+	--input-border: var(--rule);
+
+	background: var(--input-bg);
+	border: none;
+	border-bottom: 1px solid var(--input-border);
+	color: var(--ink);
+	font-family: var(--font-body);
+	transition: border-color 150ms;
+	outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	--input-border: var(--ink);
+}
+
+/* Admin Input styling */
+.admin-input {
+	display: block;
+	width: 100%;
+	border: none;
+	border-bottom: 1px solid var(--rule);
+	background: transparent;
+	color: var(--ink);
+	font-family: var(--font-body);
+	font-size: 14px;
+	padding: 6px 0;
+	outline: none;
+	transition: border-color 150ms;
+	resize: vertical;
+}
+
+.admin-input:focus {
+	border-bottom-color: var(--ink);
+}
+
+/* Dropdown/Select option backgrounds */
+.admin-input option {
+	background: var(--wall);
+	color: var(--ink);
+}
+
+/* ─── Cards ─────────────────────────────────────────────────── */
+.card {
+	--card-bg: var(--wall-dark);
+	--card-border: var(--rule);
+
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 4px;
+	padding: var(--spacing-2);
+	transition: border-color 150ms;
+}
+
+.card:hover {
+	--card-border: var(--ink);
+}

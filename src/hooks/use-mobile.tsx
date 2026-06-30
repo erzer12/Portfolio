@@ -1,3 +1,3 @@
 export function useMobile() {
-  return false;
+	return false;
 }
