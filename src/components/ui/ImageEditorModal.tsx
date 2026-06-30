@@ -46,7 +46,10 @@ export default function ImageEditorModal({
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
+		if (!isOpen) return;
+
 		setPreview(initialUrl);
+		setFile(null);
 
 		if (initialMeta?.crop) {
 			setCropLeft(initialMeta.crop.left);
@@ -67,7 +70,7 @@ export default function ImageEditorModal({
 		setX(initialMeta?.x ?? 50);
 		setY(initialMeta?.y ?? 50);
 		setScale(initialMeta?.scale ?? 1);
-	}, [initialUrl, initialMeta]);
+	}, [initialUrl, initialMeta, isOpen]);
 
 	useEffect(() => {
 		if (!file) return;
@@ -133,8 +136,6 @@ export default function ImageEditorModal({
 									objectPosition: `${x}% ${y}%`,
 									transform: `scale(${scale})`,
 									transformOrigin: 'center',
-									/* Fixed: High quality image interpolation pass overrides grain rendering bugs */
-									imageRendering: 'high-quality' as any,
 								}}
 							/>
 						) : (

@@ -52,8 +52,6 @@ export function Header({
 								objectPosition: imageCrop
 									? '50% 50%'
 									: `${imageMeta?.x ?? 50}% ${imageMeta?.y ?? 50}%`,
-								/* Fixed: Safely casted property type to bypass strict React CSS Properties constraints */
-								imageRendering: 'high-quality' as any,
 							}}
 						/>
 					</div>
