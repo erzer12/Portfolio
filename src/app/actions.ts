@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Resend } from 'resend';
 import { requireAdminAuth } from '@/lib/auth';
@@ -20,7 +20,7 @@ import { deleteExperience, saveExperience, updateExperienceOrder } from '@/lib/d
 import { deleteFooterLink, saveFooterLink, updateFooterLinksOrder } from '@/lib/data/footer';
 import { saveProfile } from '@/lib/data/profile';
 import { deleteProject, saveProject, updateProjectsOrder } from '@/lib/data/projects';
-import { reseedPortfolioData } from '@/lib/data/seed';
+
 import { saveSiteSettings } from '@/lib/data/settings';
 import { deleteSkill, saveSkill, updateSkillsOrder } from '@/lib/data/skills';
 import {
@@ -279,13 +279,7 @@ export async function updateAchievementsOrderAction(updates: { id: string; order
 	revalidatePath('/admin');
 }
 
-export async function reseedPortfolioDataAction() {
-	await requireAdminAuth();
-	await reseedPortfolioData();
-	revalidatePath('/');
-	revalidatePath('/admin');
-	revalidatePath('/projects');
-}
+
 
 // ─── Media Upload ────────────────────────────────────────────────────────────
 
@@ -342,22 +336,29 @@ export async function fetchGithubRepoAction(url: string) {
 	}
 }
 
-const contactRateLimits = new Map<string, { count: number; lastReset: number }>();
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function sendContactEmailAction(data: {
 	name: string;
 	email: string;
 	message: string;
+	/** Honeypot: must be empty. Bots fill this; humans never see it. */
+	website?: string;
 }) {
-	// 1. Server-side validation
+	// 1. Honeypot check — silently reject bot submissions
+	if (data.website) {
+		// Return silently so bots don't know they were blocked
+		return;
+	}
+
+	// 2. Server-side validation
 	if (
 		!data.name ||
 		typeof data.name !== 'string' ||
 		data.name.trim().length === 0 ||
-		data.name.length > 20
+		data.name.length > 100
 	) {
-		throw new Error('Name must be between 1 and 20 characters.');
+		throw new Error('Name must be between 1 and 100 characters.');
 	}
 
 	if (
@@ -377,26 +378,6 @@ export async function sendContactEmailAction(data: {
 		data.message.length > 5000
 	) {
 		throw new Error('Message must be between 1 and 5000 characters.');
-	}
-
-	// 2. Rate limiting
-	const headerList = await headers();
-	const ip =
-		headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || '127.0.0.1';
-	const now = Date.now();
-	const limitWindow = 10 * 60 * 1000; // 10 minutes
-	const maxRequests = 3;
-
-	const record = contactRateLimits.get(ip);
-	if (!record) {
-		contactRateLimits.set(ip, { count: 1, lastReset: now });
-	} else if (now - record.lastReset > limitWindow) {
-		record.count = 1;
-		record.lastReset = now;
-	} else if (record.count >= maxRequests) {
-		throw new Error('Too many requests. Please try again after 10 minutes.');
-	} else {
-		record.count += 1;
 	}
 
 	const apiKey = process.env.RESEND_API_KEY;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import SeedDataButton from '@/components/admin/SeedDataButton';
+
 import type {
 	Achievement,
 	Certification,
@@ -70,9 +70,6 @@ export function AdminShell({
 			<div>
 				<p className="font-mono text-xs uppercase tracking-[0.2em] text-[--ink-muted]">CMS</p>
 				<h1 className="mt-1 font-serif text-3xl italic text-[--ink]">Content Manager</h1>
-				<div className="mt-4">
-					<SeedDataButton />
-				</div>
 			</div>
 
 			{/* Tab navigation */}

@@ -38,6 +38,7 @@ export function ContactSection() {
 		const name = formData.get('name') as string;
 		const email = formData.get('email') as string;
 		const message = formData.get('message') as string;
+		const website = formData.get('website') as string;
 
 		if (!name || !email || !message) {
 			setMsg('Please fill out all fields.');
@@ -47,7 +48,7 @@ export function ContactSection() {
 		setMsg('');
 		startTransition(async () => {
 			try {
-				await sendContactEmailAction({ name, email, message });
+				await sendContactEmailAction({ name, email, message, website });
 				setMsg('Message sent! I will get back to you soon.');
 				(e.target as HTMLFormElement).reset();
 			} catch (error) {
@@ -134,6 +135,21 @@ export function ContactSection() {
 						className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none"
 						placeholder="Message"
 					/>
+					{/* Honeypot: hidden from real users, bots fill it automatically */}
+					<label
+						htmlFor="contact-website"
+						style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}
+						aria-hidden="true"
+					>
+						Website
+						<input
+							id="contact-website"
+							name="website"
+							type="text"
+							autoComplete="off"
+							tabIndex={-1}
+						/>
+					</label>
 					<div className="flex items-center gap-4">
 						<button
 							type="submit"
