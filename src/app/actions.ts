@@ -342,13 +342,27 @@ export async function fetchGithubRepoAction(url: string) {
 	}
 }
 
-// ─── Contact Email ───────────────────────────────────────────────────────────
+// ─── Contact Email & Message Saving ──────────────────────────────────────────
 
 export async function sendContactEmailAction(data: {
 	name: string;
 	email: string;
 	message: string;
 }) {
+	// 1. Save to Database first
+	try {
+		const { getSupabaseAdmin } = await import('@/lib/supabase/server');
+		const adminClient = getSupabaseAdmin();
+		await adminClient.from('contact_messages').insert({
+			name: data.name,
+			email: data.email,
+			message: data.message,
+		});
+	} catch (dbError) {
+		console.error('Error saving contact message to database:', dbError);
+	}
+
+	// 2. Send Email via Resend
 	const apiKey = process.env.RESEND_API_KEY;
 	if (!apiKey) {
 		throw new Error('Resend API key is not configured.');
@@ -356,17 +370,80 @@ export async function sendContactEmailAction(data: {
 
 	const resend = new Resend(apiKey);
 
-	// Try sending the email. If the user hasn't verified their domain in Resend,
-	// they can only send emails to the email address associated with their Resend account
-	// from an 'onboarding@resend.dev' address.
 	const { error } = await resend.emails.send({
 		from: 'Portfolio Contact <onboarding@resend.dev>',
-		to: 'cek23am024@cekottarakkara.ac.in', // Send to portfolio owner
+		to: process.env.EMAIL_TO || 'cek23am024@cekottarakkara.ac.in',
 		subject: `New Contact from ${data.name} via Portfolio`,
 		text: `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`,
 	});
 
 	if (error) {
 		throw new Error(error.message);
+	}
+}
+
+// ─── Analytics / Clicks Actions ──────────────────────────────────────────────
+
+export async function incrementPageViewAction(): Promise<number> {
+	try {
+		const { getSupabaseAdmin } = await import('@/lib/supabase/server');
+		const adminClient = getSupabaseAdmin();
+
+		const { data } = await adminClient.from('page_views').select('count').eq('id', 'main').single();
+		const currentCount = data?.count ?? 1204; // Use 1204 as mock baseline if empty
+		const nextCount = currentCount + 1;
+
+		await adminClient.from('page_views').upsert({ id: 'main', count: nextCount });
+		return nextCount;
+	} catch (err) {
+		console.error('Error incrementing page views:', err);
+		return 1205; // Fallback
+	}
+}
+
+export async function getPageViewCountAction(): Promise<number> {
+	try {
+		const { getSupabaseAdmin } = await import('@/lib/supabase/server');
+		const adminClient = getSupabaseAdmin();
+		const { data } = await adminClient.from('page_views').select('count').eq('id', 'main').single();
+		return data?.count ?? 1204;
+	} catch (_err) {
+		return 1204;
+	}
+}
+
+export async function incrementClickCounterAction(): Promise<number> {
+	try {
+		const { getSupabaseAdmin } = await import('@/lib/supabase/server');
+		const adminClient = getSupabaseAdmin();
+
+		const { data } = await adminClient
+			.from('click_counter')
+			.select('count')
+			.eq('id', 'main')
+			.single();
+		const currentCount = data?.count ?? 42108;
+		const nextCount = currentCount + 1;
+
+		await adminClient.from('click_counter').upsert({ id: 'main', count: nextCount });
+		return nextCount;
+	} catch (err) {
+		console.error('Error incrementing click counter:', err);
+		return 42109;
+	}
+}
+
+export async function getClickCounterAction(): Promise<number> {
+	try {
+		const { getSupabaseAdmin } = await import('@/lib/supabase/server');
+		const adminClient = getSupabaseAdmin();
+		const { data } = await adminClient
+			.from('click_counter')
+			.select('count')
+			.eq('id', 'main')
+			.single();
+		return data?.count ?? 42108;
+	} catch (_err) {
+		return 42108;
 	}
 }

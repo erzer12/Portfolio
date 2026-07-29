@@ -246,3 +246,42 @@ alter table achievements enable row level security;
 
 drop policy if exists "public_read_achievements" on achievements;
 create policy "public_read_achievements" on achievements for select using (true);
+
+-- ─── Contact Messages ───────────────────────────────────────
+create table if not exists contact_messages (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  message text not null,
+  created_at timestamptz default now()
+);
+
+alter table contact_messages enable row level security;
+drop policy if exists "public_insert_contact_messages" on contact_messages;
+create policy "public_insert_contact_messages" on contact_messages for insert with check (true);
+
+-- ─── Page Views ─────────────────────────────────────────────
+create table if not exists page_views (
+  id text primary key default 'main',
+  count int default 0
+);
+
+insert into page_views (id, count) values ('main', 0)
+on conflict (id) do nothing;
+
+alter table page_views enable row level security;
+drop policy if exists "public_read_page_views" on page_views;
+create policy "public_read_page_views" on page_views for select using (true);
+
+-- ─── Click Counter ──────────────────────────────────────────
+create table if not exists click_counter (
+  id text primary key default 'main',
+  count int default 0
+);
+
+insert into click_counter (id, count) values ('main', 0)
+on conflict (id) do nothing;
+
+alter table click_counter enable row level security;
+drop policy if exists "public_read_click_counter" on click_counter;
+create policy "public_read_click_counter" on click_counter for select using (true);

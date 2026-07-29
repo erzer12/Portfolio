@@ -56,7 +56,35 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
+			<head>
+				<link
+					rel="stylesheet"
+					href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+				/>
+				<script
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: theme resolution blocking script to prevent flash
+					dangerouslySetInnerHTML={{
+						__html: `
+							(function() {
+								try {
+									var saved = localStorage.getItem('theme');
+									if (saved) {
+										document.documentElement.className = saved;
+									} else {
+										var darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+										if (darkQuery.matches) {
+											document.documentElement.className = 'theme-night';
+										} else {
+											document.documentElement.className = 'theme-day';
+										}
+									}
+								} catch (e) {}
+							})();
+						`,
+					}}
+				/>
+			</head>
 			<body>{children}</body>
 		</html>
 	);

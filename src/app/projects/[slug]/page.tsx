@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { MinimalFooter } from '@/components/layout/Footer';
-import { MinimalNav } from '@/components/layout/Navigation';
-import { getFooterLinks } from '@/lib/data/footer';
+import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { getAllProjectSlugs, getProjectBySlug } from '@/lib/data/projects';
 
 export const dynamic = 'force-dynamic';
@@ -27,55 +25,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectDetailPage({ params }: Props) {
 	const { slug } = await params;
-	const [project, footerLinks] = await Promise.all([getProjectBySlug(slug), getFooterLinks()]);
+	const project = await getProjectBySlug(slug);
 
 	if (!project) notFound();
 
 	return (
-		<main className="mx-auto min-h-screen max-w-[760px] px-4 py-6 text-sm text-[--ink]">
-			<MinimalNav name="HP." email="harshilp1234@gmail.com" github="https://github.com/erzer12" />
-
-			<article className="space-y-8 py-10">
+		<LayoutWrapper>
+			<article className="space-y-8 py-4 max-w-[650px] mx-auto">
 				{/* Breadcrumb */}
-				<nav className="flex gap-2 font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted]">
-					<a href="/" className="hover:text-[--ink]">
+				<nav className="flex gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-variant">
+					<a href="/" className="hover:text-primary transition-colors">
 						Home
 					</a>
-					<span>/</span>
-					<a href="/projects" className="hover:text-[--ink pockets]">
+					<span className="text-border-muted">/</span>
+					<a href="/projects" className="hover:text-primary transition-colors">
 						Projects
 					</a>
-					<span>/</span>
-					<span className="text-[--ink]">{project.title}</span>
+					<span className="text-border-muted">/</span>
+					<span className="text-on-surface font-semibold">{project.title}</span>
 				</nav>
 
 				{/* Header */}
-				<header className="space-y-3 border-b border-[--rule] pb-8">
-					<p className="font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted]">
+				<header className="space-y-4 border-b border-border-muted/30 pb-6">
+					<p className="font-mono text-[9px] uppercase tracking-[0.15em] text-on-surface-variant/80">
 						{project.category}
 						{project.date ? ` · ${project.date}` : ''}
 					</p>
-					<h1 className="font-serif text-5xl italic text-[--ink]">{project.title}</h1>
-					<p className="text-[15px] leading-7 text-[--ink-muted]">{project.description}</p>
+					<h1 className="text-3xl font-bold tracking-tight text-on-surface">{project.title}</h1>
+					<p className="text-sm leading-relaxed text-on-surface-variant">{project.description}</p>
 
 					{/* Links */}
-					<div className="flex flex-wrap gap-4 pt-2 font-mono text-xs uppercase tracking-[0.14em]">
+					<div className="flex flex-wrap gap-3 pt-2 font-mono text-[10px] uppercase tracking-[0.1em]">
 						{project.github && (
 							<a
 								href={project.github}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="border border-[--tag-border] px-3 py-1.5 text-[--ink] hover:border-[--ink] transition-colors"
+								className="border border-border-muted px-3 py-1.5 text-on-surface hover:border-primary transition-colors rounded"
 							>
 								GitHub ↗
 							</a>
 						)}
 						{project.live && (
 							<a
-								href={project.live}
+								href={project.live.startsWith('http') ? project.live : `https://${project.live}`}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="border border-[--ink] bg-[--ink] px-3 py-1.5 text-[--bg] hover:bg-transparent hover:text-[--ink] transition-colors"
+								className="bg-primary border border-primary px-3 py-1.5 text-background hover:opacity-90 font-bold transition-opacity rounded"
 							>
 								Live Demo ↗
 							</a>
@@ -85,11 +81,11 @@ export default async function ProjectDetailPage({ params }: Props) {
 
 				{/* Tags */}
 				{project.tags.length > 0 && (
-					<div className="flex flex-wrap gap-2 font-mono text-xs">
+					<div className="flex flex-wrap gap-1.5">
 						{project.tags.map((tag) => (
 							<span
 								key={tag}
-								className="rounded border border-[--tag-border] px-2 py-0.5 text-[--tag-text]"
+								className="px-2 py-0.5 bg-surface-container border border-border-muted/40 rounded text-[10px] font-mono text-on-surface-variant"
 							>
 								{tag}
 							</span>
@@ -99,13 +95,12 @@ export default async function ProjectDetailPage({ params }: Props) {
 
 				{/* Full description */}
 				{project.long_description && (
-					<div className="space-y-4">
-						<p className="font-mono text-xs uppercase tracking-[0.12em] text-[--ink-muted]">
+					<div className="space-y-3 pt-2">
+						<h2 className="font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-bold">
 							About
-						</p>
-						<div className="prose-sm max-w-none space-y-4 text-[15px] leading-[1.75] text-[--ink]">
+						</h2>
+						<div className="text-sm leading-relaxed text-on-surface-variant space-y-4">
 							{project.long_description.split('\n\n').map((para) => (
-								/* Fixed: Created a deterministic key derived from content substring instead of iteration index */
 								<p key={`${project.slug}-${para.slice(0, 20).replace(/[^a-z0-9]/gi, '')}`}>
 									{para}
 								</p>
@@ -115,17 +110,15 @@ export default async function ProjectDetailPage({ params }: Props) {
 				)}
 
 				{/* Back link */}
-				<div className="border-t border-[--rule] pt-6">
+				<div className="border-t border-border-muted/20 pt-6">
 					<a
 						href="/projects"
-						className="font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted] hover:text-[--ink]"
+						className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.1em] text-on-surface-variant hover:text-primary transition-colors"
 					>
 						← All Projects
 					</a>
 				</div>
 			</article>
-
-			<MinimalFooter links={footerLinks} />
-		</main>
+		</LayoutWrapper>
 	);
 }
