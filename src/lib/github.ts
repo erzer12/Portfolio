@@ -10,6 +10,13 @@ export type Language = {
 	color: string;
 };
 
+export type RepoStats = {
+	stars: number;
+	forks: number;
+	contributors: Array<{ avatarUrl: string; login: string }>;
+	contributorCount: number;
+};
+
 const LANGUAGE_COLORS: Record<string, string> = {
 	javascript: '#f1e05a',
 	typescript: '#3178c6',
@@ -22,16 +29,17 @@ const LANGUAGE_COLORS: Record<string, string> = {
 	'c++': '#f34b7d',
 	java: '#b07219',
 	shell: '#89e051',
+	jupyter: '#DA5B0B',
 };
 
 // Fallback mock data in case of rate limit or fetch failure
 const MOCK_COMMITS: Commit[] = [
-	{ message: 'feat: add dark mode toggle', repo: 'erzer12/Portfolio', time: '2h ago' },
-	{ message: 'fix: nav mobile bug on safari', repo: 'erzer12/Portfolio', time: '5h ago' },
-	{ message: 'refactor: optimize image loading', repo: 'erzer12/SignStream', time: '1d ago' },
+	{ message: 'feat: add dark mode toggle', repo: 'Portfolio', time: '2h ago' },
+	{ message: 'fix: nav mobile bug on safari', repo: 'Portfolio', time: '5h ago' },
+	{ message: 'refactor: optimize image loading', repo: 'SignStream', time: '1d ago' },
 	{
 		message: 'docs: update project readme',
-		repo: 'erzer12/Historical-Risk-Explorer',
+		repo: 'Historical-Risk-Explorer',
 		time: '2d ago',
 	},
 ];
@@ -61,37 +69,57 @@ function getRelativeTime(dateString: string): string {
 
 export async function getRecentCommits(username: string): Promise<Commit[]> {
 	try {
-		const res = await fetch(`https://api.github.com/users/${username}/events/public`, {
-			next: { revalidate: 1800 }, // Cache for 30 minutes
-			headers: {
-				'User-Agent': 'harshil-portfolio-app',
+		// Fetch recently updated repositories for the user
+		const reposRes = await fetch(
+			`https://api.github.com/users/${username}/repos?sort=updated&per_page=5`,
+			{
+				next: { revalidate: 1800 },
+				headers: { 'User-Agent': 'harshil-portfolio-app' },
 			},
-		});
+		);
 
-		if (!res.ok) {
-			console.warn(`GitHub API events failed: ${res.status}. Using fallback commits.`);
+		if (!reposRes.ok) {
+			console.warn(`GitHub API user repos failed: ${reposRes.status}. Using fallback commits.`);
 			return MOCK_COMMITS;
 		}
 
-		const events = await res.json();
-		const commits: Commit[] = [];
+		const repos = await reposRes.json();
+		if (!Array.isArray(repos) || repos.length === 0) return MOCK_COMMITS;
 
-		for (const event of events) {
-			if (event.type === 'PushEvent' && event.payload?.commits) {
-				const repoName = event.repo.name.replace(`${username}/`, '');
-				for (const c of event.payload.commits) {
-					commits.push({
-						message: c.message.split('\n')[0], // Get first line
-						repo: repoName,
-						time: getRelativeTime(event.created_at),
-					});
-					if (commits.length >= 4) break;
+		// Fetch top recent commits per repository
+		const commitsNested = await Promise.all(
+			repos.slice(0, 4).map(async (repo: { name: string; full_name: string }) => {
+				try {
+					const cRes = await fetch(
+						`https://api.github.com/repos/${repo.full_name}/commits?per_page=2`,
+						{
+							next: { revalidate: 1800 },
+							headers: { 'User-Agent': 'harshil-portfolio-app' },
+						},
+					);
+					if (!cRes.ok) return [];
+					const cData = await cRes.json();
+					if (!Array.isArray(cData)) return [];
+
+					return cData.map((c: { commit?: { message?: string; author?: { date?: string } } }) => ({
+						message: c.commit?.message?.split('\n')[0] || 'Update code & features',
+						repo: repo.name,
+						time: c.commit?.author?.date ? getRelativeTime(c.commit.author.date) : 'recently',
+						rawDate: c.commit?.author?.date ? new Date(c.commit.author.date).getTime() : 0,
+					}));
+				} catch (_err) {
+					return [];
 				}
-			}
-			if (commits.length >= 4) break;
-		}
+			}),
+		);
 
-		return commits.length > 0 ? commits : MOCK_COMMITS;
+		const allCommits = commitsNested
+			.flat()
+			.sort((a, b) => b.rawDate - a.rawDate)
+			.slice(0, 4)
+			.map(({ message, repo, time }) => ({ message, repo, time }));
+
+		return allCommits.length > 0 ? allCommits : MOCK_COMMITS;
 	} catch (err) {
 		console.error('Error fetching GitHub commits:', err);
 		return MOCK_COMMITS;
@@ -119,7 +147,6 @@ export async function getLanguageStats(username: string): Promise<Language[]> {
 		for (const repo of repos) {
 			if (repo.fork) continue; // Skip forks
 			const lang = repo.language;
-			// Use size as proxy for weight/bytes if size > 0
 			if (lang && repo.size) {
 				langBytes[lang] = (langBytes[lang] || 0) + repo.size;
 				totalBytes += repo.size;
@@ -141,7 +168,6 @@ export async function getLanguageStats(username: string): Promise<Language[]> {
 			.filter((l) => l.percentage > 0)
 			.sort((a, b) => b.percentage - a.percentage);
 
-		// Limit to top 3 and group rest into Other
 		if (sortedLangs.length > 4) {
 			const topLangs = sortedLangs.slice(0, 3);
 			const otherPercentage = sortedLangs.slice(3).reduce((sum, l) => sum + l.percentage, 0);
@@ -159,5 +185,54 @@ export async function getLanguageStats(username: string): Promise<Language[]> {
 	} catch (err) {
 		console.error('Error fetching GitHub languages:', err);
 		return MOCK_LANGUAGES;
+	}
+}
+
+export async function getRepoDetails(username: string, repoSlug: string): Promise<RepoStats> {
+	try {
+		const [repoRes, contribRes] = await Promise.all([
+			fetch(`https://api.github.com/repos/${username}/${repoSlug}`, {
+				next: { revalidate: 3600 },
+				headers: { 'User-Agent': 'harshil-portfolio-app' },
+			}),
+			fetch(`https://api.github.com/repos/${username}/${repoSlug}/contributors?per_page=5`, {
+				next: { revalidate: 3600 },
+				headers: { 'User-Agent': 'harshil-portfolio-app' },
+			}),
+		]);
+
+		let stars = 0;
+		let forks = 0;
+		let contributors: Array<{ avatarUrl: string; login: string }> = [];
+
+		if (repoRes.ok) {
+			const repoData = await repoRes.json();
+			stars = repoData.stargazers_count || 0;
+			forks = repoData.forks_count || 0;
+		}
+
+		if (contribRes.ok) {
+			const contribData = await contribRes.json();
+			if (Array.isArray(contribData)) {
+				contributors = contribData.map((c: { avatar_url: string; login: string }) => ({
+					avatarUrl: c.avatar_url,
+					login: c.login,
+				}));
+			}
+		}
+
+		return {
+			stars,
+			forks,
+			contributors,
+			contributorCount: contributors.length || 1,
+		};
+	} catch (_err) {
+		return {
+			stars: 3,
+			forks: 1,
+			contributors: [],
+			contributorCount: 1,
+		};
 	}
 }

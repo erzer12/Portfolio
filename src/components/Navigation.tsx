@@ -8,7 +8,9 @@ type NavigationProps = {
 	resumeUrl?: string;
 };
 
-export function Navigation({ resumeUrl }: NavigationProps) {
+export function Navigation({
+	resumeUrl = 'https://hlbmzefstbersvrafzji.supabase.co/storage/v1/object/public/portfolio_media/1778125303389-6bz4xb.pdf',
+}: NavigationProps) {
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -23,21 +25,27 @@ export function Navigation({ resumeUrl }: NavigationProps) {
 	];
 
 	return (
-		<header className="sticky top-0 w-full z-50 bg-background/85 backdrop-blur-md border-b border-border-muted transition-colors duration-300">
-			<nav className="w-full flex justify-between items-center py-3.5 px-0">
-				{/* Logo / Brand */}
+		<header className="sticky top-0 w-full z-50 bg-background/85 backdrop-blur-md border-b border-border-muted/60 transition-colors duration-300">
+			<nav className="max-w-[1900px] mx-auto px-4 w-full flex justify-between items-center py-3.5">
+				{/* Brand Logo with terminal cursor animation */}
 				<Link
 					href="/"
-					className="font-mono text-sm font-bold tracking-tight text-on-surface hover:text-primary transition-colors flex items-center gap-1"
+					className="group font-mono text-sm font-bold tracking-tight text-on-surface hover:text-primary transition-colors flex items-center gap-1.5"
 					onClick={() => setIsOpen(false)}
 				>
-					<span className="text-primary hover:text-primary/70 transition-colors">~</span>
-					<span className="text-on-surface-variant/80 select-none">/</span>
-					<span className="w-1.5 h-3.5 bg-primary animate-pulse inline-block" aria-hidden="true" />
+					<span className="text-primary group-hover:rotate-12 transition-transform duration-200">
+						~
+					</span>
+					<span className="text-on-surface-variant/70 select-none">/</span>
+					<span className="text-on-surface font-semibold tracking-wide">harshilp.codes</span>
+					<span
+						className="w-1.5 h-3.5 bg-primary animate-pulse inline-block ml-0.5"
+						aria-hidden="true"
+					/>
 				</Link>
 
 				{/* Desktop Navigation Links */}
-				<div className="hidden md:flex items-center gap-4 lg:gap-5">
+				<div className="hidden md:flex items-center gap-4 lg:gap-6">
 					{links.map((link) => {
 						const isActive = pathname === link.path;
 						return (
@@ -52,7 +60,7 @@ export function Navigation({ resumeUrl }: NavigationProps) {
 							>
 								{link.label}
 								{isActive && (
-									<span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+									<span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full animate-calm" />
 								)}
 							</Link>
 						);
@@ -64,33 +72,34 @@ export function Navigation({ resumeUrl }: NavigationProps) {
 							download
 							target="_blank"
 							rel="noopener noreferrer"
-							className="px-2.5 py-1 border border-primary text-primary hover:bg-primary/10 transition-colors rounded text-xs font-mono"
+							className="px-3 py-1 border border-primary/80 text-primary hover:bg-primary/10 active:scale-95 transition-all rounded text-xs font-mono font-semibold flex items-center gap-1 shadow-sm"
 						>
-							Resume ↓
+							<span>Resume</span>
+							<span className="material-symbols-outlined text-[13px]">download</span>
 						</a>
 					)}
 				</div>
 
-				{/* Mobile Hamburger Menu Toggle Button */}
+				{/* Mobile Hamburger Toggle Button */}
 				<div className="flex md:hidden items-center gap-2">
 					<button
 						type="button"
 						onClick={() => setIsOpen(!isOpen)}
-						aria-label="Toggle Navigation Menu"
+						aria-label="Toggle Menu"
 						aria-expanded={isOpen}
-						className="p-1.5 border border-border-muted rounded text-on-surface hover:text-primary hover:border-primary transition-colors"
+						className="p-1.5 border border-border-muted rounded text-on-surface hover:text-primary hover:border-primary transition-colors flex items-center justify-center"
 					>
-						<span className="material-symbols-outlined text-[18px]">
+						<span className="material-symbols-outlined text-[20px]">
 							{isOpen ? 'close' : 'menu'}
 						</span>
 					</button>
 				</div>
 			</nav>
 
-			{/* Mobile Slide-Over Drawer Navigation */}
+			{/* Mobile Navigation Drawer */}
 			{isOpen && (
-				<div className="md:hidden border-t border-border-muted/50 bg-background/95 backdrop-blur-xl py-4 px-2 space-y-3 animate-calm shadow-xl">
-					<div className="flex flex-col gap-2">
+				<div className="md:hidden border-t border-border-muted/50 bg-background/95 backdrop-blur-xl py-4 px-3 space-y-3 animate-calm shadow-2xl">
+					<div className="flex flex-col gap-1.5">
 						{links.map((link) => {
 							const isActive = pathname === link.path;
 							return (
@@ -98,10 +107,10 @@ export function Navigation({ resumeUrl }: NavigationProps) {
 									key={link.path}
 									href={link.path}
 									onClick={() => setIsOpen(false)}
-									className={`px-3 py-2 rounded text-sm font-mono flex items-center justify-between transition-colors ${
+									className={`px-3 py-2.5 rounded-lg text-sm font-mono flex items-center justify-between transition-colors ${
 										isActive
 											? 'bg-surface-container text-primary font-bold border-l-2 border-primary'
-											: 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50'
+											: 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container/40'
 									}`}
 								>
 									<span>{link.label}</span>
@@ -119,9 +128,10 @@ export function Navigation({ resumeUrl }: NavigationProps) {
 								target="_blank"
 								rel="noopener noreferrer"
 								onClick={() => setIsOpen(false)}
-								className="mt-2 mx-3 py-2 border border-primary text-primary text-center rounded text-xs font-mono font-bold hover:bg-primary/10 transition-colors uppercase tracking-wider"
+								className="mt-3 mx-2 py-2.5 bg-primary text-background text-center rounded-lg text-xs font-mono font-bold hover:opacity-90 transition-opacity uppercase tracking-wider flex items-center justify-center gap-1.5"
 							>
-								Download Resume ↓
+								<span>Download Resume</span>
+								<span className="material-symbols-outlined text-[14px]">download</span>
 							</a>
 						)}
 					</div>

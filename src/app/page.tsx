@@ -1,31 +1,34 @@
 import Link from 'next/link';
-import { BentoTOC } from '@/components/BentoTOC';
 import { ClickerGame } from '@/components/ClickerGame';
+import { GitHubContributionHeatmap } from '@/components/GitHubContributionHeatmap';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { LiveClock } from '@/components/LiveClock';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { getExperience } from '@/lib/data/experience';
 import { getProfile } from '@/lib/data/profile';
 import { getFeaturedProjects } from '@/lib/data/projects';
-import { getLanguageStats, getRecentCommits } from '@/lib/github';
+import { getLanguageStats, getRecentCommits, getRepoDetails, type RepoStats } from '@/lib/github';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-	const [profile, featuredProjects, experience] = await Promise.all([
+	const username = 'erzer12';
+
+	const [profile, featuredProjects, experience, commits, languages] = await Promise.all([
 		getProfile(),
 		getFeaturedProjects(),
 		getExperience(),
-	]);
-
-	const username = 'erzer12';
-	const [commits, languages] = await Promise.all([
 		getRecentCommits(username),
 		getLanguageStats(username),
 	]);
 
 	// limit to 2 projects for the homepage featured section
 	const homepageProjects = featuredProjects.slice(0, 2);
+
+	// Fetch real dynamic repo details (stars, contributors) from GitHub API
+	const repoStatsList: RepoStats[] = await Promise.all(
+		homepageProjects.map((p) => getRepoDetails(username, p.slug)),
+	);
 
 	return (
 		<LayoutWrapper>
@@ -162,88 +165,100 @@ export default async function Home() {
 					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						{homepageProjects.map((project) => (
-							<Link
-								key={project.id}
-								href={`/projects/${project.slug}`}
-								className="group flex flex-col justify-between transition-all duration-200"
-							>
-								{/* macOS-style Terminal Box */}
-								<div className="bg-[#0f1422] border border-border-muted rounded-xl overflow-hidden shadow-lg flex flex-col justify-between aspect-video w-full transition-transform duration-200 group-hover:scale-[1.01] group-hover:border-primary/50">
-									{/* Window Titlebar */}
-									<div className="bg-[#151b27] px-4 py-2.5 flex items-center justify-between border-b border-border-muted/50 select-none">
-										<div className="flex gap-1.5">
-											<span className="w-2 h-2 rounded-full bg-[#ff5f56]" />
-											<span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
-											<span className="w-2 h-2 rounded-full bg-[#27c93f]" />
+						{homepageProjects.map((project, idx) => {
+							const stats = repoStatsList[idx] || { stars: 0, contributors: [] };
+							return (
+								<Link
+									key={project.id}
+									href={`/projects/${project.slug}`}
+									className="group flex flex-col justify-between transition-all duration-200"
+								>
+									{/* macOS-style Terminal Box */}
+									<div className="bg-[#0f1422] border border-border-muted rounded-xl overflow-hidden shadow-lg flex flex-col justify-between aspect-video w-full transition-transform duration-200 group-hover:scale-[1.01] group-hover:border-primary/50">
+										{/* Window Titlebar */}
+										<div className="bg-[#151b27] px-4 py-2.5 flex items-center justify-between border-b border-border-muted/50 select-none">
+											<div className="flex gap-1.5">
+												<span className="w-2 h-2 rounded-full bg-[#ff5f56]" />
+												<span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+												<span className="w-2 h-2 rounded-full bg-[#27c93f]" />
+											</div>
+											<div className="flex items-center gap-1 text-[9px] font-mono text-on-surface-variant/80">
+												<span className="material-symbols-outlined text-[10px] text-tertiary">
+													star
+												</span>
+												<span>{stats.stars}</span>
+											</div>
 										</div>
-										<div className="flex items-center gap-1 text-[9px] font-mono text-on-surface-variant/80">
-											<span className="material-symbols-outlined text-[10px] text-tertiary">
-												star
+
+										{/* Terminal Content */}
+										<div className="p-4 flex-grow flex flex-col justify-between font-mono text-[10px] text-on-surface-variant/90 leading-relaxed">
+											<div className="space-y-1.5">
+												<div className="text-[11px] font-bold">
+													<span className="text-tertiary">erzer12</span>
+													<span className="text-on-surface-variant/50"> / </span>
+													<span className="text-primary">{project.slug}</span>
+												</div>
+												<p className="text-[9px] text-on-surface-variant/70 leading-relaxed line-clamp-3 font-mono">
+													{project.description}
+												</p>
+											</div>
+
+											{/* Dynamic Contributor Avatars from GitHub API */}
+											<div className="flex items-center justify-between pt-3 border-t border-border-muted/10">
+												<div className="flex -space-x-1.5 overflow-hidden">
+													{stats.contributors.length > 0 ? (
+														stats.contributors.slice(0, 3).map((c) => (
+															/* biome-ignore lint/performance/noImgElement: contributor avatar */
+															<img
+																key={c.login}
+																src={c.avatarUrl}
+																alt={c.login}
+																className="inline-block h-4 w-4 rounded-full ring-1 ring-[#0f1422] object-cover"
+															/>
+														))
+													) : (
+														<span className="inline-block h-4 w-4 rounded-full ring-1 ring-[#0f1422] bg-primary/20 text-[7px] flex items-center justify-center font-bold text-primary">
+															HP
+														</span>
+													)}
+												</div>
+												<span className="text-[8px] opacity-60">
+													{stats.contributors.length || 1} Contributor
+													{(stats.contributors.length || 1) > 1 ? 's' : ''}
+												</span>
+											</div>
+										</div>
+									</div>
+
+									{/* Details Outside the Terminal */}
+									<div className="space-y-2 mt-3.5 px-1">
+										<h3 className="font-sans text-base font-bold text-primary group-hover:text-primary/80 transition-colors">
+											{project.title}
+										</h3>
+										<p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
+											{project.description}
+										</p>
+
+										{/* Tech tags and Date */}
+										<div className="pt-2 flex items-center justify-between border-t border-border-muted/20">
+											<div className="flex flex-wrap gap-1.5">
+												{project.tags.slice(0, 3).map((tag) => (
+													<span
+														key={tag}
+														className="px-1.5 py-0.5 bg-surface-container border border-border-muted/30 rounded text-[9px] font-mono text-on-surface-variant"
+													>
+														{tag}
+													</span>
+												))}
+											</div>
+											<span className="font-mono text-[9px] text-on-surface-variant/70">
+												{project.date || 'Active'}
 											</span>
-											<span>{project.slug === 'signstream' ? '42' : '15'}</span>
 										</div>
 									</div>
-
-									{/* Terminal Content */}
-									<div className="p-4 flex-grow flex flex-col justify-between font-mono text-[10px] text-on-surface-variant/90 leading-relaxed">
-										<div className="space-y-1.5">
-											<div className="text-[11px] font-bold">
-												<span className="text-tertiary">erzer12</span>
-												<span className="text-on-surface-variant/50"> / </span>
-												<span className="text-primary">{project.slug}</span>
-											</div>
-											<p className="text-[9px] text-on-surface-variant/70 leading-relaxed line-clamp-3 font-mono">
-												{project.description}
-											</p>
-										</div>
-
-										{/* Mock Contributor Avatars */}
-										<div className="flex items-center justify-between pt-3 border-t border-border-muted/10">
-											<div className="flex -space-x-1.5 overflow-hidden">
-												<span className="inline-block h-4 w-4 rounded-full ring-1 ring-[#0f1422] bg-primary/20 text-[7px] flex items-center justify-center font-bold text-primary">
-													HP
-												</span>
-												<span className="inline-block h-4 w-4 rounded-full ring-1 ring-[#0f1422] bg-tertiary/20 text-[7px] flex items-center justify-center font-bold text-tertiary">
-													JD
-												</span>
-												<span className="inline-block h-4 w-4 rounded-full ring-1 ring-[#0f1422] bg-error/20 text-[7px] flex items-center justify-center font-bold text-error">
-													AI
-												</span>
-											</div>
-											<span className="text-[8px] opacity-60">3 Contributors</span>
-										</div>
-									</div>
-								</div>
-
-								{/* Details Outside the Terminal */}
-								<div className="space-y-2 mt-3.5 px-1">
-									<h3 className="font-sans text-base font-bold text-primary group-hover:text-primary/80 transition-colors">
-										{project.title}
-									</h3>
-									<p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
-										{project.description}
-									</p>
-
-									{/* Tech tags and Date */}
-									<div className="pt-2 flex items-center justify-between border-t border-border-muted/20">
-										<div className="flex flex-wrap gap-1.5">
-											{project.tags.slice(0, 3).map((tag) => (
-												<span
-													key={tag}
-													className="px-1.5 py-0.5 bg-surface-container border border-border-muted/30 rounded text-[9px] font-mono text-on-surface-variant"
-												>
-													{tag}
-												</span>
-											))}
-										</div>
-										<span className="font-mono text-[9px] text-on-surface-variant/70">
-											{project.date || 'Active'}
-										</span>
-									</div>
-								</div>
-							</Link>
-						))}
+								</Link>
+							);
+						})}
 
 						{homepageProjects.length === 0 && (
 							<p className="text-xs font-mono text-on-surface-variant py-4">
@@ -296,8 +311,8 @@ export default async function Home() {
 						{/* Widget 4: Clicker Game */}
 						<ClickerGame />
 
-						{/* Widget 5: Recent Commits & Languages (Spans 2 columns) */}
-						<div className="bg-surface-container rounded-xl border border-border-muted p-5 flex flex-col justify-between sm:col-span-2 min-h-[12rem] transition-colors duration-300">
+						{/* Widget 5: Recent Commits & Languages (Spans 2 columns - Left Tile) */}
+						<div className="bg-surface-container rounded-xl border border-border-muted p-5 flex flex-col justify-between sm:col-span-2 min-h-[14rem] transition-colors duration-300">
 							<div className="space-y-4">
 								<div className="flex justify-between items-center">
 									<h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-semibold">
@@ -314,7 +329,7 @@ export default async function Home() {
 								</div>
 								<div className="flex flex-col gap-3">
 									{commits.map((commit, idx) => (
-										/* biome-ignore lint/suspicious/noArrayIndexKey: commits feed has no unique IDs */
+										/* biome-ignore lint/suspicious/noArrayIndexKey: commits feed */
 										<div key={idx} className="flex justify-between items-start gap-4 text-xs">
 											<span className="text-on-surface font-sans line-clamp-1">
 												{commit.message}
@@ -374,61 +389,8 @@ export default async function Home() {
 							</div>
 						</div>
 
-						{/* Widget 6: BentoTOC (Spans 2 columns) */}
-						<div className="sm:col-span-2">
-							<BentoTOC />
-						</div>
-
-						{/* Widget 7: Contribution Stats Heatmap Grid (Spans 4 columns) */}
-						<div className="bg-surface-container rounded-xl border border-border-muted p-5 flex flex-col justify-between sm:col-span-2 lg:col-span-4 transition-colors duration-300">
-							<div className="flex justify-between items-center mb-3">
-								<h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-variant font-semibold">
-									Contribution Stats
-								</h3>
-								<span className="text-[9px] font-mono text-on-surface-variant/80 uppercase">
-									Last 12 Months
-								</span>
-							</div>
-
-							<div className="flex-grow flex flex-col justify-center gap-4">
-								{/* Mock Grid representing contribution graph */}
-								<div className="grid grid-cols-12 lg:grid-cols-24 gap-1.5 w-full">
-									{Array.from({ length: 24 }).map((_, i) => {
-										// Generate styled green shading for mockup
-										const intensities = [
-											'bg-surface-container-high',
-											'bg-primary/20',
-											'bg-primary/45',
-											'bg-primary/70',
-											'bg-primary',
-										];
-										const intensityClass = intensities[(i * 7 + 3) % intensities.length];
-										return (
-											<div
-												// biome-ignore lint/suspicious/noArrayIndexKey: mockup static calendar grid
-												key={i}
-												className={`aspect-square w-full rounded border border-border-muted/20 ${intensityClass} transition-colors duration-300`}
-											/>
-										);
-									})}
-								</div>
-
-								<div className="flex items-center justify-between pt-4 border-t border-border-muted/30">
-									<div className="flex flex-col">
-										<span className="text-xl font-bold text-primary font-mono">482</span>
-										<span className="text-[9px] font-mono uppercase tracking-wider text-on-surface-variant">
-											Total Contributions
-										</span>
-									</div>
-									<div className="flex flex-col items-end">
-										<span className="text-xl font-bold text-tertiary font-mono">12</span>
-										<span className="text-[9px] font-mono uppercase tracking-wider text-on-surface-variant">
-											Current Streak
-										</span>
-									</div>
-								</div>
-							</div>
-						</div>
+						{/* Widget 6: Original GitHub Contribution Heatmap Grid (Spans 2 columns - Right Tile Next to Recent Commits) */}
+						<GitHubContributionHeatmap username={username} />
 					</div>
 				</section>
 			</div>
