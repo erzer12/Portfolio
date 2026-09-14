@@ -11,7 +11,9 @@
 		"typecheck": "tsc --noEmit",
 		"check": "biome check .",
 		"check:fix": "biome check --write .",
-		"format": "biome format --write ."
+		"format": "biome format --write .",
+		"prepare": "husky",
+		"precommit": "node scripts/pre-commit.mjs"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.3.1",
@@ -33,11 +35,18 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"autoprefixer": "^10.4.21",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.5.1",
 		"postcss": "^8.5.10",
 		"stylelint": "^16.6.1",
 		"stylelint-config-standard": "^36.0.0",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.8.3"
+	},
+	"lint-staged": {
+		"*.{js,ts,jsx,tsx,json,css}": [
+			"biome check --write --no-errors-on-unmatched"
+		]
 	},
 	"overrides": {
 		"postcss": "^8.5.10"

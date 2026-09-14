@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if command -v bun >/dev/null 2>&1; then
+  bun scripts/pre-commit.mjs
+elif command -v node >/dev/null 2>&1; then
+  node scripts/pre-commit.mjs
+else
+  echo "❌ Neither Bun nor Node found in PATH."
+  exit 1
+fi
