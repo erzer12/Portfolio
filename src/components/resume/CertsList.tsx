@@ -15,27 +15,34 @@ export function CertsList({ items, maxVisible = 5 }: CertsListProps) {
 	const hiddenCount = items.length - maxVisible;
 
 	return (
-		<div className="divide-y divide-[--rule]">
-			{visible.map((item) => (
-				<a
-					key={item.id}
-					href={item.link ?? '#'}
-					target={item.link ? '_blank' : undefined}
-					rel="noopener noreferrer"
-					className="flex items-center justify-between gap-4 py-3 text-[14px] text-[--ink] transition-colors hover:bg-[--rule]/30"
-				>
-					<span>{displayText(item.name)}</span>
-					<span className="font-mono text-xs text-[--ink-muted]">{displayText(item.issuer)}</span>
-				</a>
-			))}
+		<div className="border border-surface0/80 bg-mantle rounded-xl p-5 shadow-lg space-y-2">
+			<div className="divide-y divide-surface0/60">
+				{visible.map((item) => (
+					<a
+						key={item.id}
+						href={item.link ?? '#'}
+						target={item.link ? '_blank' : undefined}
+						rel="noopener noreferrer"
+						className="flex items-center justify-between gap-4 py-3 text-sm text-text transition-colors hover:text-accent group"
+					>
+						<span className="font-medium group-hover:underline">{displayText(item.name)}</span>
+						<div className="flex items-center gap-2">
+							<span className="font-mono text-xs text-subtext1 px-2 py-0.5 rounded bg-surface0">
+								{displayText(item.issuer)}
+							</span>
+							{item.link && <span className="text-xs text-accent">↗</span>}
+						</div>
+					</a>
+				))}
+			</div>
 
 			{!expanded && hiddenCount > 0 && (
 				<button
 					type="button"
 					onClick={() => setExpanded(true)}
-					className="w-full py-3 font-mono text-xs text-[--ink-muted] hover:text-[--ink] transition-colors"
+					className="w-full pt-3 pb-1 font-mono text-xs text-accent hover:underline cursor-pointer text-center"
 				>
-					+ {hiddenCount} more
+					+ {hiddenCount} more certifications
 				</button>
 			)}
 
@@ -43,7 +50,7 @@ export function CertsList({ items, maxVisible = 5 }: CertsListProps) {
 				<button
 					type="button"
 					onClick={() => setExpanded(false)}
-					className="w-full py-3 font-mono text-xs text-[--ink-muted] hover:text-[--ink] transition-colors"
+					className="w-full pt-3 pb-1 font-mono text-xs text-subtext1 hover:text-text cursor-pointer text-center"
 				>
 					Show less
 				</button>

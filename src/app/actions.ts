@@ -18,6 +18,11 @@ import {
 import { deleteEducation, saveEducation, updateEducationOrder } from '@/lib/data/education';
 import { deleteExperience, saveExperience, updateExperienceOrder } from '@/lib/data/experience';
 import { deleteFooterLink, saveFooterLink, updateFooterLinksOrder } from '@/lib/data/footer';
+import {
+	deleteContactMessage,
+	markContactMessageRead,
+	submitContactMessage,
+} from '@/lib/data/messages';
 import { saveProfile } from '@/lib/data/profile';
 import { deleteProject, saveProject, updateProjectsOrder } from '@/lib/data/projects';
 
@@ -224,6 +229,27 @@ export async function submitTestimonialAction(
 	revalidatePath('/admin');
 }
 
+export async function addTestimonialAction(data: {
+	name: string;
+	role: string;
+	message: string;
+	rating?: number;
+	approved?: boolean;
+}) {
+	await requireAdminAuth();
+	const { supabaseAdmin } = await import('@/lib/supabase/server');
+	const { error } = await supabaseAdmin.from('testimonials').insert({
+		name: data.name,
+		role: data.role,
+		message: data.message,
+		rating: data.rating ?? 5,
+		approved: data.approved ?? true,
+	});
+	if (error) throw error;
+	revalidatePath('/');
+	revalidatePath('/admin');
+}
+
 // ─── Site Settings ───────────────────────────────────────────────────────────
 
 export async function saveSiteSettingsAction(settings: { show_testimonials: boolean }) {
@@ -279,8 +305,6 @@ export async function updateAchievementsOrderAction(updates: { id: string; order
 	revalidatePath('/admin');
 }
 
-
-
 // ─── Media Upload ────────────────────────────────────────────────────────────
 
 export async function uploadMediaAction(formData: FormData) {
@@ -294,11 +318,24 @@ export async function uploadMediaAction(formData: FormData) {
 	const { getSupabaseAdmin } = await import('@/lib/supabase/server');
 	const adminClient = getSupabaseAdmin();
 
-	// Fixed: Removed unused `data` assignment
-	const { error } = await adminClient.storage.from('portfolio_media').upload(fileName, file, {
+	let { error } = await adminClient.storage.from('portfolio_media').upload(fileName, file, {
 		cacheControl: '3600',
 		upsert: false,
 	});
+
+	// If the bucket doesn't exist yet, auto-create it as public and retry
+	if (
+		error &&
+		(error.message?.toLowerCase().includes('not found') ||
+			(error as { statusCode?: string }).statusCode === '404')
+	) {
+		await adminClient.storage.createBucket('portfolio_media', { public: true });
+		const retry = await adminClient.storage.from('portfolio_media').upload(fileName, file, {
+			cacheControl: '3600',
+			upsert: false,
+		});
+		error = retry.error;
+	}
 
 	if (error) throw error;
 
@@ -380,35 +417,88 @@ export async function sendContactEmailAction(data: {
 		throw new Error('Message must be between 1 and 5000 characters.');
 	}
 
-	const apiKey = process.env.RESEND_API_KEY;
-	if (!apiKey) {
-		throw new Error('Resend API key is not configured.');
+	const trimmedName = data.name.trim();
+	const trimmedEmail = data.email.trim();
+	const trimmedMessage = data.message.trim();
+
+	// 3. Persist to Supabase Database (Guaranteed delivery/archive)
+	try {
+		await submitContactMessage({
+			name: trimmedName,
+			email: trimmedEmail,
+			message: trimmedMessage,
+		});
+		revalidatePath('/admin');
+	} catch (dbError) {
+		console.error('Failed to store contact message in Supabase:', dbError);
 	}
 
-	const resend = new Resend(apiKey);
+	// 4. Dispatch Discord Webhook if configured (Instant phone/desktop alert)
+	const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
+	if (discordWebhookUrl?.startsWith('http')) {
+		try {
+			await fetch(discordWebhookUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					embeds: [
+						{
+							title: '📬 New Portfolio Contact Submission',
+							color: 0xc9a24b, // Warm brass accent
+							fields: [
+								{ name: 'Sender', value: trimmedName, inline: true },
+								{ name: 'Email', value: trimmedEmail, inline: true },
+								{ name: 'Message', value: trimmedMessage },
+							],
+							footer: { text: 'Portfolio Contact Form' },
+							timestamp: new Date().toISOString(),
+						},
+					],
+				}),
+			});
+		} catch (webhookErr) {
+			console.error('Discord webhook notification failed:', webhookErr);
+		}
+	}
 
-	const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+	// 5. Optional email dispatch via Resend (if credentials are provided)
+	const apiKey = process.env.RESEND_API_KEY;
 	const emailTo = process.env.EMAIL_TO;
 
-	if (!emailTo) {
-		throw new Error('Recipient email (EMAIL_TO) is not configured in environment variables.');
+	if (
+		apiKey &&
+		apiKey !== 'your-resend-key-here' &&
+		emailTo &&
+		emailTo !== 'your-recipient-email-here'
+	) {
+		try {
+			const resend = new Resend(apiKey);
+			const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+			const cleanName = trimmedName.replace(/["\\]/g, '');
+			const fromField = `New Contact "${cleanName}" <${emailFrom}>`;
+
+			await resend.emails.send({
+				from: fromField,
+				to: emailTo,
+				subject: `New Contact from ${trimmedName} via Portfolio`,
+				text: `Name: ${trimmedName}\nEmail: ${trimmedEmail}\n\nMessage:\n${trimmedMessage}`,
+			});
+		} catch (resendError) {
+			console.warn('Resend email delivery skipped/failed:', resendError);
+		}
 	}
+}
 
-	// Clean the name to prevent any header parsing/formatting issues
-	const cleanName = data.name.replace(/["\\]/g, '');
-	const fromField = `New Contact "${cleanName}" <${emailFrom}>`;
+// ─── Contact Messages Management (Admin) ──────────────────────
 
-	// Try sending the email. If the user hasn't verified their domain in Resend,
-	// they can only send emails to the email address associated with their Resend account
-	// from an 'onboarding@resend.dev' address.
-	const { error } = await resend.emails.send({
-		from: fromField,
-		to: emailTo,
-		subject: `New Contact from ${data.name} via Portfolio`,
-		text: `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`,
-	});
+export async function markContactMessageReadAction(id: string, read: boolean) {
+	await requireAdminAuth();
+	await markContactMessageRead(id, read);
+	revalidatePath('/admin');
+}
 
-	if (error) {
-		throw new Error(error.message);
-	}
+export async function deleteContactMessageAction(id: string) {
+	await requireAdminAuth();
+	await deleteContactMessage(id);
+	revalidatePath('/admin');
 }

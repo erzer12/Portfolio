@@ -1,6 +1,6 @@
 import { MinimalFooter } from '@/components/layout/Footer';
 import { MinimalNav } from '@/components/layout/Navigation';
-import { SectionRule } from '@/components/resume/SectionRule';
+import { ProjectCard } from '@/components/resume/ProjectCard';
 import { getFooterLinks } from '@/lib/data/footer';
 import { getProjects } from '@/lib/data/projects';
 
@@ -10,91 +10,45 @@ export default async function ProjectsPage() {
 	const [projects, footerLinks] = await Promise.all([getProjects(), getFooterLinks()]);
 
 	return (
-		<main className="mx-auto min-h-screen max-w-[760px] px-4 py-6 text-sm text-[--ink]">
-			<MinimalNav name="HP." email="harshilp1234@gmail.com" github="https://github.com/erzer12" />
+		<div className="min-h-screen flex flex-col bg-base text-text selection:bg-surface1 selection:text-accent font-mono transition-colors">
+			<MinimalNav
+				name="harshil"
+				email="harshilp1234@gmail.com"
+				github="https://github.com/erzer12"
+			/>
 
-			<div className="space-y-10 py-10">
-				<header>
+			<main className="flex-1 mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 sm:py-10 space-y-8 pb-20">
+				<header className="space-y-2 border-b border-surface0/60 pb-6">
 					<a
 						href="/"
-						className="font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted] hover:text-[--ink]"
+						className="inline-flex items-center gap-1.5 text-xs font-mono text-accent hover:underline mb-2"
 					>
-						← Back
+						<span>← Back to Home</span>
 					</a>
-					<p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-[--ink-muted]">
-						All Projects
+					<h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text">
+						All Projects & Experiments
+					</h1>
+					<p className="text-subtext0 text-sm font-sans max-w-xl leading-relaxed">
+						A collection of production applications, tools, and technical experiments built over the
+						years.
 					</p>
-					<h1 className="mt-2 font-serif text-4xl italic text-[--ink]">Selected work</h1>
 				</header>
 
-				{projects.map((project, index) => (
-					<section key={project.id}>
-						<div className="grid gap-4 md:grid-cols-[2.5rem_1fr] md:gap-6">
-							{/* Index number */}
-							<div className="font-mono text-xs text-[--ink-muted]">
-								{String(index + 1).padStart(2, '0')}
-							</div>
-
-							{/* Content */}
-							<div className="space-y-3">
-								<div className="flex items-start justify-between gap-4">
-									<div>
-										<h2 className="font-serif text-3xl italic text-[--ink]">
-											<a
-												href={`/projects/${project.slug}`}
-												className="hover:underline decoration-[--rule] underline-offset-4"
-											>
-												{project.title}
-											</a>
-										</h2>
-										<p className="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted]">
-											{project.category}
-											{project.date ? ` · ${project.date}` : ''}
-										</p>
-									</div>
-								</div>
-
-								<p className="max-w-2xl leading-7 text-[--ink-muted]">{project.description}</p>
-
-								<div className="flex flex-wrap gap-2 font-mono text-xs">
-									{project.tags.map((tag) => (
-										<span
-											key={tag}
-											className="rounded border border-[--tag-border] px-2 py-0.5 text-[--tag-text]"
-										>
-											{tag}
-										</span>
-									))}
-								</div>
-
-								<div className="flex gap-4 font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted]">
-									{project.github && (
-										<a href={project.github} target="_blank" rel="noopener noreferrer">
-											GitHub ↗
-										</a>
-									)}
-									{project.live && (
-										<a href={project.live} target="_blank" rel="noopener noreferrer">
-											Live Demo ↗
-										</a>
-									)}
-									<a href={`/projects/${project.slug}`} className="text-[--ink]">
-										Details →
-									</a>
-								</div>
-							</div>
-						</div>
-
-						{index < projects.length - 1 && <SectionRule className="mt-10" />}
-					</section>
-				))}
+				{/* Responsive 3-Column Lab Spec Sheet Grid */}
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+					{projects.map((project, index) => (
+						<ProjectCard key={project.id} project={project} index={index + 1} />
+					))}
+				</div>
 
 				{projects.length === 0 && (
-					<p className="font-mono text-xs text-[--ink-muted]">No projects yet.</p>
+					<div className="p-12 rounded-xl border border-surface0 bg-mantle text-center text-subtext0 text-sm">
+						No projects in database yet. Add projects via the CMS dashboard.
+					</div>
 				)}
-			</div>
+			</main>
 
 			<MinimalFooter links={footerLinks} />
-		</main>
+		</div>
 	);
 }

@@ -16,6 +16,8 @@ export type Profile = {
 		twitter?: string;
 		imageMeta?: { x?: number; y?: number; scale?: number };
 		imageCrop?: { left: number; top: number; size: number };
+		avatar_mode?: 'ascii' | 'photo';
+		ascii_art?: string;
 	};
 };
 
@@ -111,4 +113,13 @@ export type FooterLink = {
 	label: string;
 	url: string;
 	order: number;
+};
+
+export type ContactMessage = {
+	id: string;
+	name: string;
+	email: string;
+	message: string;
+	read: boolean;
+	created_at: string;
 };

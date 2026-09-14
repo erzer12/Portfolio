@@ -1,64 +1,75 @@
-import { displayText } from '@/lib/utils';
+'use client';
+
 import type { Project } from '@/types';
+import { ProjectCard } from './ProjectCard';
 
 type FeaturedProjectsProps = {
 	items: Project[];
-	viewAllHref: string;
+	viewAllHref?: string;
 };
 
-export function FeaturedProjects({ items, viewAllHref }: FeaturedProjectsProps) {
+export function FeaturedProjects({ items, viewAllHref = '/projects' }: FeaturedProjectsProps) {
+	const featuredItems = items.slice(0, 2);
+
 	return (
-		<div className="space-y-6">
-			<div className="flex justify-end">
+		<section id="projects" className="space-y-4 pt-3 pb-1" aria-label="Featured Projects">
+			{/* Section Header */}
+			<div className="flex items-center justify-between border-b border-surface0/60 pb-2.5">
+				<h2 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-text">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="18"
+						height="18"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						className="text-accent"
+					>
+						<title>Star Icon</title>
+						<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+					</svg>
+					<span>Featured Projects</span>
+				</h2>
+
 				<a
 					href={viewAllHref}
-					className="font-mono text-xs uppercase tracking-[0.14em] text-[--ink-muted] transition-colors hover:text-[--ink]"
+					className="group text-accent hover:underline inline-flex items-center gap-1 text-xs font-mono font-medium"
 				>
-					View all →
+					<span>View all ({items.length})</span>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="13"
+						height="13"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						className="transition-transform duration-200 group-hover:translate-x-0.5"
+					>
+						<title>Arrow Right</title>
+						<line x1="5" y1="12" x2="19" y2="12" />
+						<polyline points="12 5 19 12 12 19" />
+					</svg>
 				</a>
 			</div>
 
-			<div className="space-y-6">
-				{items.map((item) => (
-					<article
-						key={item.id}
-						className="group space-y-3 border-l-[3px] border-[--rule] pl-4 transition-[border-color,padding-left] duration-150 hover:border-[--ink] hover:pl-4"
-					>
-						<div className="flex flex-wrap items-start justify-between gap-4">
-							<div>
-								<h3 className="text-[15px] font-medium text-[--ink]">
-									<a href={`/projects/${item.slug}`} className="hover:underline underline-offset-4">
-										{displayText(item.title)} ↗
-									</a>
-								</h3>
-								<p className="text-[14px] leading-7 text-[--ink-muted]">
-									{displayText(item.description)}
-								</p>
-							</div>
-							<p className="font-mono text-xs text-[--ink-muted]">
-								{displayText(item.date ?? item.created_at?.slice(0, 4))}
-							</p>
-						</div>
-
-						<div className="flex flex-wrap gap-2 font-mono text-xs">
-							{item.tags.map((tag) => (
-								<span
-									key={tag}
-									className="rounded border border-[--tag-border] px-2 py-0.5 text-[--tag-text]"
-								>
-									{displayText(tag)}
-								</span>
-							))}
-						</div>
-					</article>
+			{/* Responsive 2-Card Grid */}
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
+				{featuredItems.map((item, idx) => (
+					<ProjectCard key={item.id} project={item} index={idx + 1} />
 				))}
 			</div>
 
 			{items.length === 0 && (
-				<p className="font-mono text-xs text-[--ink-muted]">
-					No featured projects yet. Mark projects as featured in the admin.
-				</p>
+				<div className="rounded-xl border border-surface0 bg-mantle p-8 text-center text-subtext0 font-mono text-sm">
+					No featured projects available right now. Mark projects as featured in the CMS dashboard.
+				</div>
 			)}
-		</div>
+		</section>
 	);
 }

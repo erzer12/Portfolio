@@ -2,28 +2,13 @@
 
 /* ─── Buttons ───────────────────────────────────────────────── */
 button {
-	--btn-bg: var(--analytics-btn-bg, transparent);
-	--btn-text: var(--analytics-btn-text, var(--ink));
-
-	background-color: var(--btn-bg);
-	color: var(--btn-text);
-	border: 1px solid transparent;
 	font-family: var(--font-mono);
-	transition:
-		background 150ms,
-		color 150ms,
-		border-color 150ms;
 	cursor: pointer;
 }
 
 button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
-}
-
-button:hover:not(:disabled) {
-	--btn-bg: var(--analytics-btn-hover, var(--ink));
-	--btn-text: var(--analytics-btn-hover-text, var(--wall));
 }
 
 /* Admin Button */
@@ -107,6 +92,47 @@ select:focus {
 .admin-input option {
 	background: var(--wall);
 	color: var(--ink);
+}
+
+/* Modern Admin Input styling with Catppuccin support */
+.admin-input-modern {
+	display: block;
+	width: 100%;
+	border-radius: 0.75rem;
+	border: 1px solid var(--color-surface1);
+	background-color: var(--color-base);
+	padding: 0.625rem 0.875rem;
+	font-family: var(--font-mono, monospace);
+	font-size: 0.8125rem;
+	color: var(--color-text);
+	outline: none;
+	transition: all 150ms ease;
+}
+
+.latte .admin-input-modern {
+	background-color: #ffffff;
+	border-color: var(--color-surface1);
+	color: var(--color-text);
+}
+
+.admin-input-modern:focus {
+	border-color: var(--current-accent-color);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--current-accent-color) 25%, transparent);
+}
+
+.admin-input-modern::placeholder {
+	color: var(--color-surface2);
+}
+
+/* Select option styles in Latte & Mocha */
+select.admin-input-modern option {
+	background-color: var(--color-base);
+	color: var(--color-text);
+}
+
+.latte select.admin-input-modern option {
+	background-color: #ffffff;
+	color: var(--color-text);
 }
 
 /* ─── Cards ─────────────────────────────────────────────────── */

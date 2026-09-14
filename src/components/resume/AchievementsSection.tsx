@@ -4,28 +4,36 @@ type Props = { items: Achievement[] };
 
 export function AchievementsSection({ items }: Props) {
 	return (
-		<div className="divide-y divide-[--rule]">
-			{items.map((item) => (
-				<div key={item.id} className="flex items-start justify-between gap-4 py-3">
-					<div className="space-y-0.5">
+		<div className="border border-surface0/80 bg-mantle rounded-xl p-5 shadow-lg space-y-3">
+			{items.map((item, idx) => (
+				<div
+					key={item.id}
+					className={`flex items-start justify-between gap-4 py-2 ${
+						idx < items.length - 1 ? 'border-b border-surface0/60 pb-3' : ''
+					}`}
+				>
+					<div className="space-y-1">
 						{item.url ? (
 							<a
 								href={item.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-[14px] font-medium text-[--ink] underline decoration-[--rule] underline-offset-4 hover:text-[--ink-muted]"
+								className="text-sm font-bold text-text hover:text-accent inline-flex items-center gap-1 transition-colors"
 							>
-								{item.title} ↗
+								<span>{item.title}</span>
+								<span className="text-xs">↗</span>
 							</a>
 						) : (
-							<p className="text-[14px] font-medium text-[--ink]">{item.title}</p>
+							<p className="text-sm font-bold text-text">{item.title}</p>
 						)}
 						{item.description && (
-							<p className="text-[13px] text-[--ink-muted]">{item.description}</p>
+							<p className="text-xs text-subtext0 leading-relaxed font-sans">{item.description}</p>
 						)}
 					</div>
 					{item.date && (
-						<p className="shrink-0 font-mono text-xs text-[--ink-muted]">{item.date}</p>
+						<span className="shrink-0 font-mono text-xs text-subtext1 px-2 py-0.5 rounded bg-surface0">
+							{item.date}
+						</span>
 					)}
 				</div>
 			))}

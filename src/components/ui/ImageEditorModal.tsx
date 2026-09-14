@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2, Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { uploadMediaAction } from '@/app/actions';
@@ -99,9 +100,14 @@ export default function ImageEditorModal({
 			};
 			const centerX = crop.left + crop.size / 2;
 			const centerY = crop.top + crop.size / 2;
-			const derivedScale = Math.max(1, Math.min(5, Number((100 / crop.size).toFixed(2))));
+			const calculatedScale = Number(Math.max(1, 100 / crop.size).toFixed(2));
 
-			onSave(url, { x: centerX, y: centerY, scale: derivedScale, crop });
+			onSave(url, {
+				x: Number(centerX.toFixed(2)),
+				y: Number(centerY.toFixed(2)),
+				scale: calculatedScale,
+				crop,
+			});
 			onClose();
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : 'Upload failed';
@@ -112,17 +118,37 @@ export default function ImageEditorModal({
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-			<div className="w-[960px] max-w-full bg-[--bg] border border-[--rule] p-6 rounded">
-				<h3 className="font-mono text-sm mb-4">Upload & Adjust Image</h3>
+		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-base/80 backdrop-blur-sm">
+			<div className="w-full max-w-3xl rounded-2xl border border-surface0 bg-mantle p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150">
+				{/* Modal Header */}
+				<div className="flex items-center justify-between border-b border-surface0 pb-4">
+					<div className="flex items-center gap-2.5">
+						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
+							<Upload className="h-4 w-4" />
+						</div>
+						<div>
+							<h3 className="text-sm font-semibold text-text">Upload & Adjust Avatar</h3>
+							<p className="text-[11px] text-subtext0">
+								Position the focal square or select a new headshot photo
+							</p>
+						</div>
+					</div>
+					<button
+						type="button"
+						onClick={onClose}
+						className="rounded-lg p-1.5 text-subtext0 hover:bg-surface0 hover:text-text transition-colors"
+					>
+						<X className="h-4 w-4" />
+					</button>
+				</div>
 
-				<div className="flex gap-6">
+				<div className="flex flex-col sm:flex-row gap-6 items-start">
+					{/* Cropper Container */}
 					<div
 						ref={containerRef}
 						role="application"
 						aria-label="Image cropper. Drag the square overlay to move it and drag the corner handle to resize"
-						/* Adjusted: Visual container dimension sizes expanded to w-64 h-64 */
-						className="w-96 h-96 bg-white border border-[--rule] overflow-hidden relative flex-shrink-0"
+						className="w-72 h-72 sm:w-80 sm:h-80 bg-base border border-surface1 rounded-xl overflow-hidden relative shrink-0 shadow-inner select-none"
 						style={{ touchAction: 'none' }}
 					>
 						{preview ? (
@@ -131,7 +157,7 @@ export default function ImageEditorModal({
 								alt="preview"
 								fill
 								unoptimized
-								className="object-cover"
+								className="object-cover pointer-events-none"
 								style={{
 									objectPosition: `${x}% ${y}%`,
 									transform: `scale(${scale})`,
@@ -139,13 +165,14 @@ export default function ImageEditorModal({
 								}}
 							/>
 						) : (
-							<div className="text-xs text-[--ink-muted] flex items-center justify-center h-full">
-								No image
+							<div className="text-xs text-subtext0 flex items-center justify-center h-full font-mono">
+								No image selected
 							</div>
 						)}
 
+						{/* Crop selection overlay box */}
 						<div
-							className="absolute bg-black/20 border-2 border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.18)]"
+							className="absolute bg-base/20 border-2 border-accent shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing"
 							style={{
 								left: `${cropLeft}%`,
 								top: `${cropTop}%`,
@@ -203,9 +230,9 @@ export default function ImageEditorModal({
 								dragStateRef.current = null;
 							}}
 						>
+							{/* Corner resize handle */}
 							<div
-								className="absolute w-4 h-4 bg-white/90 border border-black/20"
-								style={{ right: -8, bottom: -8, cursor: 'nwse-resize' }}
+								className="absolute w-4 h-4 bg-accent border-2 border-base rounded-xs -right-2 -bottom-2 cursor-nwse-resize shadow-md"
 								onPointerDown={(e) => {
 									e.stopPropagation();
 									(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -248,45 +275,59 @@ export default function ImageEditorModal({
 								}}
 							/>
 
+							{/* Rule of thirds grid lines */}
 							<div className="absolute inset-0 pointer-events-none">
-								<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/20" />
-								<div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/20" />
-								<div className="absolute top-1/3 left-0 right-0 h-px bg-white/20" />
-								<div className="absolute top-2/3 left-0 right-0 h-px bg-white/20" />
+								<div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/30" />
+								<div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/30" />
+								<div className="absolute top-1/3 left-0 right-0 h-px bg-white/30" />
+								<div className="absolute top-2/3 left-0 right-0 h-px bg-white/30" />
 							</div>
 						</div>
 					</div>
 
-					<div className="flex-1 flex flex-col justify-between">
-						<div className="mb-3">
+					{/* Controls column */}
+					<div className="flex-1 flex flex-col justify-between w-full space-y-4">
+						<div className="space-y-2">
 							<label
 								htmlFor="file-chooser"
-								className="block text-xs font-mono mb-2 text-[--ink-muted]"
+								className="block text-xs font-semibold uppercase tracking-wider text-subtext0"
 							>
-								Choose file
+								Choose Replacement Image
 							</label>
 							<input
 								id="file-chooser"
 								type="file"
 								accept="image/*"
-								className="text-xs font-mono file:mr-4 file:py-1.5 file:px-3 file:border file:border-[--ink] file:text-[--ink] file:bg-transparent file:hover:bg-[--ink] file:hover:text-[--bg] file:transition-colors cursor-pointer"
+								className="text-xs font-mono text-subtext0 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border file:border-surface1 file:text-xs file:font-semibold file:text-text file:bg-surface0 file:hover:border-accent file:hover:text-accent file:transition-all cursor-pointer w-full"
 								onChange={(e) => setFile(e.target.files?.[0] ?? null)}
 							/>
+							<p className="text-[11px] text-subtext0/70 font-mono">
+								Supported formats: PNG, JPG, WebP. Recommended 1:1 square ratio.
+							</p>
 						</div>
 
-						{error && <p className="text-red-500 text-xs mt-2 font-mono">{error}</p>}
+						{error && (
+							<div className="rounded-xl border border-red/40 bg-red/10 px-3.5 py-2.5 text-xs text-red font-mono">
+								{error}
+							</div>
+						)}
 
-						<div className="flex gap-3 mt-6">
+						<div className="flex items-center justify-end gap-3 pt-4 border-t border-surface0">
+							<button
+								type="button"
+								onClick={onClose}
+								className="rounded-xl border border-surface1 px-4 py-2.5 text-xs font-semibold text-subtext0 hover:bg-surface0 hover:text-text transition-colors"
+							>
+								Cancel
+							</button>
 							<button
 								type="button"
 								onClick={handleSave}
 								disabled={isUploading}
-								className="admin-btn"
+								className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-fg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md shadow-accent/10"
 							>
-								{isUploading ? 'Saving...' : 'Save Image'}
-							</button>
-							<button type="button" onClick={onClose} className="admin-btn-sm">
-								Cancel
+								{isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
+								<span>{isUploading ? 'Uploading...' : 'Save Avatar'}</span>
 							</button>
 						</div>
 					</div>

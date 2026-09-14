@@ -4,7 +4,7 @@ import './components.css';
 import './app.css';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-
+import { ThemeProvider } from '@/components/theme/ThemeContext';
 import { getProfile } from '@/lib/data/profile';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -76,9 +76,29 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
-			<body>
-				{children}
+		<html
+			lang="en"
+			suppressHydrationWarning
+			className="bg-base font-mono text-text selection:bg-surface1 selection:text-accent caret-accent min-h-screen"
+		>
+			<head>
+				<script data-theme-init>
+					{`
+						(function() {
+							try {
+								var palette = localStorage.getItem('catppuccin-palette') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'latte' : 'mocha');
+								var accent = localStorage.getItem('catppuccin-accent') || 'peach';
+								document.documentElement.classList.remove('mocha', 'latte', 'frappe', 'macchiato');
+								document.documentElement.classList.add(palette);
+								document.documentElement.setAttribute('data-accent', accent);
+								document.documentElement.style.setProperty('--current-accent-color', 'var(--color-' + accent + ')');
+							} catch(e) {}
+						})();
+					`}
+				</script>
+			</head>
+			<body className="bg-base text-text min-h-screen">
+				<ThemeProvider>{children}</ThemeProvider>
 				<SpeedInsights />
 				<Analytics />
 			</body>

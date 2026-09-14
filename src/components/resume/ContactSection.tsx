@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useState, useTransition } from 'react';
 import { sendContactEmailAction, submitTestimonialAction } from '@/app/actions';
 
@@ -7,6 +8,13 @@ export function ContactSection() {
 	const [activeTab, setActiveTab] = useState<'contact' | 'testimonial'>('contact');
 	const [isPending, startTransition] = useTransition();
 	const [msg, setMsg] = useState('');
+	const [copied, setCopied] = useState(false);
+
+	const handleCopyEmail = () => {
+		navigator.clipboard.writeText('harshilp1234@gmail.com');
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	const handleTestimonialSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -60,9 +68,26 @@ export function ContactSection() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="border border-surface0/80 bg-mantle rounded-xl p-5 sm:p-6 shadow-lg space-y-5 font-sans">
+			{/* Quick direct copy banner */}
+			<div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-surface0/50 border border-surface0 text-xs font-mono">
+				<div className="flex items-center gap-2">
+					<span className="text-accent">✉</span>
+					<span className="text-subtext0">Direct Email:</span>
+					<span className="text-text font-bold">harshilp1234@gmail.com</span>
+				</div>
+				<button
+					type="button"
+					onClick={handleCopyEmail}
+					className="px-2.5 py-1 rounded bg-surface1 text-text hover:text-accent hover:border-accent text-xs transition-all cursor-pointer font-medium"
+				>
+					{copied ? 'Copied! ✓' : 'Copy Email'}
+				</button>
+			</div>
+
+			{/* Tab Selector */}
 			<div
-				className="flex gap-4 border-b border-[--rule] pb-2 font-mono text-xs uppercase tracking-[0.14em]"
+				className="flex gap-2 border-b border-surface0/80 pb-3 font-mono text-xs"
 				role="tablist"
 				aria-label="Contact options"
 			>
@@ -72,26 +97,33 @@ export function ContactSection() {
 						setActiveTab('contact');
 						setMsg('');
 					}}
-					className={`transition-colors ${activeTab === 'contact' ? 'text-[--ink]' : 'text-[--ink-muted] hover:text-[--ink]'}`}
+					className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer font-medium ${
+						activeTab === 'contact'
+							? 'bg-surface0 text-accent font-bold ring-1 ring-accent shadow-xs'
+							: 'text-subtext0 hover:text-text'
+					}`}
 					role="tab"
 					aria-selected={activeTab === 'contact'}
 					aria-controls="contact-panel"
 				>
-					Contact me
+					Send Message
 				</button>
-				<span className="text-[--ink-muted]">|</span>
 				<button
 					type="button"
 					onClick={() => {
 						setActiveTab('testimonial');
 						setMsg('');
 					}}
-					className={`transition-colors ${activeTab === 'testimonial' ? 'text-[--ink]' : 'text-[--ink-muted] hover:text-[--ink]'}`}
+					className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer font-medium ${
+						activeTab === 'testimonial'
+							? 'bg-surface0 text-accent font-bold ring-1 ring-accent shadow-xs'
+							: 'text-subtext0 hover:text-text'
+					}`}
 					role="tab"
 					aria-selected={activeTab === 'testimonial'}
 					aria-controls="testimonial-panel"
 				>
-					Testimonial
+					Leave Testimonial
 				</button>
 			</div>
 
@@ -102,39 +134,57 @@ export function ContactSection() {
 					id="contact-panel"
 					role="tabpanel"
 				>
-					<div className="grid gap-4 md:grid-cols-2">
-						<label htmlFor="contact-name" className="sr-only">
-							Name
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div>
+							<label
+								htmlFor="contact-name"
+								className="block text-xs font-mono text-subtext1 mb-1.5"
+							>
+								Your Name
+							</label>
+							<input
+								id="contact-name"
+								name="name"
+								disabled={isPending}
+								className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"
+								placeholder="Jane Doe"
+							/>
+						</div>
+						<div>
+							<label
+								htmlFor="contact-email"
+								className="block text-xs font-mono text-subtext1 mb-1.5"
+							>
+								Your Email
+							</label>
+							<input
+								id="contact-email"
+								name="email"
+								type="email"
+								disabled={isPending}
+								className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"
+								placeholder="jane@example.com"
+							/>
+						</div>
+					</div>
+
+					<div>
+						<label
+							htmlFor="contact-message"
+							className="block text-xs font-mono text-subtext1 mb-1.5"
+						>
+							Your Message
 						</label>
-						<input
-							id="contact-name"
-							name="name"
+						<textarea
+							id="contact-message"
+							name="message"
 							disabled={isPending}
-							className="border-b border-[--rule] bg-transparent py-2 outline-none"
-							placeholder="Name"
-						/>
-						<label htmlFor="contact-email" className="sr-only">
-							Email
-						</label>
-						<input
-							id="contact-email"
-							name="email"
-							type="email"
-							disabled={isPending}
-							className="border-b border-[--rule] bg-transparent py-2 outline-none"
-							placeholder="Email"
+							rows={4}
+							className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors resize-y"
+							placeholder="Hi Harshil, let's talk about..."
 						/>
 					</div>
-					<label htmlFor="contact-message" className="sr-only">
-						Message
-					</label>
-					<textarea
-						id="contact-message"
-						name="message"
-						disabled={isPending}
-						className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none"
-						placeholder="Message"
-					/>
+
 					{/* Honeypot: hidden from real users, bots fill it automatically */}
 					<label
 						htmlFor="contact-website"
@@ -150,15 +200,16 @@ export function ContactSection() {
 							tabIndex={-1}
 						/>
 					</label>
-					<div className="flex items-center gap-4">
+
+					<div className="flex items-center gap-4 pt-1">
 						<button
 							type="submit"
 							disabled={isPending}
-							className="border border-[--ink] px-4 py-2 font-mono text-xs uppercase tracking-[0.14em] hover:bg-[--ink] hover:text-[--bg] transition-colors disabled:opacity-50"
+							className="px-5 py-2.5 rounded-lg bg-accent text-accent-fg font-mono text-xs font-bold uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-50"
 						>
-							{isPending ? 'Sending...' : 'Send'}
+							{isPending ? 'Sending...' : 'Send Message'}
 						</button>
-						{msg && <p className="font-mono text-xs text-[--ink-muted]">{msg}</p>}
+						{msg && <p className="font-mono text-xs text-accent">{msg}</p>}
 					</div>
 				</form>
 			) : (
@@ -168,47 +219,65 @@ export function ContactSection() {
 					id="testimonial-panel"
 					role="tabpanel"
 				>
-					<div className="grid gap-4 md:grid-cols-2">
-						<label htmlFor="testimonial-name" className="sr-only">
-							Your Name
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div>
+							<label
+								htmlFor="testimonial-name"
+								className="block text-xs font-mono text-subtext1 mb-1.5"
+							>
+								Your Name
+							</label>
+							<input
+								id="testimonial-name"
+								name="name"
+								disabled={isPending}
+								className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"
+								placeholder="Alex Smith"
+							/>
+						</div>
+						<div>
+							<label
+								htmlFor="testimonial-role"
+								className="block text-xs font-mono text-subtext1 mb-1.5"
+							>
+								Your Role / Organization
+							</label>
+							<input
+								id="testimonial-role"
+								name="role"
+								disabled={isPending}
+								className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors"
+								placeholder="Tech Lead @ Company"
+							/>
+						</div>
+					</div>
+
+					<div>
+						<label
+							htmlFor="testimonial-message"
+							className="block text-xs font-mono text-subtext1 mb-1.5"
+						>
+							Your Testimonial
 						</label>
-						<input
-							id="testimonial-name"
-							name="name"
-							className="border-b border-[--rule] bg-transparent py-2 outline-none"
-							placeholder="Your Name"
+						<textarea
+							id="testimonial-message"
+							name="message"
 							disabled={isPending}
-						/>
-						<label htmlFor="testimonial-role" className="sr-only">
-							Your Role / Company
-						</label>
-						<input
-							id="testimonial-role"
-							name="role"
-							className="border-b border-[--rule] bg-transparent py-2 outline-none"
-							placeholder="Your Role / Company"
-							disabled={isPending}
+							rows={4}
+							className="w-full border border-surface1/80 bg-base rounded-lg px-3 py-2 text-sm text-text focus:border-accent focus:outline-none transition-colors resize-y"
+							placeholder="Harshil is a talented builder who delivered..."
 						/>
 					</div>
-					<label htmlFor="testimonial-message" className="sr-only">
-						Your Testimonial
-					</label>
-					<textarea
-						id="testimonial-message"
-						name="message"
-						className="min-h-32 w-full border-b border-[--rule] bg-transparent py-2 outline-none"
-						placeholder="Your Testimonial"
-						disabled={isPending}
-					/>
-					<div className="flex items-center gap-4">
+
+					<div className="flex items-center gap-4 pt-1">
 						<button
 							type="submit"
 							disabled={isPending}
-							className="border border-[--ink] px-4 py-2 font-mono text-xs uppercase tracking-[0.14em] hover:bg-[--ink] hover:text-[--bg] transition-colors disabled:opacity-50"
+							className="px-5 py-2.5 rounded-lg bg-accent text-accent-fg font-mono text-xs font-bold uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-50"
 						>
-							{isPending ? 'Sending...' : 'Submit Testimonial'}
+							{isPending ? 'Submitting...' : 'Submit Testimonial'}
 						</button>
-						{msg && <p className="font-mono text-xs text-[--ink-muted]">{msg}</p>}
+						{msg && <p className="font-mono text-xs text-accent">{msg}</p>}
 					</div>
 				</form>
 			)}
