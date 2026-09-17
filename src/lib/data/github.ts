@@ -122,7 +122,7 @@ function githubHeaders(): Record<string, string> {
 	};
 	const token = process.env.GITHUB_TOKEN;
 	if (token) {
-		headers['Authorization'] = `Bearer ${token}`;
+		headers.Authorization = `Bearer ${token}`;
 	}
 	return headers;
 }
@@ -215,11 +215,22 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 			(e) => e.type === 'PushEvent' && (e.payload?.head || e.payload?.commits?.length),
 		);
 
+		type GitHubPushEvent = {
+			type: string;
+			created_at?: string;
+			repo?: { name?: string };
+			payload?: {
+				head?: string;
+				ref?: string;
+				commits?: Array<{ sha?: string; message?: string }>;
+			};
+		};
+
 		// Extract up to 5 unique recent push events
-		const selectedEvents: any[] = [];
+		const selectedEvents: GitHubPushEvent[] = [];
 		const seenShas = new Set<string>();
 
-		for (const pe of pushEvents) {
+		for (const pe of pushEvents as GitHubPushEvent[]) {
 			const sha = pe.payload?.head || pe.payload?.commits?.[pe.payload.commits.length - 1]?.sha;
 			if (sha && !seenShas.has(sha)) {
 				seenShas.add(sha);
@@ -238,7 +249,9 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 				const repoFullName: string = event.repo?.name ?? '';
 				const repoName = repoFullName.split('/')[1] || repoFullName;
 				const sha: string =
-					event.payload?.head || event.payload?.commits?.[event.payload.commits.length - 1]?.sha || '';
+					event.payload?.head ||
+					event.payload?.commits?.[event.payload.commits.length - 1]?.sha ||
+					'';
 				const eventDate = event.created_at ? new Date(event.created_at).getTime() : Date.now();
 
 				// If the event payload already has the commit message
@@ -268,7 +281,7 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 
 				if (!commitRes.ok) {
 					return {
-						message: 'Pushed commits to ' + (event.payload?.ref?.replace('refs/heads/', '') || 'branch'),
+						message: `Pushed commits to ${event.payload?.ref?.replace('refs/heads/', '') || 'branch'}`,
 						repo: repoName,
 						time: event.created_at ? getRelativeTime(event.created_at) : 'recently',
 						sha: sha ? sha.slice(0, 7) : '',
@@ -291,7 +304,9 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 					sha: sha ? sha.slice(0, 7) : '',
 					url:
 						commitData.html_url ||
-						(sha ? `https://github.com/${repoFullName}/commit/${sha}` : `https://github.com/${repoFullName}`),
+						(sha
+							? `https://github.com/${repoFullName}/commit/${sha}`
+							: `https://github.com/${repoFullName}`),
 					rawDate: commitDate,
 				};
 			}),
@@ -333,13 +348,10 @@ export async function getLanguageStats(username = 'erzer12'): Promise<Language[]
 
 		const langPromises = ownRepos.map(async (repo: { name: string }) => {
 			try {
-				const res = await fetch(
-					`https://api.github.com/repos/${username}/${repo.name}/languages`,
-					{
-						next: { revalidate: 3600 },
-						headers: githubHeaders(),
-					},
-				);
+				const res = await fetch(`https://api.github.com/repos/${username}/${repo.name}/languages`, {
+					next: { revalidate: 3600 },
+					headers: githubHeaders(),
+				});
 				if (!res.ok) return {};
 				return (await res.json()) as Record<string, number>;
 			} catch {

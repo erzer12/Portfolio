@@ -32,9 +32,29 @@ const capture = (cmd) => {
 
 function printBanner() {
 	console.log(`\n${c.cyan}┌────────────────────────────────────────────────────────┐${c.reset}`);
-	console.log(`${c.cyan}│${c.reset}  ${c.bold}⚡ PORTFOLIO PRE-COMMIT VERIFICATION PIPELINE${c.reset}         ${c.cyan}│${c.reset}`);
+	console.log(
+		`${c.cyan}│${c.reset}  ${c.bold}⚡ PORTFOLIO PRE-COMMIT VERIFICATION PIPELINE${c.reset}         ${c.cyan}│${c.reset}`,
+	);
 	console.log(`${c.cyan}└────────────────────────────────────────────────────────┘${c.reset}\n`);
 }
+
+function detectPackageManager() {
+	const userAgent = process.env.npm_config_user_agent || '';
+	if (userAgent.startsWith('bun')) return { run: 'bun run', x: 'bunx' };
+	if (userAgent.startsWith('pnpm')) return { run: 'pnpm run', x: 'pnpm dlx' };
+	if (userAgent.startsWith('yarn')) return { run: 'yarn', x: 'yarn dlx' };
+
+	try {
+		execSync('bun --version', { stdio: 'ignore' });
+		return { run: 'bun run', x: 'bunx' };
+	} catch {
+		// Bun not installed or not in PATH
+	}
+
+	return { run: 'npm run', x: 'npx' };
+}
+
+const pm = detectPackageManager();
 
 function checkStagedFiles() {
 	const staged = capture('git diff --cached --name-only --diff-filter=ACMR');
@@ -42,40 +62,51 @@ function checkStagedFiles() {
 		console.log(`${c.yellow}ℹ No staged changes found to verify.${c.reset}`);
 		process.exit(0);
 	}
-	return staged.split('\n').map((s) => s.trim()).filter(Boolean);
+	return staged
+		.split('\n')
+		.map((s) => s.trim())
+		.filter(Boolean);
 }
 
 // ─── GATE 1: Staged Format & Lint with Biome ──────────────────────────────
 function gateLintStaged() {
-	process.stdout.write(`${c.bold}[1/4]${c.reset} 🎨 ${c.cyan}Biome staged formatting & linting...${c.reset} `);
+	process.stdout.write(
+		`${c.bold}[1/4]${c.reset} 🎨 ${c.cyan}Biome staged formatting & linting...${c.reset} `,
+	);
 	try {
-		run('bunx lint-staged', true);
+		run(`${pm.x} lint-staged`, true);
 		console.log(`${c.green}✔ PASS${c.reset}`);
 	} catch {
 		console.log(`${c.red}✖ FAIL${c.reset}`);
 		console.error(`\n${c.red}Biome encountered errors on staged files.${c.reset}`);
-		console.error(`${c.dim}Run 'bun run check:fix' to auto-resolve.${c.reset}\n`);
+		console.error(`${c.dim}Run '${pm.run} check:fix' to auto-resolve.${c.reset}\n`);
 		process.exit(1);
 	}
 }
 
 // ─── GATE 2: Full TypeScript Type Check ────────────────────────────────────
 function gateTypeCheck() {
-	process.stdout.write(`${c.bold}[2/4]${c.reset} 🧠 ${c.cyan}TypeScript compilation check (tsc)...${c.reset} `);
+	process.stdout.write(
+		`${c.bold}[2/4]${c.reset} 🧠 ${c.cyan}TypeScript compilation check (tsc)...${c.reset} `,
+	);
 	try {
-		run('bun run typecheck', true);
+		run(`${pm.run} typecheck`, true);
 		console.log(`${c.green}✔ PASS${c.reset}`);
 	} catch {
 		console.log(`${c.red}✖ FAIL${c.reset}`);
 		console.error(`\n${c.red}TypeScript found compilation or type errors.${c.reset}`);
-		console.error(`${c.dim}Run 'bun run typecheck' to see full compiler diagnostics.${c.reset}\n`);
+		console.error(
+			`${c.dim}Run '${pm.run} typecheck' to see full compiler diagnostics.${c.reset}\n`,
+		);
 		process.exit(1);
 	}
 }
 
 // ─── GATE 3: Security & Secret Leak Guard ─────────────────────────────────
 function gateSecurity(stagedFiles) {
-	process.stdout.write(`${c.bold}[3/4]${c.reset} 🔐 ${c.cyan}Security & secret leak audit...${c.reset} `);
+	process.stdout.write(
+		`${c.bold}[3/4]${c.reset} 🔐 ${c.cyan}Security & secret leak audit...${c.reset} `,
+	);
 
 	// 1. Check for sensitive files
 	const forbiddenFiles = ['.env', '.env.local', '.env.production', '.env.development'];
@@ -109,9 +140,13 @@ function gateSecurity(stagedFiles) {
 		for (const pattern of secretPatterns) {
 			if (pattern.regex.test(line)) {
 				console.log(`${c.red}✖ BLOCKED${c.reset}`);
-				console.error(`\n${c.red}🚨 Detected possible credential leak [${pattern.name}]:${c.reset}`);
+				console.error(
+					`\n${c.red}🚨 Detected possible credential leak [${pattern.name}]:${c.reset}`,
+				);
 				console.error(`   ${c.dim}${line.slice(0, 100)}...${c.reset}`);
-				console.error(`${c.yellow}Move credentials into .env.local and use process.env instead.${c.reset}\n`);
+				console.error(
+					`${c.yellow}Move credentials into .env.local and use process.env instead.${c.reset}\n`,
+				);
 				process.exit(1);
 			}
 		}
@@ -122,7 +157,9 @@ function gateSecurity(stagedFiles) {
 
 // ─── GATE 4: Code Hygiene & Sanity Checks ──────────────────────────────────
 function gateHygiene(stagedFiles) {
-	process.stdout.write(`${c.bold}[4/4]${c.reset} 🧹 ${c.cyan}Code hygiene & git sanity checks...${c.reset} `);
+	process.stdout.write(
+		`${c.bold}[4/4]${c.reset} 🧹 ${c.cyan}Code hygiene & git sanity checks...${c.reset} `,
+	);
 
 	// 1. Check file size limits (reject any file > 2MB)
 	const MAX_SIZE_MB = 2;
@@ -131,8 +168,12 @@ function gateHygiene(stagedFiles) {
 			const stats = statSync(file);
 			if (stats.size > MAX_SIZE_MB * 1024 * 1024) {
 				console.log(`${c.red}✖ BLOCKED${c.reset}`);
-				console.error(`\n${c.red}📦 File exceeds ${MAX_SIZE_MB}MB limit:${c.reset} ${file} (${(stats.size / (1024 * 1024)).toFixed(2)} MB)`);
-				console.error(`${c.dim}Large binaries slow down git repos. Use Git LFS or external CDN.${c.reset}\n`);
+				console.error(
+					`\n${c.red}📦 File exceeds ${MAX_SIZE_MB}MB limit:${c.reset} ${file} (${(stats.size / (1024 * 1024)).toFixed(2)} MB)`,
+				);
+				console.error(
+					`${c.dim}Large binaries slow down git repos. Use Git LFS or external CDN.${c.reset}\n`,
+				);
 				process.exit(1);
 			}
 		} catch {
@@ -141,7 +182,9 @@ function gateHygiene(stagedFiles) {
 	}
 
 	// 2. Check for merge conflict markers and stray debuggers
-	const diff = capture("git diff --cached -U0 -- ':!.husky' ':!*.md' ':!bun.lock' ':!package-lock.json'");
+	const diff = capture(
+		"git diff --cached -U0 -- ':!.husky' ':!*.md' ':!bun.lock' ':!package-lock.json'",
+	);
 	const addedLines = diff
 		.split('\n')
 		.filter((line) => line.startsWith('+') && !line.startsWith('+++'));
@@ -149,7 +192,9 @@ function gateHygiene(stagedFiles) {
 	for (const line of addedLines) {
 		if (line.includes('<<<<<<< HEAD') || line.includes('>>>>>>>') || line === '+=======') {
 			console.log(`${c.red}✖ BLOCKED${c.reset}`);
-			console.error(`\n${c.red}⚔️  Unresolved merge conflict markers found in staged changes.${c.reset}`);
+			console.error(
+				`\n${c.red}⚔️  Unresolved merge conflict markers found in staged changes.${c.reset}`,
+			);
 			console.error(`   ${c.yellow}${line}${c.reset}\n`);
 			process.exit(1);
 		}

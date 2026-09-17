@@ -20,7 +20,7 @@ type HeaderProps = {
 
 export function Header({
 	name = 'Harshil P',
-	tagline: _tagline = 'CS Student & Builder',
+	tagline = 'CS Student & Builder',
 	location = 'Kerala, India',
 	status = 'Open to work',
 	summary,
@@ -62,6 +62,13 @@ export function Header({
 							)}
 						</button>
 					</h1>
+
+					{/* Tagline */}
+					{tagline && (
+						<p className="text-xs sm:text-sm font-mono text-accent font-semibold tracking-wide">
+							{displayText(tagline)}
+						</p>
+					)}
 
 					{/* Authentic developer narrative */}
 					<p className="text-subtext0 text-base sm:text-lg leading-relaxed font-sans">

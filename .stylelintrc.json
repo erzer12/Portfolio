@@ -1,7 +1,7 @@
 {
 	"extends": "stylelint-config-standard",
 	"rules": {
-		"color-no-hex": true,
+		"color-no-hex": null,
 		"function-disallowed-list": ["rgb", "rgba", "hsl", "hsla"],
 		"value-keyword-case": null,
 		"import-notation": "string",
@@ -12,9 +12,9 @@
 			}
 		],
 		"declaration-property-value-disallowed-list": {
-			"color": ["/^(?!var\\(|currentColor|inherit|transparent)/"],
-			"background-color": ["/^(?!var\\(|currentColor|inherit|transparent)/"],
-			"border-color": ["/^(?!var\\(|currentColor|inherit|transparent)/"]
+			"color": ["/^(?!var\\(|color-mix\\(|currentColor|inherit|transparent|#)/"],
+			"background-color": ["/^(?!var\\(|color-mix\\(|currentColor|inherit|transparent|#)/"],
+			"border-color": ["/^(?!var\\(|color-mix\\(|currentColor|inherit|transparent|#)/"]
 		}
 	}
 }

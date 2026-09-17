@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Resend } from 'resend';
-import { requireAdminAuth } from '@/lib/auth';
+import { getExpectedAdminToken, requireAdminAuth } from '@/lib/auth';
 import {
 	deleteAchievement,
 	saveAchievement,
@@ -53,8 +53,9 @@ export async function loginAction(formData: FormData) {
 	if (!code || code !== process.env.ADMIN_ACCESS_CODE) {
 		redirect('/admin/login?error=1');
 	}
+	const token = getExpectedAdminToken();
 	const cookieStore = await cookies();
-	cookieStore.set('admin_token', code, {
+	cookieStore.set('admin_token', token, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === 'production',
 		sameSite: 'strict',

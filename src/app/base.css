@@ -52,7 +52,7 @@
 	--ink: var(--color-text);
 	--ink-muted: var(--color-subtext0);
 	--ink-faint: var(--color-overlay0);
-	--ink-bright: #ffffff;
+	--ink-bright: #fff;
 	--rule: var(--color-surface0);
 	--tag-border: var(--color-surface1);
 	--tag-text: var(--color-text);
@@ -102,7 +102,7 @@
 
 	/* Default accent & contrast foreground */
 	--current-accent-color: var(--color-peach);
-	--accent-fg: #ffffff;
+	--accent-fg: #fff;
 
 	/* Backwards-compatible variables for existing components */
 	--wall: var(--color-base);
@@ -130,42 +130,55 @@
 [data-accent="rosewater"] {
 	--current-accent-color: var(--color-rosewater);
 }
+
 [data-accent="flamingo"] {
 	--current-accent-color: var(--color-flamingo);
 }
+
 [data-accent="pink"] {
 	--current-accent-color: var(--color-pink);
 }
+
 [data-accent="mauve"] {
 	--current-accent-color: var(--color-mauve);
 }
+
 [data-accent="red"] {
 	--current-accent-color: var(--color-red);
 }
+
 [data-accent="maroon"] {
 	--current-accent-color: var(--color-maroon);
 }
+
 [data-accent="peach"] {
 	--current-accent-color: var(--color-peach);
 }
+
 [data-accent="yellow"] {
 	--current-accent-color: var(--color-yellow);
 }
+
 [data-accent="green"] {
 	--current-accent-color: var(--color-green);
 }
+
 [data-accent="teal"] {
 	--current-accent-color: var(--color-teal);
 }
+
 [data-accent="sky"] {
 	--current-accent-color: var(--color-sky);
 }
+
 [data-accent="sapphire"] {
 	--current-accent-color: var(--color-sapphire);
 }
+
 [data-accent="blue"] {
 	--current-accent-color: var(--color-blue);
 }
+
 [data-accent="lavender"] {
 	--current-accent-color: var(--color-lavender);
 }
@@ -203,6 +216,7 @@ a {
 	49% {
 		opacity: 1;
 	}
+
 	50%,
 	100% {
 		opacity: 0;
@@ -219,9 +233,11 @@ a {
 	100% {
 		transform: rotate(0deg);
 	}
+
 	25% {
 		transform: rotate(-8deg);
 	}
+
 	75% {
 		transform: rotate(8deg);
 	}

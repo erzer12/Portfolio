@@ -110,7 +110,7 @@ select:focus {
 }
 
 .latte .admin-input-modern {
-	background-color: #ffffff;
+	background-color: #fff;
 	border-color: var(--color-surface1);
 	color: var(--color-text);
 }
@@ -131,7 +131,7 @@ select.admin-input-modern option {
 }
 
 .latte select.admin-input-modern option {
-	background-color: #ffffff;
+	background-color: #fff;
 	color: var(--color-text);
 }
 

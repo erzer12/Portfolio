@@ -13,7 +13,7 @@ type NavigationProps = {
 
 export function MinimalNav({
 	name = 'harshil',
-	email: _email = 'harshilp1234@gmail.com',
+	email = 'harshilp1234@gmail.com',
 	github = 'https://github.com/erzer12',
 	resume,
 	linkedin = 'https://linkedin.com',
@@ -52,16 +52,28 @@ export function MinimalNav({
 				{/* Desktop Navigation Links */}
 				<div className="hidden md:flex items-center space-x-2 lg:space-x-4 text-sm font-medium">
 					<a
-						href="#about"
-						className="text-text hover:text-accent rounded px-3 py-1.5 transition-colors"
+						href="/#about"
+						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
 					>
 						About
 					</a>
 					<a
 						href="/projects"
-						className="text-text hover:text-accent rounded px-3 py-1.5 transition-colors"
+						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
 					>
 						Projects
+					</a>
+					<a
+						href="/experience"
+						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+					>
+						Experience
+					</a>
+					<a
+						href="/contact"
+						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+					>
+						Contact
 					</a>
 
 					<button
@@ -256,6 +268,24 @@ export function MinimalNav({
 								Projects
 							</a>
 						</li>
+						<li>
+							<a
+								href="/experience"
+								onClick={() => setSidebarOpen(false)}
+								className="w-full text-left block rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors"
+							>
+								Experience
+							</a>
+						</li>
+						<li>
+							<a
+								href="/contact"
+								onClick={() => setSidebarOpen(false)}
+								className="w-full text-left block rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors"
+							>
+								Contact
+							</a>
+						</li>
 
 						<li>
 							<hr className="my-2.5 border-surface0" />
@@ -301,6 +331,17 @@ export function MinimalNav({
 								>
 									<span>LinkedIn</span>
 									<span>↗</span>
+								</a>
+							</li>
+						)}
+						{email && (
+							<li>
+								<a
+									href={`mailto:${email}`}
+									className="flex items-center justify-between rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors text-xs"
+								>
+									<span>Email ({email})</span>
+									<span>✉</span>
 								</a>
 							</li>
 						)}
