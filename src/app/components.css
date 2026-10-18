@@ -150,3 +150,12 @@ select.admin-input-modern option {
 .card:hover {
 	--card-border: var(--ink);
 }
+
+/* ─── Leaflet Map Tiles ─────────────────────────────────────── */
+.osm-tiles-dark {
+	filter: brightness(0.6) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.25) brightness(0.9);
+}
+
+.osm-tiles-light {
+	filter: saturate(0.85) contrast(1.05);
+}

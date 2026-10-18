@@ -24,7 +24,7 @@ export function ExperienceList({ items, projects }: ExperienceListProps) {
 						{/* Header row: Company, Role & Dates */}
 						<div className="flex flex-wrap items-start justify-between gap-2">
 							<div>
-								<h3 className="text-base sm:text-lg font-bold text-text">
+								<h3 className="text-[16px] sm:text-lg font-bold text-text">
 									{displayText(item.company)}
 								</h3>
 								<p className="text-sm font-medium text-accent">

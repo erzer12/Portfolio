@@ -38,7 +38,7 @@ const config: Config = {
 			},
 			fontFamily: {
 				mono: ['var(--font-mono)', 'JetBrains Mono', 'Menlo', 'monospace'],
-				sans: ['var(--font-mono)', 'JetBrains Mono', 'Menlo', 'monospace'],
+				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
 				serif: ['var(--font-serif)', 'Instrument Serif', 'Georgia', 'serif'],
 				grotesk: ['var(--font-grotesk)', 'Space Grotesk', 'system-ui', 'sans-serif'],
 			},

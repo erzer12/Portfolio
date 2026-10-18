@@ -38,57 +38,77 @@ export const ACCENT_COLORS: { name: AccentColor; hex: string; title: string }[] 
 	{ name: 'lavender', hex: '#b4befe', title: 'Lavender' },
 ];
 
+export type FontPreset = 'mono' | 'modern' | 'geometric' | 'editorial';
+
+export const FONT_PRESETS: { id: FontPreset; label: string; name: string }[] = [
+	{ id: 'mono', label: 'Mono', name: 'JetBrains Mono' },
+	{ id: 'modern', label: 'Modern', name: 'Inter Sans' },
+	{ id: 'geometric', label: 'Geometric', name: 'Space Grotesk' },
+	{ id: 'editorial', label: 'Editorial', name: 'Fraunces Serif' },
+];
+
 type ThemeContextType = {
 	palette: Palette;
 	accent: AccentColor;
+	fontStyle: FontPreset;
 	setPalette: (palette: Palette) => void;
 	setAccent: (accent: AccentColor) => void;
+	setFontStyle: (font: FontPreset) => void;
+	cycleFontStyle: () => void;
 };
 
 export const LATTE_ACCENT_HEX: Record<AccentColor, string> = {
-	rosewater: '#dc8a78',
-	flamingo: '#dd7878',
-	pink: '#ea76cb',
-	mauve: '#8839ef',
-	red: '#d20f39',
-	maroon: '#e64553',
-	peach: '#fe640b',
-	yellow: '#df8e1d',
-	green: '#40a02b',
-	teal: '#179299',
-	sky: '#04a5e5',
-	sapphire: '#209fb5',
-	blue: '#1e66f5',
-	lavender: '#7287fd',
+	rosewater: '#c26553',
+	flamingo: '#c25353',
+	pink: '#be3e95',
+	mauve: '#7c3aed',
+	red: '#dc2626',
+	maroon: '#b91c1c',
+	peach: '#ea580c',
+	yellow: '#d97706',
+	green: '#16a34a',
+	teal: '#0d9488',
+	sky: '#0284c7',
+	sapphire: '#0369a1',
+	blue: '#2563eb',
+	lavender: '#6366f1',
 };
 
 const ThemeContext = createContext<ThemeContextType>({
 	palette: 'mocha',
 	accent: 'peach',
+	fontStyle: 'mono',
 	setPalette: () => {},
 	setAccent: () => {},
+	setFontStyle: () => {},
+	cycleFontStyle: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
 	const [palette, setPaletteState] = useState<Palette>('mocha');
 	const [accent, setAccentState] = useState<AccentColor>('peach');
+	const [fontStyle, setFontStyleState] = useState<FontPreset>('mono');
 
 	useEffect(() => {
 		try {
 			const savedPalette = localStorage.getItem('catppuccin-palette') as Palette | null;
 			const savedAccent = localStorage.getItem('catppuccin-accent') as AccentColor | null;
+			const savedFont = (localStorage.getItem('portfolio-font') as FontPreset) || 'mono';
 
 			const initialPalette: Palette =
 				savedPalette ||
 				(window.matchMedia('(prefers-color-scheme: light)').matches ? 'latte' : 'mocha');
 			const initialAccent: AccentColor = savedAccent || 'peach';
+			const initialFont: FontPreset = savedFont;
 
 			setPaletteState(initialPalette);
 			setAccentState(initialAccent);
+			setFontStyleState(initialFont);
 
 			document.documentElement.classList.remove('mocha', 'latte');
 			document.documentElement.classList.add(initialPalette);
 			document.documentElement.setAttribute('data-accent', initialAccent);
+			document.documentElement.setAttribute('data-font', initialFont);
 
 			const hex =
 				initialPalette === 'latte'
@@ -133,8 +153,34 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 		}
 	};
 
+	const setFontStyle = (newFont: FontPreset) => {
+		setFontStyleState(newFont);
+		try {
+			localStorage.setItem('portfolio-font', newFont);
+			document.documentElement.setAttribute('data-font', newFont);
+		} catch {
+			// ignore
+		}
+	};
+
+	const cycleFontStyle = () => {
+		const order: FontPreset[] = ['mono', 'modern', 'geometric', 'editorial'];
+		const next = order[(order.indexOf(fontStyle) + 1) % order.length];
+		setFontStyle(next);
+	};
+
 	return (
-		<ThemeContext.Provider value={{ palette, accent, setPalette, setAccent }}>
+		<ThemeContext.Provider
+			value={{
+				palette,
+				accent,
+				fontStyle,
+				setPalette,
+				setAccent,
+				setFontStyle,
+				cycleFontStyle,
+			}}
+		>
 			{children}
 		</ThemeContext.Provider>
 	);

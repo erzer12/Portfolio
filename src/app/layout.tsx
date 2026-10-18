@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './base.css';
 import './components.css';
 import './app.css';
+import 'leaflet/dist/leaflet.css';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ThemeProvider } from '@/components/theme/ThemeContext';
@@ -32,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 			'Full-Stack Builder',
 			'Computer Science Student',
 		],
-		metadataBase: new URL('https://harshilp.codes'),
+		metadataBase: new URL('https://harshilp12.vercel.app'),
 		alternates: {
 			canonical: '/',
 		},
@@ -41,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 		openGraph: {
 			title: `${name} — CS Student & Builder`,
 			description: tagline,
-			url: 'https://harshilp.codes',
+			url: 'https://harshilp12.vercel.app',
 			siteName: `${name} Portfolio`,
 			images: ogImageUrl
 				? [
@@ -88,9 +89,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 							try {
 								var palette = localStorage.getItem('catppuccin-palette') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'latte' : 'mocha');
 								var accent = localStorage.getItem('catppuccin-accent') || 'peach';
+								var font = localStorage.getItem('portfolio-font') || 'mono';
 								document.documentElement.classList.remove('mocha', 'latte', 'frappe', 'macchiato');
 								document.documentElement.classList.add(palette);
 								document.documentElement.setAttribute('data-accent', accent);
+								document.documentElement.setAttribute('data-font', font);
 								document.documentElement.style.setProperty('--current-accent-color', 'var(--color-' + accent + ')');
 							} catch(e) {}
 						})();

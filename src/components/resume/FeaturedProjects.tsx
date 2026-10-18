@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import type { Project } from '@/types';
 import { ProjectCard } from './ProjectCard';
 
@@ -34,11 +35,11 @@ export function FeaturedProjects({ items, viewAllHref = '/projects' }: FeaturedP
 					<span>Featured Projects</span>
 				</h2>
 
-				<a
+				<Link
 					href={viewAllHref}
 					className="group text-accent hover:underline inline-flex items-center gap-1 text-xs font-mono font-medium"
 				>
-					<span>View all ({items.length})</span>
+					<span>View all projects</span>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="13"
@@ -55,7 +56,7 @@ export function FeaturedProjects({ items, viewAllHref = '/projects' }: FeaturedP
 						<line x1="5" y1="12" x2="19" y2="12" />
 						<polyline points="12 5 19 12 12 19" />
 					</svg>
-				</a>
+				</Link>
 			</div>
 
 			{/* Responsive 2-Card Grid */}

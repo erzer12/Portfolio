@@ -1,16 +1,27 @@
 'use client';
 
-import { ArrowUp, Clock, GitCommit, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa6';
+import { FaEnvelope, FaGithub, FaInstagram, FaLinkedin } from 'react-icons/fa6';
+import { ensureExternalUrl } from '@/lib/utils';
 import type { FooterLink } from '@/types';
 
 type Props = {
-	links: FooterLink[];
+	links?: FooterLink[];
 	lastCommitSha?: string;
+	github?: string;
+	linkedin?: string;
+	email?: string;
+	instagram?: string;
 };
 
-export function MinimalFooter({ links, lastCommitSha = '3b18d67' }: Props) {
+export function MinimalFooter({
+	links: _links,
+	lastCommitSha = '3b18d67',
+	github = 'https://github.com/erzer12',
+	linkedin = 'https://www.linkedin.com/in/harshilp1/',
+	email = 'harshilp1234@gmail.com',
+	instagram,
+}: Props) {
 	// Live session surfing stopwatch
 	const [secondsSurfing, setSecondsSurfing] = useState(0);
 
@@ -29,151 +40,130 @@ export function MinimalFooter({ links, lastCommitSha = '3b18d67' }: Props) {
 		return `${mins}:${secs}`;
 	};
 
-	// Group CMS footer links by category if present
-	const categories: string[] = [];
-	const grouped: Record<string, FooterLink[]> = {};
-
-	for (const link of links) {
-		const cat = link.category || 'Links';
-		if (!grouped[cat]) {
-			grouped[cat] = [];
-			categories.push(cat);
-		}
-		grouped[cat].push(link);
-	}
-
-	const hasLinks = categories.length > 0;
-
 	return (
-		<footer className="w-full mt-16 pb-12">
-			<div className="mx-auto max-w-5xl px-4 sm:px-6">
-				{/* CMS Links (if provided in dashboard) */}
-				{hasLinks && (
-					<div className="py-8 border-t border-surface0/60 font-mono mb-6">
-						<div className="grid grid-cols-2 gap-x-8 gap-y-6 md:[grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
-							{categories.map((category) => (
-								<div key={category} className="space-y-3">
-									<h4 className="text-xs uppercase tracking-wider font-semibold text-text">
-										{category}
-									</h4>
-									<ul className="space-y-2">
-										{grouped[category].map((link) => (
-											<li key={link.id}>
-												<a
-													href={link.url}
-													target={link.url.startsWith('http') ? '_blank' : '_self'}
-													rel="noopener noreferrer"
-													className="text-xs text-subtext0 hover:text-accent transition-colors"
-												>
-													{link.label}
-												</a>
-											</li>
-										))}
-									</ul>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-
-				{/* Overlapping Top Badge Tag */}
-				<div className="relative flex justify-end pr-4 sm:pr-8">
-					<div className="bg-mantle border border-surface0/80 border-b-0 rounded-t-lg px-3.5 py-1.5 shadow-xs text-xs font-mono text-subtext1 flex items-center gap-2">
-						<span className="text-overlay1">Stack:</span>
-						<span className="text-peach font-semibold">next16</span>
-						<span className="text-surface2">/</span>
-						<span className="text-green font-semibold">react19</span>
-						<span className="text-surface2">/</span>
-						<span className="text-blue font-semibold">catppuccin</span>
-					</div>
-				</div>
-
-				{/* Main Terminal Card Footer */}
-				<div className="rounded-xl border border-surface0/80 bg-crust/90 p-5 sm:p-6 shadow-xl backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-4 font-mono select-none">
-					{/* Left: Copyright & System Status */}
-					<div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-subtext0">
-						<span className="text-text font-medium">© {new Date().getFullYear()} Harshil P</span>
-						<span className="text-surface1 hidden sm:inline">•</span>
-						<div className="flex items-center gap-1.5" title="Service Status">
-							<span className="relative flex h-2.5 w-2.5">
-								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75" />
-								<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green" />
+		<footer className="w-full mt-12 pb-12 font-mono">
+			<div className="mx-auto max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16">
+				<div className="bg-crust text-subtext0 border-surface0/60 flex h-auto flex-col items-center justify-center gap-y-3 rounded-lg border p-5 text-sm md:flex-row md:justify-between md:gap-y-0 shadow-sm">
+					{/* Left Column: Copyright & Status Indicator */}
+					<div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:justify-start">
+						<span className="whitespace-nowrap">© {new Date().getFullYear()} Harshil P</span>
+						<span className="text-surface0 hidden md:inline">-</span>
+						<div className="flex items-center gap-1 whitespace-nowrap" title="Service Status">
+							<span className="relative mr-1.5 flex h-3 w-3">
+								<span className="bg-green/75 absolute inline-flex h-full w-full animate-ping rounded-full" />
+								<span className="bg-green relative inline-flex h-3 w-3 rounded-full" />
 							</span>
-							<span className="text-subtext1 text-xs">All Systems Nominal</span>
+							<span className="text-subtext1 text-sm font-medium">All Services Nominal</span>
 						</div>
 					</div>
 
-					{/* Right: Timer, Git commit, Social Icons & Back to top */}
-					<div className="flex flex-wrap items-center justify-center md:justify-end gap-3.5 text-xs text-subtext1">
-						{/* Session surfing stopwatch */}
+					{/* Right Column: Surfing Stopwatch, Deployment Commit & Socials */}
+					<div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:justify-end">
+						{/* Surfing Time Clock */}
 						<div
 							className="flex items-center gap-1.5"
-							title="How long you have explored this portfolio"
+							title="How long you have been surfing my site"
 						>
-							<Clock className="w-3.5 h-3.5 text-subtext1" />
-							<span className="text-accent font-bold">{formatTimer(secondsSurfing)}</span>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								className="tabler-icon tabler-icon-clock text-subtext1"
+								aria-hidden="true"
+							>
+								<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+								<path d="M12 7v5l3 3" />
+							</svg>
+							<span className="text-accent font-mono text-xs">{formatTimer(secondsSurfing)}</span>
 						</div>
 
-						<span className="text-surface1 hidden sm:inline">•</span>
+						<span className="text-surface0 hidden sm:inline">-</span>
 
-						{/* Git commit hash */}
+						{/* Latest Deployment Commit */}
 						<a
 							href={`https://github.com/erzer12/Portfolio/commit/${lastCommitSha}`}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center gap-1 hover:text-accent transition-colors"
-							title={`Latest portfolio commit: ${lastCommitSha}`}
+							className="text-subtext1 hover:text-accent flex items-center gap-x-1 transition-colors duration-200"
+							title={`View deployment commit (${lastCommitSha})`}
 						>
-							<GitCommit className="w-3.5 h-3.5 text-accent" />
-							<span className="font-mono">{lastCommitSha}</span>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								className="tabler-icon tabler-icon-git-commit shrink-0"
+								aria-hidden="true"
+							>
+								<path d="M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+								<path d="M12 3l0 6" />
+								<path d="M12 15l0 6" />
+							</svg>
+							<span>{lastCommitSha}</span>
 						</a>
 
-						<span className="text-surface1 hidden sm:inline">•</span>
+						<span className="text-surface0 hidden sm:inline">-</span>
 
 						{/* Social Icons */}
-						<div className="flex items-center gap-2.5">
-							<a
-								href="https://github.com/erzer12"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="GitHub Profile"
-								className="hover:text-accent transition-colors p-1"
-								title="GitHub"
-							>
-								<FaGithub className="w-4 h-4" />
-							</a>
-							<a
-								href="https://linkedin.com"
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label="LinkedIn Profile"
-								className="hover:text-accent transition-colors p-1"
-								title="LinkedIn"
-							>
-								<FaLinkedin className="w-4 h-4" />
-							</a>
-							<a
-								href="mailto:harshilp1234@gmail.com"
-								aria-label="Email Harshil"
-								className="hover:text-accent transition-colors p-1"
-								title="Email"
-							>
-								<Mail className="w-4 h-4" />
-							</a>
+						<div className="flex items-center gap-x-3 text-lg">
+							{github && (
+								<a
+									href={ensureExternalUrl(github)}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="GitHub Profile"
+									className="text-subtext1 hover:text-accent transition-colors duration-200"
+									title="GitHub"
+								>
+									<FaGithub className="w-4 h-4" />
+								</a>
+							)}
+							{linkedin && (
+								<a
+									href={ensureExternalUrl(linkedin)}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="LinkedIn Profile"
+									className="text-subtext1 hover:text-accent transition-colors duration-200"
+									title="LinkedIn"
+								>
+									<FaLinkedin className="w-4 h-4" />
+								</a>
+							)}
+							{instagram && (
+								<a
+									href={ensureExternalUrl(instagram)}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Instagram Profile"
+									className="text-subtext1 hover:text-accent transition-colors duration-200"
+									title="Instagram"
+								>
+									<FaInstagram className="w-4 h-4" />
+								</a>
+							)}
+							{email && (
+								<a
+									href={`mailto:${email}`}
+									aria-label="Send Email"
+									className="text-subtext1 hover:text-accent transition-colors duration-200"
+									title="Email"
+								>
+									<FaEnvelope className="w-4 h-4" />
+								</a>
+							)}
 						</div>
-
-						<span className="text-surface1 hidden sm:inline">•</span>
-
-						{/* Smooth Scroll To Top */}
-						<button
-							type="button"
-							onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-							className="hover:text-accent text-accent font-bold inline-flex items-center gap-1 cursor-pointer transition-colors"
-							aria-label="Scroll to top of page"
-						>
-							<ArrowUp className="w-3.5 h-3.5" />
-							<span>top</span>
-						</button>
 					</div>
 				</div>
 			</div>

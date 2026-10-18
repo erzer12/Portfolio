@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { ACCENT_COLORS, useTheme } from '@/components/theme/ThemeContext';
+import { ensureExternalUrl } from '@/lib/utils';
 
 type NavigationProps = {
 	name?: string;
@@ -16,7 +18,7 @@ export function MinimalNav({
 	email = 'harshilp1234@gmail.com',
 	github = 'https://github.com/erzer12',
 	resume,
-	linkedin = 'https://linkedin.com',
+	linkedin = 'https://www.linkedin.com/in/harshilp1/',
 }: NavigationProps) {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const { palette, accent, setPalette, setAccent } = useTheme();
@@ -24,98 +26,100 @@ export function MinimalNav({
 	return (
 		<>
 			{/* Sticky Terminal Masthead */}
-			<header className="sticky top-0 z-30 flex h-20 items-center justify-between bg-base/80 backdrop-blur-md px-4 sm:px-6 py-4 border-b border-surface0/40 select-none transition-colors">
-				{/* Breadcrumbs prompt: ~ / harshil ▋ */}
-				<nav aria-label="Breadcrumbs">
-					<ul className="flex items-center text-sm sm:text-base font-mono">
-						<li className="inline-flex items-center">
-							<a
-								href="/"
-								className="animation-wiggle text-accent hover:opacity-80 font-bold transition-opacity"
-							>
-								~
-							</a>
-						</li>
-						<li className="mx-1.5 inline-flex items-center text-subtext0" aria-hidden="true">
-							/
-						</li>
-						<li className="inline-flex items-center font-medium text-text">
-							<span>{name.toLowerCase().replace(/\s+/g, '')}</span>
+			<header className="sticky top-0 z-30 flex h-20 items-center bg-base/80 backdrop-blur-md border-b border-surface0/40 select-none transition-colors">
+				<div className="mx-auto max-w-7xl w-full px-6 sm:px-8 md:px-12 lg:px-16 flex items-center justify-between">
+					{/* Breadcrumbs prompt: ~ / harshil ▋ */}
+					<nav aria-label="Breadcrumbs">
+						<ul className="flex items-center text-sm sm:text-[15px] font-mono">
+							<li className="inline-flex items-center">
+								<Link
+									href="/"
+									className="animation-wiggle text-accent hover:opacity-80 font-bold transition-opacity"
+								>
+									~
+								</Link>
+							</li>
+							<li className="mx-1.5 inline-flex items-center text-subtext0" aria-hidden="true">
+								/
+							</li>
+							<li className="inline-flex items-center font-medium text-text">
+								<span>{name.toLowerCase().replace(/\s+/g, '')}</span>
+								<span
+									className="cursor-blink bg-accent ml-1.5 inline-block h-4 w-2 rounded-xs"
+									aria-hidden="true"
+								/>
+							</li>
+						</ul>
+					</nav>
+
+					{/* Desktop Navigation Links */}
+					<div className="hidden md:flex items-center space-x-2 lg:space-x-4 text-sm font-medium">
+						<Link
+							href="/#about"
+							className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+						>
+							About
+						</Link>
+						<Link
+							href="/projects"
+							className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+						>
+							Projects
+						</Link>
+						<Link
+							href="/experience"
+							className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+						>
+							Experience
+						</Link>
+						<Link
+							href="/contact"
+							className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
+						>
+							Contact
+						</Link>
+
+						<button
+							type="button"
+							onClick={() => setSidebarOpen(true)}
+							className="border border-surface1 hover:border-accent text-subtext0 hover:text-accent cursor-pointer rounded-md px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all shadow-xs"
+							aria-label="Open theme and navigation settings"
+						>
 							<span
-								className="cursor-blink bg-accent ml-1.5 inline-block h-4 w-2 rounded-xs"
-								aria-hidden="true"
+								className="inline-block w-2.5 h-2.5 rounded-full"
+								style={{ backgroundColor: `var(--color-${accent})` }}
 							/>
-						</li>
-					</ul>
-				</nav>
+							<span>Theme...</span>
+						</button>
+					</div>
 
-				{/* Desktop Navigation Links */}
-				<div className="hidden md:flex items-center space-x-2 lg:space-x-4 text-sm font-medium">
-					<a
-						href="/#about"
-						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
-					>
-						About
-					</a>
-					<a
-						href="/projects"
-						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
-					>
-						Projects
-					</a>
-					<a
-						href="/experience"
-						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
-					>
-						Experience
-					</a>
-					<a
-						href="/contact"
-						className="text-text hover:text-accent rounded px-2.5 py-1.5 transition-colors"
-					>
-						Contact
-					</a>
-
+					{/* Mobile Hamburger Button */}
 					<button
 						type="button"
 						onClick={() => setSidebarOpen(true)}
-						className="border border-surface1 hover:border-accent text-subtext0 hover:text-accent cursor-pointer rounded-md px-3 py-1.5 text-xs flex items-center gap-1.5 transition-all shadow-xs"
-						aria-label="Open theme and navigation settings"
+						className="text-text hover:text-accent p-2 rounded-md md:hidden focus:outline-none focus:ring-1 focus:ring-accent"
+						aria-label="Open navigation menu"
+						aria-expanded={sidebarOpen}
+						aria-controls="sidebar-nav"
 					>
-						<span
-							className="inline-block w-2.5 h-2.5 rounded-full"
-							style={{ backgroundColor: `var(--color-${accent})` }}
-						/>
-						<span>Theme...</span>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="22"
+							height="22"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						>
+							<title>Open Navigation Menu</title>
+							<line x1="4" y1="6" x2="20" y2="6" />
+							<line x1="4" y1="12" x2="20" y2="12" />
+							<line x1="4" y1="18" x2="20" y2="18" />
+						</svg>
 					</button>
 				</div>
-
-				{/* Mobile Hamburger Button */}
-				<button
-					type="button"
-					onClick={() => setSidebarOpen(true)}
-					className="text-text hover:text-accent p-2 rounded-md md:hidden focus:outline-none focus:ring-1 focus:ring-accent"
-					aria-label="Open navigation menu"
-					aria-expanded={sidebarOpen}
-					aria-controls="sidebar-nav"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="22"
-						height="22"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					>
-						<title>Open Navigation Menu</title>
-						<line x1="4" y1="6" x2="20" y2="6" />
-						<line x1="4" y1="12" x2="20" y2="12" />
-						<line x1="4" y1="18" x2="20" y2="18" />
-					</svg>
-				</button>
 			</header>
 
 			{/* Slide-in Sidebar Drawer (#sidebar-nav) */}
@@ -260,31 +264,31 @@ export function MinimalNav({
 							</button>
 						</li>
 						<li>
-							<a
+							<Link
 								href="/projects"
 								onClick={() => setSidebarOpen(false)}
 								className="w-full text-left block rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors"
 							>
 								Projects
-							</a>
+							</Link>
 						</li>
 						<li>
-							<a
+							<Link
 								href="/experience"
 								onClick={() => setSidebarOpen(false)}
 								className="w-full text-left block rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors"
 							>
 								Experience
-							</a>
+							</Link>
 						</li>
 						<li>
-							<a
+							<Link
 								href="/contact"
 								onClick={() => setSidebarOpen(false)}
 								className="w-full text-left block rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors"
 							>
 								Contact
-							</a>
+							</Link>
 						</li>
 
 						<li>
@@ -311,7 +315,7 @@ export function MinimalNav({
 						{github && (
 							<li>
 								<a
-									href={github}
+									href={ensureExternalUrl(github)}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-between rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors text-xs"
@@ -324,7 +328,7 @@ export function MinimalNav({
 						{linkedin && (
 							<li>
 								<a
-									href={linkedin}
+									href={ensureExternalUrl(linkedin)}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-between rounded p-2 text-text hover:bg-surface0 hover:text-accent transition-colors text-xs"

@@ -423,6 +423,7 @@ export async function sendContactEmailAction(data: {
 	const trimmedMessage = data.message.trim();
 
 	// 3. Persist to Supabase Database (Guaranteed delivery/archive)
+	let delivered = false;
 	try {
 		await submitContactMessage({
 			name: trimmedName,
@@ -430,6 +431,7 @@ export async function sendContactEmailAction(data: {
 			message: trimmedMessage,
 		});
 		revalidatePath('/admin');
+		delivered = true;
 	} catch (dbError) {
 		console.error('Failed to store contact message in Supabase:', dbError);
 	}
@@ -457,6 +459,7 @@ export async function sendContactEmailAction(data: {
 					],
 				}),
 			});
+			delivered = true;
 		} catch (webhookErr) {
 			console.error('Discord webhook notification failed:', webhookErr);
 		}
@@ -484,9 +487,16 @@ export async function sendContactEmailAction(data: {
 				subject: `New Contact from ${trimmedName} via Portfolio`,
 				text: `Name: ${trimmedName}\nEmail: ${trimmedEmail}\n\nMessage:\n${trimmedMessage}`,
 			});
+			delivered = true;
 		} catch (resendError) {
 			console.warn('Resend email delivery skipped/failed:', resendError);
 		}
+	}
+
+	if (!delivered) {
+		throw new Error(
+			'Message delivery service is temporarily unreachable. Please email directly at harshilp1234@gmail.com.',
+		);
 	}
 }
 

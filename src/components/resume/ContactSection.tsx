@@ -4,14 +4,18 @@ import type React from 'react';
 import { useState, useTransition } from 'react';
 import { sendContactEmailAction, submitTestimonialAction } from '@/app/actions';
 
-export function ContactSection() {
+type ContactSectionProps = {
+	email?: string;
+};
+
+export function ContactSection({ email = 'harshilp1234@gmail.com' }: ContactSectionProps) {
 	const [activeTab, setActiveTab] = useState<'contact' | 'testimonial'>('contact');
 	const [isPending, startTransition] = useTransition();
 	const [msg, setMsg] = useState('');
 	const [copied, setCopied] = useState(false);
 
 	const handleCopyEmail = () => {
-		navigator.clipboard.writeText('harshilp1234@gmail.com');
+		navigator.clipboard.writeText(email);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
@@ -74,7 +78,7 @@ export function ContactSection() {
 				<div className="flex items-center gap-2">
 					<span className="text-accent">✉</span>
 					<span className="text-subtext0">Direct Email:</span>
-					<span className="text-text font-bold">harshilp1234@gmail.com</span>
+					<span className="text-text font-bold">{email}</span>
 				</div>
 				<button
 					type="button"

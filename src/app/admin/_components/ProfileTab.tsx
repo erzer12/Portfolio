@@ -3,24 +3,30 @@
 import {
 	Camera,
 	Check,
+	ChevronDown,
+	ChevronUp,
 	ExternalLink,
 	FileText,
 	ImageIcon,
 	Loader2,
+	Pencil,
+	Plus,
 	RotateCcw,
 	Save,
 	Sparkles,
 	Terminal,
+	Trash2,
 	UserCheck,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useState, useTransition } from 'react';
 import { saveProfileAction } from '@/app/actions';
+import { DEFAULT_AFFILIATIONS } from '@/components/resume/AffiliationRibbon';
 import { DEFAULT_ASCII_PORTRAIT } from '@/components/ui/AsciiImage';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { imageCropFrameStyle } from '@/lib/utils';
-import type { Profile } from '@/types';
+import type { Affiliation, Profile } from '@/types';
 
 const ImageEditorModal = dynamic(() => import('@/components/ui/ImageEditorModal'), { ssr: false });
 
@@ -71,7 +77,122 @@ export function ProfileTab({ profile }: Props) {
 		setIsEditorOpen(false);
 	}
 
-	async function persistProfile(nextForm: typeof form) {
+	const MAX_AFFILIATIONS = 3;
+
+	const [affiliations, setAffiliations] = useState<Affiliation[]>(() => {
+		if (profile?.social?.affiliations && Array.isArray(profile.social.affiliations)) {
+			return profile.social.affiliations.slice(0, MAX_AFFILIATIONS);
+		}
+		return DEFAULT_AFFILIATIONS.slice(0, MAX_AFFILIATIONS);
+	});
+
+	const [isAddingAff, setIsAddingAff] = useState(false);
+	const [editingAffId, setEditingAffId] = useState<string | null>(null);
+	const [itemForm, setItemForm] = useState<Affiliation>({
+		id: '',
+		title: '',
+		status: '',
+		role: '',
+		details: '',
+		tags: [],
+		logo_url: '',
+		icon_svg: '',
+		website: '',
+		date_range: '',
+	});
+	const [tagsInput, setTagsInput] = useState('');
+
+	function handleStartAddAff() {
+		if (affiliations.length >= MAX_AFFILIATIONS) {
+			setMsg({ text: 'Maximum of 3 affiliation badges allowed.', type: 'error' });
+			return;
+		}
+		setEditingAffId(null);
+		setIsAddingAff(true);
+		setItemForm({
+			id: `aff-${Date.now()}`,
+			title: '',
+			status: '',
+			role: '',
+			details: '',
+			tags: [],
+			logo_url: '',
+			icon_svg: '',
+			website: '',
+			date_range: '',
+		});
+		setTagsInput('');
+	}
+
+	function handleEditAff(aff: Affiliation) {
+		setIsAddingAff(false);
+		setEditingAffId(aff.id);
+		setItemForm({ ...aff });
+		setTagsInput(aff.tags?.join(', ') || '');
+	}
+
+	function handleCancelAff() {
+		setIsAddingAff(false);
+		setEditingAffId(null);
+	}
+
+	function handleSaveAff() {
+		if (!itemForm.title.trim()) return;
+		if (!editingAffId && affiliations.length >= MAX_AFFILIATIONS) {
+			setMsg({ text: 'Maximum of 3 affiliation badges allowed.', type: 'error' });
+			return;
+		}
+
+		const parsedTags = tagsInput
+			.split(',')
+			.map((t) => t.trim())
+			.filter(Boolean);
+
+		const updatedItem: Affiliation = {
+			...itemForm,
+			title: itemForm.title.trim(),
+			status: itemForm.status?.trim() || undefined,
+			role: itemForm.role.trim(),
+			details: itemForm.details.trim(),
+			tags: parsedTags,
+			logo_url: itemForm.logo_url?.trim() || undefined,
+			icon_svg: itemForm.icon_svg?.trim() || undefined,
+			website: itemForm.website?.trim() || undefined,
+			date_range: itemForm.date_range?.trim() || undefined,
+		};
+
+		if (editingAffId) {
+			setAffiliations((prev) =>
+				prev.map((item) => (item.id === editingAffId ? updatedItem : item)),
+			);
+		} else {
+			setAffiliations((prev) => [...prev, updatedItem].slice(0, MAX_AFFILIATIONS));
+		}
+
+		setIsAddingAff(false);
+		setEditingAffId(null);
+	}
+
+	function handleDeleteAff(id: string) {
+		setAffiliations((prev) => prev.filter((item) => item.id !== id));
+		if (editingAffId === id) {
+			setEditingAffId(null);
+			setIsAddingAff(false);
+		}
+	}
+
+	function handleMoveAff(index: number, direction: 'up' | 'down') {
+		const targetIndex = direction === 'up' ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= affiliations.length) return;
+		setAffiliations((prev) => {
+			const copy = [...prev];
+			const [moved] = copy.splice(index, 1);
+			copy.splice(targetIndex, 0, moved);
+			return copy;
+		});
+	}
+
+	async function persistProfile(nextForm: typeof form, currentAffiliations = affiliations) {
 		await saveProfileAction({
 			name: nextForm.name,
 			tagline: nextForm.tagline,
@@ -91,6 +212,7 @@ export function ProfileTab({ profile }: Props) {
 				imageCrop: nextForm.imageCrop ? JSON.parse(String(nextForm.imageCrop)) : undefined,
 				avatar_mode: nextForm.avatarMode,
 				ascii_art: nextForm.asciiArt,
+				affiliations: currentAffiliations,
 			},
 		});
 	}
@@ -186,7 +308,7 @@ export function ProfileTab({ profile }: Props) {
 		setMsg(null);
 		startTransition(async () => {
 			try {
-				await persistProfile(form);
+				await persistProfile(form, affiliations);
 				setMsg({ text: 'Profile changes successfully published.', type: 'success' });
 			} catch {
 				setMsg({ text: 'Failed to save profile changes.', type: 'error' });
@@ -333,8 +455,318 @@ export function ProfileTab({ profile }: Props) {
 			</div>
 
 			<div className="space-y-4">
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<div>
+						<div className="flex items-center gap-2">
+							<h3 className="text-xs font-bold uppercase tracking-widest text-accent">
+								4. Key Affiliations & Ribbon Badges
+							</h3>
+							<span className="text-[10px] px-2 py-0.5 rounded-full bg-surface0 border border-surface1 text-accent font-mono font-semibold">
+								{affiliations.length} / {MAX_AFFILIATIONS} Max
+							</span>
+						</div>
+						<p className="text-[11px] text-subtext0 mt-0.5">
+							Configure up to 3 badges shown in the hero ribbon with custom SVG icons or logos,
+							titles, and popover content.
+						</p>
+					</div>
+
+					{!isAddingAff && !editingAffId && (
+						<button
+							type="button"
+							onClick={handleStartAddAff}
+							disabled={affiliations.length >= MAX_AFFILIATIONS}
+							className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface0 hover:bg-surface1 border border-surface1 hover:border-accent text-accent text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+						>
+							<Plus className="w-3.5 h-3.5" />
+							<span>
+								{affiliations.length >= MAX_AFFILIATIONS
+									? 'Max 3 Badges Reached'
+									: 'Add Affiliation'}
+							</span>
+						</button>
+					)}
+				</div>
+
+				{/* Affiliation Editor Form */}
+				{(isAddingAff || editingAffId) && (
+					<div className="rounded-xl border border-accent/40 bg-surface0/30 p-5 space-y-4 animate-in fade-in">
+						<div className="flex items-center justify-between border-b border-surface0/80 pb-3">
+							<span className="text-xs font-bold uppercase tracking-wider text-text">
+								{editingAffId ? 'Edit Affiliation' : 'New Affiliation'}
+							</span>
+							<button
+								type="button"
+								onClick={handleCancelAff}
+								className="text-subtext0 hover:text-text p-1 text-xs cursor-pointer"
+								aria-label="Cancel editing"
+							>
+								✕
+							</button>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<Field id="aff-title" label="Name / Organization (e.g. MuLearn)">
+								<input
+									id="aff-title"
+									value={itemForm.title}
+									onChange={(e) => setItemForm((prev) => ({ ...prev, title: e.target.value }))}
+									placeholder="MuLearn"
+									className="admin-input-modern"
+								/>
+							</Field>
+
+							<Field id="aff-role" label="Role / Subtitle (e.g. Frontend Intern)">
+								<input
+									id="aff-role"
+									value={itemForm.role}
+									onChange={(e) => setItemForm((prev) => ({ ...prev, role: e.target.value }))}
+									placeholder="Frontend Intern"
+									className="admin-input-modern"
+								/>
+							</Field>
+
+							<Field
+								id="aff-status"
+								label="Status Tag (e.g. Past, Current, Active — leave blank for active)"
+							>
+								<input
+									id="aff-status"
+									value={itemForm.status ?? ''}
+									onChange={(e) => setItemForm((prev) => ({ ...prev, status: e.target.value }))}
+									placeholder="Past or leave blank"
+									className="admin-input-modern"
+								/>
+							</Field>
+
+							<Field
+								id="aff-date-range"
+								label="Date Range (e.g. January 2026 – Present or Oct 2025)"
+							>
+								<input
+									id="aff-date-range"
+									value={itemForm.date_range ?? ''}
+									onChange={(e) => setItemForm((prev) => ({ ...prev, date_range: e.target.value }))}
+									placeholder="January 2026 – Present"
+									className="admin-input-modern"
+								/>
+							</Field>
+
+							<Field id="aff-website" label="Website URL (Optional, for click dialog)">
+								<input
+									id="aff-website"
+									value={itemForm.website ?? ''}
+									onChange={(e) => setItemForm((prev) => ({ ...prev, website: e.target.value }))}
+									placeholder="https://mulearn.org"
+									className="admin-input-modern"
+								/>
+							</Field>
+
+							<Field id="aff-tags" label="Tags (comma-separated)">
+								<input
+									id="aff-tags"
+									value={tagsInput}
+									onChange={(e) => setTagsInput(e.target.value)}
+									placeholder="Next.js, React, TypeScript"
+									className="admin-input-modern"
+								/>
+							</Field>
+						</div>
+
+						{/* Icon SVG & Logo Input Options */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+							<Field
+								id="aff-icon-svg"
+								label="Icon SVG Code (Optional, paste raw <svg>...</svg> vector code)"
+							>
+								<div className="flex gap-2 items-start">
+									<textarea
+										id="aff-icon-svg"
+										value={itemForm.icon_svg ?? ''}
+										onChange={(e) => setItemForm((prev) => ({ ...prev, icon_svg: e.target.value }))}
+										placeholder="<svg viewBox='0 0 24 24'>...</svg>"
+										rows={2}
+										className="admin-input-modern flex-1 font-mono text-xs"
+									/>
+									{itemForm.icon_svg?.trim().startsWith('<svg') && (
+										<div
+											className="w-10 h-10 rounded-lg bg-surface0 border border-surface1 flex items-center justify-center p-1.5 shrink-0 text-accent [&>svg]:w-full [&>svg]:h-full"
+											// biome-ignore lint/security/noDangerouslySetInnerHtml: admin SVG preview
+											dangerouslySetInnerHTML={{ __html: itemForm.icon_svg }}
+										/>
+									)}
+								</div>
+							</Field>
+
+							<Field
+								id="aff-logo"
+								label="Or Logo Image URL / File Path (e.g. /logos/mulearn.svg or https://...)"
+							>
+								<div className="flex gap-2 items-center">
+									<input
+										id="aff-logo"
+										value={itemForm.logo_url ?? ''}
+										onChange={(e) => setItemForm((prev) => ({ ...prev, logo_url: e.target.value }))}
+										placeholder="/logos/mulearn.svg or https://..."
+										className="admin-input-modern flex-1"
+									/>
+									{itemForm.logo_url && (
+										<div className="w-9 h-9 rounded bg-surface0 border border-surface1 flex items-center justify-center p-1 shrink-0">
+											<Image
+												src={itemForm.logo_url}
+												alt="Logo preview"
+												width={28}
+												height={28}
+												unoptimized
+												className="max-h-7 max-w-7 object-contain"
+											/>
+										</div>
+									)}
+								</div>
+							</Field>
+						</div>
+
+						<div className="pt-1">
+							<p className="text-[11px] font-bold uppercase tracking-wider text-subtext0 mb-1.5">
+								Or Upload Logo File (Optional)
+							</p>
+							<FileUpload
+								onUploadSuccess={(url) => setItemForm((prev) => ({ ...prev, logo_url: url }))}
+								label="Upload Logo File"
+								helperText="SVG, PNG, or WebP logo file"
+							/>
+						</div>
+
+						<Field id="aff-details" label="Content / Narrative (Shown in Click Popover)">
+							<textarea
+								id="aff-details"
+								value={itemForm.details}
+								onChange={(e) => setItemForm((prev) => ({ ...prev, details: e.target.value }))}
+								placeholder="Describe responsibilities, contributions, and context..."
+								rows={3}
+								className="admin-input-modern leading-relaxed"
+							/>
+						</Field>
+
+						<div className="flex items-center justify-end gap-2 pt-2">
+							<button
+								type="button"
+								onClick={handleCancelAff}
+								className="px-3.5 py-1.5 rounded-lg border border-surface1 hover:border-surface2 text-subtext0 text-xs font-semibold cursor-pointer"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={handleSaveAff}
+								disabled={!itemForm.title.trim()}
+								className="px-4 py-1.5 rounded-lg bg-accent text-accent-fg hover:brightness-110 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+							>
+								{editingAffId ? 'Update Item' : 'Add to Ribbon'}
+							</button>
+						</div>
+					</div>
+				)}
+
+				{/* Affiliation Items List */}
+				<div className="space-y-2.5">
+					{affiliations.length === 0 ? (
+						<div className="p-6 rounded-xl border border-dashed border-surface1 bg-surface0/20 text-center text-subtext0 text-xs">
+							No affiliations configured. Click &quot;Add Affiliation&quot; to create one.
+						</div>
+					) : (
+						affiliations.map((aff, idx) => (
+							<div
+								key={aff.id}
+								className="p-3.5 rounded-xl border border-surface0/80 bg-mantle hover:border-surface1 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+							>
+								<div className="flex items-center gap-3">
+									{aff.icon_svg?.trim().startsWith('<svg') ? (
+										<div
+											className="w-9 h-9 rounded-lg bg-surface0 border border-surface1 flex items-center justify-center p-1 shrink-0 text-accent [&>svg]:w-6 [&>svg]:h-6"
+											// biome-ignore lint/security/noDangerouslySetInnerHtml: admin SVG thumbnail
+											dangerouslySetInnerHTML={{ __html: aff.icon_svg }}
+										/>
+									) : aff.logo_url ? (
+										<div className="w-9 h-9 rounded-lg bg-surface0 border border-surface1 flex items-center justify-center p-1 shrink-0">
+											<Image
+												src={aff.logo_url}
+												alt={aff.title}
+												width={28}
+												height={28}
+												unoptimized
+												className="max-h-7 max-w-7 object-contain"
+											/>
+										</div>
+									) : (
+										<div className="w-9 h-9 rounded-lg bg-surface0 border border-surface1 flex items-center justify-center text-xs font-mono font-bold text-accent shrink-0">
+											{aff.title.slice(0, 2).toUpperCase()}
+										</div>
+									)}
+									<div>
+										<div className="flex items-center gap-2">
+											<span className="text-xs font-bold text-text">{aff.title}</span>
+											{aff.status && (
+												<span className="text-[10px] font-mono text-subtext1 px-1.5 py-0.5 rounded bg-surface0 border border-surface1/40">
+													({aff.status})
+												</span>
+											)}
+										</div>
+										<p className="text-[11px] text-subtext0 font-sans line-clamp-1 mt-0.5">
+											{aff.role} — {aff.details}
+										</p>
+									</div>
+								</div>
+
+								<div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+									<button
+										type="button"
+										onClick={() => handleMoveAff(idx, 'up')}
+										disabled={idx === 0}
+										className="p-1.5 rounded-lg text-subtext1 hover:text-text hover:bg-surface0 disabled:opacity-30 transition-colors cursor-pointer"
+										title="Move Up"
+										aria-label="Move Up"
+									>
+										<ChevronUp className="w-3.5 h-3.5" />
+									</button>
+									<button
+										type="button"
+										onClick={() => handleMoveAff(idx, 'down')}
+										disabled={idx === affiliations.length - 1}
+										className="p-1.5 rounded-lg text-subtext1 hover:text-text hover:bg-surface0 disabled:opacity-30 transition-colors cursor-pointer"
+										title="Move Down"
+										aria-label="Move Down"
+									>
+										<ChevronDown className="w-3.5 h-3.5" />
+									</button>
+									<button
+										type="button"
+										onClick={() => handleEditAff(aff)}
+										className="p-1.5 rounded-lg text-subtext1 hover:text-accent hover:bg-surface0 transition-colors cursor-pointer"
+										title="Edit"
+										aria-label="Edit"
+									>
+										<Pencil className="w-3.5 h-3.5" />
+									</button>
+									<button
+										type="button"
+										onClick={() => handleDeleteAff(aff.id)}
+										className="p-1.5 rounded-lg text-subtext1 hover:text-red hover:bg-surface0 transition-colors cursor-pointer"
+										title="Delete"
+										aria-label="Delete"
+									>
+										<Trash2 className="w-3.5 h-3.5" />
+									</button>
+								</div>
+							</div>
+						))
+					)}
+				</div>
+			</div>
+
+			<div className="space-y-4">
 				<h3 className="text-xs font-bold uppercase tracking-widest text-accent">
-					4. Resume Document & PDF Storage
+					5. Resume Document & PDF Storage
 				</h3>
 				<div className="rounded-xl border border-surface0 bg-base/40 p-5 space-y-4">
 					<Field id="resume" label="Direct Resume Link or Upload New PDF">
@@ -379,7 +811,7 @@ export function ProfileTab({ profile }: Props) {
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
 						<h3 className="text-xs font-bold uppercase tracking-widest text-accent">
-							5. Avatar Presentation & Media (ASCII Art vs Photo)
+							6. Avatar Presentation & Media (ASCII Art vs Photo)
 						</h3>
 						<p className="text-[11px] text-subtext0 mt-0.5">
 							Sync whether your hero portrait displays custom ASCII text art or an uploaded photo.

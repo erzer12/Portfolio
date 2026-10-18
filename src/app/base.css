@@ -1,4 +1,4 @@
-@import "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@1&family=Space+Grotesk:wght@400;500;600&family=Fraunces:opsz,wght@9..144,380..520&family=Work+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap";
+@import "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap";
 
 /* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
 @tailwind base;
@@ -70,39 +70,39 @@
 }
 
 .latte {
-	/* Catppuccin Latte (Light) */
-	--color-base: #eff1f5;
-	--color-mantle: #e6e9ef;
-	--color-crust: #dce0e8;
-	--color-surface0: #ccd0da;
-	--color-surface1: #bcc0cc;
-	--color-surface2: #acb0be;
-	--color-overlay0: #9ca0b0;
-	--color-overlay1: #8c8fa1;
-	--color-overlay2: #7c7f93;
-	--color-subtext0: #6c6f85;
-	--color-subtext1: #5c5f77;
-	--color-text: #4c4f69;
+	/* Soft, balanced light theme (glare-free canvas, clean elevated cards) */
+	--color-base: #f5f6f9;
+	--color-mantle: #ffffff;
+	--color-crust: #edf0f5;
+	--color-surface0: #e2e6ee;
+	--color-surface1: #cbd2df;
+	--color-surface2: #b3bccd;
+	--color-overlay0: #848d9f;
+	--color-overlay1: #6b7588;
+	--color-overlay2: #555e71;
+	--color-subtext0: #475569;
+	--color-subtext1: #334155;
+	--color-text: #181b26;
 
-	/* Accents (Latte equivalents) */
-	--color-rosewater: #dc8a78;
-	--color-flamingo: #dd7878;
-	--color-pink: #ea76cb;
-	--color-mauve: #8839ef;
-	--color-red: #d20f39;
-	--color-maroon: #e64553;
-	--color-peach: #fe640b;
-	--color-yellow: #df8e1d;
-	--color-green: #40a02b;
-	--color-teal: #179299;
-	--color-sky: #04a5e5;
-	--color-sapphire: #209fb5;
-	--color-blue: #1e66f5;
-	--color-lavender: #7287fd;
+	/* Refined, readable accents (eliminated neon glare) */
+	--color-rosewater: #c26553;
+	--color-flamingo: #c25353;
+	--color-pink: #be3e95;
+	--color-mauve: #7c3aed;
+	--color-red: #dc2626;
+	--color-maroon: #b91c1c;
+	--color-peach: #ea580c;
+	--color-yellow: #d97706;
+	--color-green: #16a34a;
+	--color-teal: #0d9488;
+	--color-sky: #0284c7;
+	--color-sapphire: #0369a1;
+	--color-blue: #2563eb;
+	--color-lavender: #6366f1;
 
 	/* Default accent & contrast foreground */
 	--current-accent-color: var(--color-peach);
-	--accent-fg: #fff;
+	--accent-fg: #ffffff;
 
 	/* Backwards-compatible variables for existing components */
 	--wall: var(--color-base);
@@ -110,7 +110,7 @@
 	--ink: var(--color-text);
 	--ink-muted: var(--color-subtext0);
 	--ink-faint: var(--color-overlay0);
-	--ink-bright: #1e1e2e;
+	--ink-bright: #0f172a;
 	--rule: var(--color-surface0);
 	--tag-border: var(--color-surface1);
 	--tag-text: var(--color-text);
@@ -270,4 +270,40 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--current-accent-color);
+}
+
+/* ─── Typography Presets ─────────────────────────────────────── */
+html[data-font="modern"] {
+	--font-mono:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	--font-body:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	--font-display: "Space Grotesk", system-ui, sans-serif;
+	--font-grotesk: "Space Grotesk", system-ui, sans-serif;
+}
+
+html[data-font="geometric"] {
+	--font-mono:
+		"Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-body:
+		"Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-display: "Space Grotesk", system-ui, sans-serif;
+	--font-grotesk: "Space Grotesk", system-ui, sans-serif;
+}
+
+html[data-font="editorial"] {
+	--font-mono: "Fraunces", Georgia, Cambria, "Times New Roman", serif;
+	--font-body: "Fraunces", Georgia, Cambria, "Times New Roman", serif;
+	--font-display: "Fraunces", Georgia, serif;
+	--font-serif: "Fraunces", Georgia, serif;
+	--font-grotesk: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* Ensure raw code elements remain monospace in all typography presets */
+code,
+pre,
+kbd,
+samp,
+.font-code {
+	font-family: "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 }

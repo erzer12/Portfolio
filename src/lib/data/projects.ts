@@ -17,7 +17,7 @@ export async function getFeaturedProjects(): Promise<Project[]> {
 		.select('*')
 		.eq('featured', true)
 		.order('order', { ascending: true })
-		.limit(3);
+		.limit(2);
 	if (error) return [];
 	return data as Project[];
 }

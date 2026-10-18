@@ -1,6 +1,7 @@
 'use client';
 
 import { Braces, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import type React from 'react';
 import { FaGithub } from 'react-icons/fa6';
 import {
@@ -13,6 +14,7 @@ import {
 	SiGooglegemini,
 	SiHuggingface,
 	SiJavascript,
+	SiJupyter,
 	SiLinux,
 	SiMongodb,
 	SiNextdotjs,
@@ -24,12 +26,13 @@ import {
 	SiReact,
 	SiRedis,
 	SiRust,
+	SiStreamlit,
 	SiSupabase,
 	SiTailwindcss,
 	SiTensorflow,
 	SiTypescript,
 } from 'react-icons/si';
-import { displayText } from '@/lib/utils';
+import { displayText, ensureExternalUrl } from '@/lib/utils';
 import type { Project } from '@/types';
 
 type ProjectCardProps = {
@@ -40,6 +43,9 @@ type ProjectCardProps = {
 // Brand icons map with case-insensitive lookup
 const STACK_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 	python: SiPython,
+	streamlit: SiStreamlit,
+	'jupyter notebook': SiJupyter,
+	jupyter: SiJupyter,
 	react: SiReact,
 	'next.js': SiNextdotjs,
 	nextjs: SiNextdotjs,
@@ -47,6 +53,7 @@ const STACK_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 	pytorch: SiPytorch,
 	flask: SiFlask,
 	'sentence transformers': SiHuggingface,
+	'hugging face': SiHuggingface,
 	huggingface: SiHuggingface,
 	onnx: SiOnnx,
 	'onnx runtime web': SiOnnx,
@@ -84,11 +91,20 @@ const STATUS_ACCENT: Record<string, string> = {
 	building: 'var(--color-peach)',
 	active: 'var(--color-green)',
 	shipped: 'var(--color-blue)',
+	'web app': 'var(--color-blue)',
+	'ai workflow': 'var(--color-mauve)',
+	'hugging face app': 'var(--color-yellow)',
+	'open source': 'var(--color-teal)',
+	'data science': 'var(--color-sky)',
 };
 
 export function ProjectCard({ project, index: _index }: ProjectCardProps) {
-	// Derive status
-	const rawCategory = (project.category || '').toLowerCase();
+	const primaryHref = `/projects/${project.slug}`;
+	const safeGithubUrl = ensureExternalUrl(project.github);
+	const safeLiveUrl = ensureExternalUrl(project.live);
+
+	// Derive status and badge text
+	const rawCategory = (project.category || '').toLowerCase().trim();
 	let status: 'Building' | 'Active' | 'Shipped' = 'Building';
 	if (rawCategory.includes('shipped') || project.live) {
 		status = 'Shipped';
@@ -98,66 +114,70 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 		status = 'Building';
 	}
 
-	const accentColor = STATUS_ACCENT[status.toLowerCase()] || 'var(--color-peach)';
+	const badgeText = project.category?.trim() || status;
+	const accentColor =
+		STATUS_ACCENT[rawCategory] || STATUS_ACCENT[status.toLowerCase()] || 'var(--color-blue)';
+
 	const stack =
 		project.tags && project.tags.length > 0 ? project.tags : ['Full-Stack', 'TypeScript'];
-	const primaryHref = `/projects/${project.slug}`;
+
+	// Standardized skills: show up to 3 tags + remaining count pill for uniform height & alignment
+	const visibleTags = stack.slice(0, 3);
+	const remainingCount = stack.length - 3;
 
 	return (
 		<div
-			className="group flex flex-col justify-between rounded-xl border border-surface0/80 bg-mantle hover:bg-surface0/40 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden"
+			className="group flex flex-col justify-between rounded-xl border border-surface0/80 bg-mantle hover:bg-surface0/40 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden h-full min-h-[235px] sm:min-h-[255px]"
 			style={{
 				borderTopWidth: '3px',
 				borderTopColor: accentColor,
 			}}
 		>
-			{/* Compact Card Body */}
-			<div className="p-4 sm:p-5 pb-3 flex-1 flex flex-col">
-				<div className="flex items-start justify-between gap-2.5 mb-1.5">
+			{/* Card Body */}
+			<div className="p-5 sm:p-6 pb-4 flex-1 flex flex-col">
+				<div className="flex items-start justify-between gap-2.5 mb-2.5">
 					<h3 className="font-serif italic font-normal text-xl sm:text-2xl text-text group-hover:text-accent transition-colors tracking-tight leading-snug min-w-0">
-						<a href={primaryHref} className="hover:underline">
+						<Link href={primaryHref} className="hover:underline">
 							{displayText(project.title)}
-						</a>
+						</Link>
 					</h3>
 
-					{/* External GitHub / Live Links */}
+					{/* Action Buttons: Clean standalone icons */}
 					<div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5 text-xs font-mono text-subtext1">
-						{project.github && (
+						{safeGithubUrl && (
 							<a
-								href={project.github}
+								href={safeGithubUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="hover:text-accent inline-flex items-center gap-0.5 transition-colors p-0.5"
+								className="hover:text-accent inline-flex items-center justify-center p-1 rounded-md hover:bg-surface0/60 transition-colors"
 								title="View GitHub Repository"
 								aria-label={`${project.title} on GitHub`}
 							>
 								<FaGithub className="w-3.5 h-3.5" />
-								<span className="hidden sm:inline text-[11px]">GH</span>
 							</a>
 						)}
-						{project.live && (
+						{safeLiveUrl && (
 							<a
-								href={project.live}
+								href={safeLiveUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-accent hover:underline inline-flex items-center gap-0.5 font-medium transition-colors p-0.5"
+								className="text-accent hover:underline inline-flex items-center justify-center p-1 rounded-md hover:bg-surface0/60 transition-colors"
 								title="View Live Demo"
 								aria-label={`${project.title} live demo`}
 							>
 								<ExternalLink className="w-3.5 h-3.5" />
-								<span className="hidden sm:inline text-[11px]">Live</span>
 							</a>
 						)}
 					</div>
 				</div>
 
-				{/* Short Concise Description */}
-				<p className="font-grotesk text-xs sm:text-[13px] leading-relaxed text-subtext0 line-clamp-2 mb-3 flex-grow">
+				{/* Description with room to breathe */}
+				<p className="font-grotesk text-xs sm:text-[13px] leading-relaxed text-subtext0 line-clamp-3 mb-4 flex-grow min-h-[3.6rem]">
 					{displayText(project.description)}
 				</p>
 
-				{/* Compact Foot: Status and Tag Pills */}
-				<div className="pt-2.5 border-t border-surface0/60 mt-auto">
+				{/* Card Foot: Status and Tag Pills */}
+				<div className="pt-3.5 border-t border-surface0/60 mt-auto">
 					<div className="flex items-center justify-between mb-2">
 						<span
 							className="font-grotesk text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5"
@@ -167,7 +187,7 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 								className="w-1.5 h-1.5 rounded-full inline-block"
 								style={{ backgroundColor: accentColor }}
 							/>
-							<span>{status}</span>
+							<span>{displayText(badgeText)}</span>
 						</span>
 
 						{project.date && (
@@ -177,9 +197,9 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 						)}
 					</div>
 
-					{/* Stack Pills */}
+					{/* Standardized Stack Pills */}
 					<div className="flex flex-wrap gap-1">
-						{stack.map((tech) => {
+						{visibleTags.map((tech) => {
 							const Icon = getStackIcon(tech);
 							return (
 								<span
@@ -187,10 +207,18 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-surface0 bg-surface0/40 text-[11px] font-grotesk text-subtext1 hover:text-text hover:border-surface1 transition-colors"
 								>
 									<Icon className="w-3 h-3 flex-shrink-0" />
-									<span>{tech}</span>
+									<span>{displayText(tech)}</span>
 								</span>
 							);
 						})}
+						{remainingCount > 0 && (
+							<span
+								className="inline-flex items-center px-2 py-0.5 rounded-full border border-surface0/70 bg-surface0/30 text-[10.5px] font-grotesk text-subtext1 hover:text-text hover:border-surface1 transition-colors"
+								title={stack.slice(3).join(', ')}
+							>
+								+{remainingCount}
+							</span>
+						)}
 					</div>
 				</div>
 			</div>

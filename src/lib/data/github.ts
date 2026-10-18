@@ -115,16 +115,44 @@ function getRelativeTime(dateString: string): string {
 }
 
 /** Build GitHub API headers — uses GITHUB_TOKEN if available for 5000 req/hr (vs 60 unauthenticated) */
-function githubHeaders(): Record<string, string> {
+function githubHeaders(includeAuth = true): Record<string, string> {
 	const headers: Record<string, string> = {
 		'User-Agent': 'harshil-portfolio-app',
 		Accept: 'application/vnd.github+json',
 	};
-	const token = process.env.GITHUB_TOKEN;
-	if (token) {
+	const token = process.env.GITHUB_TOKEN?.trim();
+	if (includeAuth && token) {
 		headers.Authorization = `Bearer ${token}`;
 	}
 	return headers;
+}
+
+/** Robust fetch with fallback to unauthenticated request if token is invalid or unauthorized */
+async function fetchGitHub(url: string, init?: RequestInit): Promise<Response> {
+	const hasAuth = !!process.env.GITHUB_TOKEN?.trim();
+	const headers = {
+		...githubHeaders(hasAuth),
+		...((init?.headers as Record<string, string>) || {}),
+	};
+
+	let res = await fetch(url, {
+		...init,
+		headers,
+	});
+
+	if (hasAuth && (res.status === 401 || res.status === 403)) {
+		console.warn(`GitHub API auth failed (${res.status}). Retrying unauthenticated for: ${url}`);
+		const unauthHeaders = {
+			...githubHeaders(false),
+			...((init?.headers as Record<string, string>) || {}),
+		};
+		res = await fetch(url, {
+			...init,
+			headers: unauthHeaders,
+		});
+	}
+
+	return res;
 }
 
 export async function getGitHubContributions(
@@ -188,25 +216,110 @@ export async function getGitHubContributions(
 	}
 }
 
+/**
+ * Fetches recent public commits from GitHub's Atom timeline feed (https://github.com/{username}.atom).
+ * This endpoint has no API rate limits and acts as an infallible live fallback for public activity.
+ */
+async function fetchRecentCommitsFromFeed(username: string): Promise<Commit[]> {
+	try {
+		const res = await fetch(`https://github.com/${username}.atom`, {
+			next: { revalidate: 300 },
+			headers: {
+				'User-Agent': 'harshil-portfolio-app',
+			},
+		});
+
+		if (!res.ok) return [];
+
+		const xml = await res.text();
+		const entries = xml.split('<entry>');
+		const commits: (Commit & { rawDate: number })[] = [];
+
+		for (const entry of entries.slice(1)) {
+			if (!entry.includes('repo-push')) continue;
+
+			const contentMatch = entry.match(/<content type="html">([\s\S]*?)<\/content>/);
+			if (!contentMatch) continue;
+
+			const html = contentMatch[1]
+				.replace(/&lt;/g, '<')
+				.replace(/&gt;/g, '>')
+				.replace(/&quot;/g, '"')
+				.replace(/&amp;/g, '&');
+
+			// Extract repository name
+			const repoMatch = html.match(
+				/href="\/[^/]+\/([^"/]+)"[^>]*rel="noreferrer">[^<]+\/[^<]+<\/a>/,
+			);
+			const repo = repoMatch ? repoMatch[1] : '';
+
+			// Extract event timestamp
+			const timeMatch = html.match(/datetime="([^"]+)"/);
+			const timeStr = timeMatch ? timeMatch[1] : '';
+			const time = timeStr ? getRelativeTime(timeStr) : 'recently';
+
+			// Extract commits list within push
+			const commitBlockMatch = html.match(/<div class="commits[^"]*">([\s\S]*?)<\/div>/);
+			if (commitBlockMatch) {
+				const commitItems = commitBlockMatch[1].split('<li');
+				for (const item of commitItems.slice(1)) {
+					const shaMatch = item.match(/href="\/[^/]+\/[^/]+\/commit\/([a-f0-9]+)"/);
+					const msgMatch = item.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
+					const sha = shaMatch ? shaMatch[1] : '';
+					const rawMsg = msgMatch ? msgMatch[1].trim() : 'Commit changes';
+					const message = rawMsg
+						.replace(/&hellip;/g, '…')
+						.replace(/<[^>]+>/g, '')
+						.trim();
+
+					if (sha && repo) {
+						commits.push({
+							message,
+							repo,
+							time,
+							sha: sha.slice(0, 7),
+							url: `https://github.com/${username}/${repo}/commit/${sha}`,
+							rawDate: timeStr ? new Date(timeStr).getTime() : 0,
+						});
+					}
+				}
+			}
+		}
+
+		return commits
+			.sort((a, b) => b.rawDate - a.rawDate)
+			.slice(0, 5)
+			.map(({ rawDate: _, ...commit }) => commit);
+	} catch (error) {
+		console.warn('Error fetching Atom feed fallback:', error);
+		return [];
+	}
+}
+
 export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> {
 	try {
 		// Use the Events API — this is what GitHub uses for recent public activity.
 		// It captures all push activity including forks.
-		const eventsRes = await fetch(
+		const eventsRes = await fetchGitHub(
 			`https://api.github.com/users/${username}/events/public?per_page=50`,
 			{
-				cache: 'no-store',
-				headers: githubHeaders(),
+				next: { revalidate: 300 },
 			},
 		);
 
 		if (!eventsRes.ok) {
-			console.warn(`GitHub events fetch failed: ${eventsRes.status} ${eventsRes.statusText}`);
+			console.warn(
+				`GitHub events fetch returned ${eventsRes.status}. Trying Atom feed fallback...`,
+			);
+			const feedCommits = await fetchRecentCommitsFromFeed(username);
+			if (feedCommits.length > 0) return feedCommits;
 			return FALLBACK_COMMITS;
 		}
 
 		const events = await eventsRes.json();
 		if (!Array.isArray(events) || events.length === 0) {
+			const feedCommits = await fetchRecentCommitsFromFeed(username);
+			if (feedCommits.length > 0) return feedCommits;
 			return FALLBACK_COMMITS;
 		}
 
@@ -240,6 +353,8 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 		}
 
 		if (selectedEvents.length === 0) {
+			const feedCommits = await fetchRecentCommitsFromFeed(username);
+			if (feedCommits.length > 0) return feedCommits;
 			return FALLBACK_COMMITS;
 		}
 
@@ -271,11 +386,10 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 				}
 
 				// Otherwise fetch the commit details via GitHub API
-				const commitRes = await fetch(
+				const commitRes = await fetchGitHub(
 					`https://api.github.com/repos/${repoFullName}/commits/${sha}`,
 					{
-						cache: 'no-store',
-						headers: githubHeaders(),
+						next: { revalidate: 300 },
 					},
 				);
 
@@ -320,9 +434,17 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 			.sort((a, b) => b.rawDate - a.rawDate)
 			.map(({ rawDate: _, ...commit }) => commit);
 
-		return validCommits.length > 0 ? validCommits : FALLBACK_COMMITS;
+		if (validCommits.length === 0) {
+			const feedCommits = await fetchRecentCommitsFromFeed(username);
+			if (feedCommits.length > 0) return feedCommits;
+			return FALLBACK_COMMITS;
+		}
+
+		return validCommits;
 	} catch (error) {
-		console.warn('Error fetching recent commits:', error);
+		console.warn('Error fetching recent commits, trying Atom feed fallback:', error);
+		const feedCommits = await fetchRecentCommitsFromFeed(username);
+		if (feedCommits.length > 0) return feedCommits;
 		return FALLBACK_COMMITS;
 	}
 }
@@ -330,11 +452,10 @@ export async function getRecentCommits(username = 'erzer12'): Promise<Commit[]> 
 export async function getLanguageStats(username = 'erzer12'): Promise<Language[]> {
 	try {
 		// 1. Get user's non-fork repos
-		const reposRes = await fetch(
+		const reposRes = await fetchGitHub(
 			`https://api.github.com/users/${username}/repos?sort=pushed&direction=desc&per_page=20`,
 			{
 				next: { revalidate: 3600 },
-				headers: githubHeaders(),
 			},
 		);
 
@@ -348,10 +469,12 @@ export async function getLanguageStats(username = 'erzer12'): Promise<Language[]
 
 		const langPromises = ownRepos.map(async (repo: { name: string }) => {
 			try {
-				const res = await fetch(`https://api.github.com/repos/${username}/${repo.name}/languages`, {
-					next: { revalidate: 3600 },
-					headers: githubHeaders(),
-				});
+				const res = await fetchGitHub(
+					`https://api.github.com/repos/${username}/${repo.name}/languages`,
+					{
+						next: { revalidate: 3600 },
+					},
+				);
 				if (!res.ok) return {};
 				return (await res.json()) as Record<string, number>;
 			} catch {

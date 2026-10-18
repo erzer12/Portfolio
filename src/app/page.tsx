@@ -4,7 +4,6 @@ import { AffiliationRibbon } from '@/components/resume/AffiliationRibbon';
 import { DashboardWidgets } from '@/components/resume/DashboardWidgets';
 import { FeaturedProjects } from '@/components/resume/FeaturedProjects';
 import { Header } from '@/components/resume/Header';
-import { SectionRule } from '@/components/resume/SectionRule';
 import { getFooterLinks } from '@/lib/data/footer';
 import { getLatestPortfolioCommitSha } from '@/lib/data/git';
 import { getRecentCommits } from '@/lib/data/github';
@@ -30,10 +29,10 @@ export default async function Home() {
 				email={profile?.email ?? 'harshilp1234@gmail.com'}
 				github={profile?.social?.github ?? 'https://github.com/erzer12'}
 				resume={profile?.resume}
-				linkedin={profile?.social?.linkedin ?? 'https://linkedin.com'}
+				linkedin={profile?.social?.linkedin ?? 'https://www.linkedin.com/in/harshilp1/'}
 			/>
 
-			<main className="flex-1 mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 sm:py-10 space-y-10 pb-20">
+			<main className="flex-1 mx-auto w-full max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-10 space-y-10 pb-20">
 				{/* §1 Hero Section (Jason Cameron Style) */}
 				<section id="about">
 					<Header
@@ -44,7 +43,7 @@ export default async function Home() {
 						summary={profile?.summary}
 						email={profile?.email ?? 'harshilp1234@gmail.com'}
 						github={profile?.social?.github ?? 'https://github.com/erzer12'}
-						linkedin={profile?.social?.linkedin ?? 'https://linkedin.com'}
+						linkedin={profile?.social?.linkedin ?? 'https://www.linkedin.com/in/harshilp1/'}
 						resume={profile?.resume}
 						image={profile?.image}
 						customAscii={profile?.social?.ascii_art}
@@ -52,9 +51,7 @@ export default async function Home() {
 				</section>
 
 				{/* §2 Affiliation / Role Ribbon */}
-				<AffiliationRibbon />
-
-				<SectionRule />
+				<AffiliationRibbon items={profile?.social?.affiliations} />
 
 				{/* §3 Featured Projects (Lab Spec Sheet Grid) */}
 				<section id="projects">
@@ -75,7 +72,14 @@ export default async function Home() {
 			</main>
 
 			{/* §5 Sticky Docked Developer Footer */}
-			<MinimalFooter links={footerLinks} lastCommitSha={lastCommitSha} />
+			<MinimalFooter
+				links={footerLinks}
+				lastCommitSha={lastCommitSha}
+				email={profile?.email}
+				github={profile?.social?.github}
+				linkedin={profile?.social?.linkedin}
+				instagram={profile?.social?.instagram}
+			/>
 		</div>
 	);
 }

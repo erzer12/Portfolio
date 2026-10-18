@@ -1,4 +1,15 @@
-// All shared database types for the portfolio
+export type Affiliation = {
+	id: string;
+	title: string;
+	status?: string;
+	role: string;
+	details: string;
+	tags: string[];
+	logo_url?: string;
+	icon_svg?: string;
+	website?: string;
+	date_range?: string;
+};
 
 export type Profile = {
 	id: string;
@@ -14,10 +25,13 @@ export type Profile = {
 		github?: string;
 		linkedin?: string;
 		twitter?: string;
+		x?: string;
+		instagram?: string;
 		imageMeta?: { x?: number; y?: number; scale?: number };
 		imageCrop?: { left: number; top: number; size: number };
 		avatar_mode?: 'ascii' | 'photo';
 		ascii_art?: string;
+		affiliations?: Affiliation[];
 	};
 };
 
