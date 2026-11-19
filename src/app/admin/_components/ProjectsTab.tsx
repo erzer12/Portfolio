@@ -35,6 +35,8 @@ import { useEffect, useState, useTransition } from 'react';
 import {
 	deleteProjectAction,
 	fetchGithubRepoAction,
+	fetchUserGithubReposAction,
+	type GithubRepoSummary,
 	saveProjectAction,
 	updateProjectsOrderAction,
 } from '@/app/actions';
@@ -166,6 +168,11 @@ export function ProjectsTab({ projects }: Props) {
 	const [msg, setMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 	const [githubUrl, setGithubUrl] = useState('');
 	const [isFetchingGithub, setIsFetchingGithub] = useState(false);
+	const [githubUsername, setGithubUsername] = useState('erzer12');
+	const [userRepos, setUserRepos] = useState<GithubRepoSummary[]>([]);
+	const [selectedRepoUrl, setSelectedRepoUrl] = useState('');
+	const [isFetchingUserRepos, setIsFetchingUserRepos] = useState(false);
+	const [importMode, setImportMode] = useState<'list' | 'url'>('list');
 	const [tagInput, setTagInput] = useState('');
 
 	useEffect(() => {
@@ -199,6 +206,8 @@ export function ProjectsTab({ projects }: Props) {
 
 	function handleNew() {
 		setEditing({ ...EMPTY, order: items.length });
+		setSelectedRepoUrl('');
+		setGithubUrl('');
 		setMsg(null);
 	}
 
@@ -258,7 +267,7 @@ export function ProjectsTab({ projects }: Props) {
 							github: githubUrl,
 							tags: prev.tags?.length
 								? prev.tags
-								: [data.language, ...(data.tags || [])].filter(Boolean),
+								: [data.language, ...(data.tags || [])].filter((t): t is string => Boolean(t)),
 						}
 					: prev,
 			);
@@ -270,6 +279,53 @@ export function ProjectsTab({ projects }: Props) {
 		} finally {
 			setIsFetchingGithub(false);
 		}
+	}
+
+	async function handleFetchUserRepos() {
+		setIsFetchingUserRepos(true);
+		setMsg(null);
+		try {
+			const repos = await fetchUserGithubReposAction(githubUsername);
+			setUserRepos(repos);
+			if (repos.length === 0) {
+				setMsg({ text: `No public repositories found for ${githubUsername}.`, type: 'error' });
+			} else {
+				setMsg({
+					text: `Found ${repos.length} repositories for ${githubUsername}!`,
+					type: 'success',
+				});
+			}
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : 'Failed to fetch repositories from GitHub';
+			setMsg({ text: errorMessage, type: 'error' });
+		} finally {
+			setIsFetchingUserRepos(false);
+		}
+	}
+
+	function handleSelectRepo(repoUrl: string) {
+		setSelectedRepoUrl(repoUrl);
+		if (!repoUrl) return;
+		const repo = userRepos.find((r) => r.html_url === repoUrl);
+		if (!repo) return;
+
+		setEditing((prev) =>
+			prev
+				? {
+						...prev,
+						title: prev.title || repo.name,
+						slug: prev.slug || repo.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+						description: prev.description || repo.description,
+						github: repo.html_url,
+						live: prev.live || repo.homepage || '',
+						tags: prev.tags?.length
+							? prev.tags
+							: [repo.language, ...(repo.topics || [])].filter((t): t is string => Boolean(t)),
+					}
+				: prev,
+		);
+		setMsg({ text: `Autofilled project form from ${repo.name}!`, type: 'success' });
 	}
 
 	function handleSave(e: React.FormEvent) {
@@ -297,7 +353,7 @@ export function ProjectsTab({ projects }: Props) {
 
 	return (
 		<div className="space-y-8 font-mono">
-			{/* Top Bar: Actions & GitHub Import */}
+			{/* Top Bar: Actions */}
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface0/80 pb-5">
 				<div className="flex items-center gap-3">
 					<button
@@ -312,31 +368,6 @@ export function ProjectsTab({ projects }: Props) {
 					<span className="text-xs text-subtext0">
 						{items.length} {items.length === 1 ? 'project' : 'projects'} listed
 					</span>
-				</div>
-
-				{/* GitHub Fast Import Box */}
-				<div className="flex items-center gap-2">
-					<div className="relative flex-1 sm:w-64">
-						<input
-							value={githubUrl}
-							onChange={(e) => setGithubUrl(e.target.value)}
-							placeholder="https://github.com/org/repo"
-							className="admin-input-modern text-xs py-2 pl-8"
-						/>
-						<FolderGit2 className="w-3.5 h-3.5 text-subtext0 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-					</div>
-					<button
-						type="button"
-						onClick={handleGithubImport}
-						disabled={isFetchingGithub || !githubUrl}
-						className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-surface1 bg-surface0/60 text-xs font-bold text-text hover:text-accent hover:border-accent transition-all disabled:opacity-50 shrink-0"
-					>
-						{isFetchingGithub ? (
-							<Loader2 className="w-3.5 h-3.5 animate-spin" />
-						) : (
-							<span>Import</span>
-						)}
-					</button>
 				</div>
 			</div>
 
@@ -375,6 +406,123 @@ export function ProjectsTab({ projects }: Props) {
 							<X className="w-4 h-4" />
 						</button>
 					</div>
+
+					{/* GitHub Autofill Assistant — ONLY shown when creating a New Project */}
+					{!editing.id && (
+						<div className="rounded-xl border border-surface1/70 bg-surface0/30 p-4 space-y-3.5">
+							<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface0/70 pb-2.5">
+								<div className="flex items-center gap-2">
+									<FolderGit2 className="w-4 h-4 text-accent" />
+									<span className="text-xs font-bold text-text uppercase tracking-wider">
+										Autofill from GitHub
+									</span>
+								</div>
+								<div className="flex items-center gap-1 text-[11px]">
+									<button
+										type="button"
+										onClick={() => setImportMode('list')}
+										className={`cursor-pointer px-2.5 py-1 rounded-lg font-bold transition-all ${
+											importMode === 'list'
+												? 'bg-accent text-accent-fg shadow-sm'
+												: 'text-subtext0 hover:text-text hover:bg-surface0/60'
+										}`}
+									>
+										Your Repositories
+									</button>
+									<button
+										type="button"
+										onClick={() => setImportMode('url')}
+										className={`cursor-pointer px-2.5 py-1 rounded-lg font-bold transition-all ${
+											importMode === 'url'
+												? 'bg-accent text-accent-fg shadow-sm'
+												: 'text-subtext0 hover:text-text hover:bg-surface0/60'
+										}`}
+									>
+										Direct URL
+									</button>
+								</div>
+							</div>
+
+							{importMode === 'list' ? (
+								<div className="space-y-3">
+									<div className="flex flex-col sm:flex-row gap-2">
+										<div className="relative flex-1">
+											<input
+												value={githubUsername}
+												onChange={(e) => setGithubUsername(e.target.value)}
+												placeholder="GitHub username (e.g. erzer12)"
+												className="admin-input-modern text-xs py-2 w-full"
+												style={{ paddingLeft: '2.5rem' }}
+											/>
+											<FolderGit2 className="w-4 h-4 text-subtext0 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+										</div>
+										<button
+											type="button"
+											onClick={handleFetchUserRepos}
+											disabled={isFetchingUserRepos || !githubUsername}
+											className="cursor-pointer inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface1/60 hover:bg-surface1 text-xs font-bold text-text hover:text-accent border border-surface2/50 transition-all disabled:opacity-50 shrink-0"
+										>
+											{isFetchingUserRepos ? (
+												<Loader2 className="w-3.5 h-3.5 animate-spin" />
+											) : (
+												<span>Fetch Repos</span>
+											)}
+										</button>
+									</div>
+
+									{userRepos.length > 0 && (
+										<div className="space-y-1.5">
+											<label
+												htmlFor="repo-select-input"
+												className="text-[11px] font-bold text-subtext1 uppercase tracking-wider"
+											>
+												Select a repository to autofill:
+											</label>
+											<select
+												id="repo-select-input"
+												value={selectedRepoUrl}
+												onChange={(e) => handleSelectRepo(e.target.value)}
+												className="admin-input-modern text-xs py-2 w-full cursor-pointer"
+											>
+												<option value="">-- Choose from {userRepos.length} repositories --</option>
+												{userRepos.map((repo) => (
+													<option key={repo.id} value={repo.html_url}>
+														{repo.name} {repo.language ? `(${repo.language})` : ''}
+														{repo.description ? ` — ${repo.description.slice(0, 50)}...` : ''}
+													</option>
+												))}
+											</select>
+										</div>
+									)}
+								</div>
+							) : (
+								<div className="flex flex-col sm:flex-row gap-2">
+									<div className="relative flex-1">
+										<input
+											value={githubUrl}
+											onChange={(e) => setGithubUrl(e.target.value)}
+											placeholder="https://github.com/org/repo"
+											className="admin-input-modern text-xs py-2 w-full"
+											style={{ paddingLeft: '2.5rem' }}
+										/>
+										<FolderGit2 className="w-4 h-4 text-subtext0 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+									</div>
+									<button
+										type="button"
+										onClick={handleGithubImport}
+										disabled={isFetchingGithub || !githubUrl}
+										className="cursor-pointer inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-accent text-accent-fg text-xs font-bold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 shrink-0"
+									>
+										{isFetchingGithub ? (
+											<Loader2 className="w-3.5 h-3.5 animate-spin" />
+										) : (
+											<span>Import &amp; Fill</span>
+										)}
+									</button>
+								</div>
+							)}
+						</div>
+					)}
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 						<FormField id="proj-title" label="Project Title *">

@@ -48,13 +48,6 @@ export function MinimalFooter({
 					<div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:justify-start">
 						<span className="whitespace-nowrap">© {new Date().getFullYear()} Harshil P</span>
 						<span className="text-surface0 hidden md:inline">-</span>
-						<div className="flex items-center gap-1 whitespace-nowrap" title="Service Status">
-							<span className="relative mr-1.5 flex h-3 w-3">
-								<span className="bg-green/75 absolute inline-flex h-full w-full animate-ping rounded-full" />
-								<span className="bg-green relative inline-flex h-3 w-3 rounded-full" />
-							</span>
-							<span className="text-subtext1 text-sm font-medium">All Services Nominal</span>
-						</div>
 					</div>
 
 					{/* Right Column: Surfing Stopwatch, Deployment Commit & Socials */}

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { MinimalFooter } from '@/components/layout/Footer';
 import { MinimalNav } from '@/components/layout/Navigation';
 import { ProjectCard } from '@/components/resume/ProjectCard';
@@ -35,14 +34,6 @@ export default async function ProjectsPage() {
 			<main className="flex-1 mx-auto w-full max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-10 space-y-8 pb-20">
 				{/* Header Section */}
 				<header className="space-y-3 border-b border-surface0/60 pb-6">
-					<nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-subtext1">
-						<Link href="/" className="hover:text-accent transition-colors">
-							~
-						</Link>
-						<span className="text-surface2">/</span>
-						<span className="text-accent font-bold">projects</span>
-					</nav>
-
 					<div className="space-y-1">
 						<h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text">Projects</h1>
 						<p className="text-subtext0 text-sm font-sans max-w-2xl leading-relaxed">

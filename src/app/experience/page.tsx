@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { MinimalFooter } from '@/components/layout/Footer';
 import { MinimalNav } from '@/components/layout/Navigation';
 import { ExperienceTimeline } from '@/components/resume/ExperienceTimeline';
@@ -30,17 +29,8 @@ export default async function ExperiencePage() {
 			<main className="flex-1 mx-auto w-full max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-10 space-y-10 pb-20">
 				{/* Page Header */}
 				<header className="space-y-3 border-b border-surface0/60 pb-6">
-					<nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-subtext1">
-						<Link href="/" className="hover:text-accent transition-colors">
-							~
-						</Link>
-						<span className="text-surface2">/</span>
-						<span className="text-accent font-bold">experience</span>
-					</nav>
-
 					<div className="space-y-1">
 						<div className="flex items-center gap-2">
-							<span className="text-accent text-xs font-mono font-bold">02 {'//'}</span>
 							<h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text">
 								Experience
 							</h1>

@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { ACCENT_COLORS, useTheme } from '@/components/theme/ThemeContext';
 import type { Commit } from '@/lib/data/github';
 import { GitHubContributionGraph } from './GitHubContributionGraph';
@@ -155,13 +156,13 @@ export function DashboardWidgets({ username = 'erzer12', initialCommits }: Dashb
 					</div>
 
 					<div className="mt-3">
-						<a
-							href="mailto:harshilp1234@gmail.com"
-							className="inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface0 hover:bg-surface1 text-accent font-mono text-xs font-semibold border border-surface1 hover:border-accent transition-all"
+						<Link
+							href="/contact"
+							className="inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface0 hover:bg-surface1 text-accent font-mono text-xs font-semibold border border-surface1 hover:border-accent transition-all group"
 						>
-							<span>Say Hello</span>
-							<span>✉</span>
-						</a>
+							<span>Get in Touch</span>
+							<span className="transition-transform group-hover:translate-x-0.5">→</span>
+						</Link>
 					</div>
 				</div>
 			</div>

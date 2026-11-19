@@ -43,7 +43,6 @@ export function MinimalNav({
 								/
 							</li>
 							<li className="inline-flex items-center font-medium text-text">
-								<span>{name.toLowerCase().replace(/\s+/g, '')}</span>
 								<span
 									className="cursor-blink bg-accent ml-1.5 inline-block h-4 w-2 rounded-xs"
 									aria-hidden="true"

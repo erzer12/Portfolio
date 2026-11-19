@@ -23,7 +23,7 @@ import {
 	markContactMessageRead,
 	submitContactMessage,
 } from '@/lib/data/messages';
-import { saveProfile } from '@/lib/data/profile';
+import { getProfile, saveProfile } from '@/lib/data/profile';
 import { deleteProject, saveProject, updateProjectsOrder } from '@/lib/data/projects';
 
 import { saveSiteSettings } from '@/lib/data/settings';
@@ -84,6 +84,10 @@ export async function saveProfileAction(data: Partial<Profile>) {
 
 export async function saveProjectAction(data: Partial<Project>) {
 	await requireAdminAuth();
+	// Sanitize slug: trim whitespace and normalize to lowercase kebab-case
+	if (data.slug) {
+		data.slug = data.slug.trim().toLowerCase().replace(/\s+/g, '-');
+	}
 	await saveProject(data);
 	revalidatePath('/');
 	revalidatePath('/admin');
@@ -368,6 +372,88 @@ export async function fetchGithubRepoAction(url: string) {
 			github: url,
 		};
 		// Fixed: Catch clause variable cannot have explicit type annotation
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Unknown repository fetch error';
+		throw new Error(message);
+	}
+}
+
+export type GithubRepoSummary = {
+	id: number;
+	name: string;
+	full_name: string;
+	description: string;
+	html_url: string;
+	homepage?: string;
+	language?: string;
+	topics: string[];
+	stargazers_count: number;
+	updated_at: string;
+};
+
+type RawGithubRepo = {
+	id: number;
+	name: string;
+	full_name: string;
+	description: string | null;
+	html_url: string;
+	homepage?: string | null;
+	language?: string | null;
+	topics?: string[];
+	stargazers_count?: number;
+	updated_at?: string;
+};
+
+export async function fetchUserGithubReposAction(username?: string): Promise<GithubRepoSummary[]> {
+	await requireAdminAuth();
+	try {
+		let user = username?.trim();
+		if (!user) {
+			const profile = await getProfile();
+			const githubUrl = profile?.social?.github;
+			if (githubUrl) {
+				const match = githubUrl.match(/github\.com\/([^/]+)/);
+				if (match) user = match[1];
+			}
+		}
+		if (!user) user = 'erzer12';
+
+		const res = await fetch(
+			`https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=100`,
+			{
+				headers: {
+					Accept: 'application/vnd.github.v3+json',
+					'User-Agent': 'Portfolio-CMS',
+				},
+				next: { revalidate: 60 },
+			},
+		);
+
+		if (!res.ok) {
+			if (res.status === 404) {
+				throw new Error(`GitHub user "${user}" was not found.`);
+			}
+			if (res.status === 403) {
+				throw new Error('GitHub API rate limit reached. Please import by direct URL.');
+			}
+			throw new Error(`GitHub API responded with error (${res.status})`);
+		}
+
+		const data = await res.json();
+		if (!Array.isArray(data)) return [];
+
+		return (data as RawGithubRepo[]).map((repo) => ({
+			id: repo.id,
+			name: repo.name,
+			full_name: repo.full_name,
+			description: repo.description || '',
+			html_url: repo.html_url,
+			homepage: repo.homepage || '',
+			language: repo.language || '',
+			topics: Array.isArray(repo.topics) ? repo.topics : [],
+			stargazers_count: repo.stargazers_count || 0,
+			updated_at: repo.updated_at || '',
+		}));
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown repository fetch error';
 		throw new Error(message);

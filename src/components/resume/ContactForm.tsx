@@ -78,7 +78,7 @@ export function ContactForm({ recipientEmail = 'harshilp1234@gmail.com' }: Props
 	};
 
 	return (
-		<div className="rounded-xl border border-surface0/80 bg-mantle p-6 sm:p-8 shadow-lg space-y-6 font-sans">
+		<div className="rounded-xl border border-surface0/80 bg-mantle p-6 sm:p-8 shadow-lg font-sans flex-1 h-full flex flex-col justify-between">
 			<div className="space-y-1 border-b border-surface0/60 pb-4">
 				<h2 className="text-xl font-bold text-text font-mono">Send a Message</h2>
 				<p className="text-xs text-subtext0">
@@ -125,7 +125,11 @@ export function ContactForm({ recipientEmail = 'harshilp1234@gmail.com' }: Props
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="space-y-4" noValidate>
+			<form
+				onSubmit={handleSubmit}
+				className="space-y-4 flex-1 flex flex-col justify-between pt-6"
+				noValidate
+			>
 				{/* Name Field */}
 				<div className="space-y-1.5">
 					<label htmlFor="contact-name" className="block text-xs font-mono text-text font-semibold">
@@ -201,7 +205,7 @@ export function ContactForm({ recipientEmail = 'harshilp1234@gmail.com' }: Props
 					</label>
 					<textarea
 						id="contact-message"
-						rows={5}
+						rows={4}
 						value={message}
 						onChange={(e) => {
 							setMessage(e.target.value);
@@ -239,7 +243,7 @@ export function ContactForm({ recipientEmail = 'harshilp1234@gmail.com' }: Props
 				</div>
 
 				{/* Submit Button */}
-				<div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+				<div className="pt-2 mt-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 					<button
 						type="submit"
 						disabled={isPending}

@@ -197,7 +197,7 @@ export function MessagesTab({ messages }: Props) {
 				))}
 
 				{filteredMessages.length === 0 && (
-					<div className="rounded-2xl border border-dashed border-surface1 p-8 sm:p-12 text-center text-xs text-subtext0 space-y-4">
+					<div className="rounded-2xl border border-dashed border-surface1 p-8 sm:p-12 text-center text-xs text-subtext0 space-y-2">
 						<p className="font-semibold text-text">
 							{filter === 'all'
 								? 'No contact form messages received yet.'
@@ -205,35 +205,8 @@ export function MessagesTab({ messages }: Props) {
 						</p>
 						<p className="text-[11px] text-subtext0 max-w-md mx-auto leading-relaxed">
 							When visitors send messages via your portfolio contact form, they will be archived
-							here and dispatched to your email / Discord webhook.
+							here and dispatched to your email.
 						</p>
-
-						<div className="pt-2">
-							<button
-								type="button"
-								onClick={() => {
-									const sql = `-- Run this in Supabase SQL Editor:
-create table if not exists contact_messages (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  email text not null,
-  message text not null,
-  read boolean default false,
-  created_at timestamptz default now()
-);
-alter table contact_messages enable row level security;
-create policy "public_insert_contact_messages" on contact_messages for insert with check (true);`;
-									navigator.clipboard.writeText(sql);
-									alert(
-										'SQL setup snippet copied to clipboard! Paste and run it in your Supabase SQL Editor.',
-									);
-								}}
-								className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-surface1 bg-surface0/60 text-xs font-mono text-subtext1 hover:text-accent hover:border-accent transition-colors"
-							>
-								<Copy className="w-3.5 h-3.5" />
-								<span>Copy Supabase SQL Setup Script</span>
-							</button>
-						</div>
 					</div>
 				)}
 			</div>

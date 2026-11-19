@@ -3,26 +3,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FaGithub } from 'react-icons/fa6';
+import ReactMarkdown from 'react-markdown';
 import { MinimalFooter } from '@/components/layout/Footer';
 import { MinimalNav } from '@/components/layout/Navigation';
 import { getCaseStudy } from '@/lib/data/case-studies';
 import { getFooterLinks } from '@/lib/data/footer';
 import { getProfile } from '@/lib/data/profile';
-import { getAllProjectSlugs, getProjectBySlug, getProjects } from '@/lib/data/projects';
+import { getProjectBySlug, getProjects } from '@/lib/data/projects';
 import { displayText, ensureExternalUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ slug: string }> };
-
-export async function generateStaticParams() {
-	if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-		return [{ slug: 'signstream' }, { slug: 'h-r-e' }, { slug: 'zen' }];
-	}
-	const slugs = await getAllProjectSlugs();
-	const uniqueSlugs = new Set([...slugs, 'signstream', 'h-r-e', 'zen']);
-	return Array.from(uniqueSlugs).map((slug) => ({ slug }));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { slug } = await params;
@@ -37,6 +29,81 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 		title: `${title} — Harshil P`,
 		description,
 	};
+}
+
+function ProjectMarkdown({ content }: { content: string }) {
+	return (
+		<ReactMarkdown
+			components={{
+				h1: ({ children }) => (
+					<h2 className="text-xl sm:text-2xl font-bold text-text font-mono mt-2 mb-4 tracking-tight block">
+						{children}
+					</h2>
+				),
+				h2: ({ children }) => (
+					<h3 className="text-lg sm:text-xl font-bold text-accent font-mono mt-8 mb-3 tracking-tight block">
+						{children}
+					</h3>
+				),
+				h3: ({ children }) => (
+					<h4 className="text-base sm:text-lg font-bold text-text font-mono mt-6 mb-3 tracking-tight block">
+						{children}
+					</h4>
+				),
+				h4: ({ children }) => (
+					<h5 className="text-sm sm:text-base font-bold text-subtext1 font-mono mt-4 mb-2 block">
+						{children}
+					</h5>
+				),
+				p: ({ children }) => (
+					<p className="text-xs sm:text-sm text-subtext0 leading-relaxed font-sans mb-3.5 last:mb-0">
+						{children}
+					</p>
+				),
+				ul: ({ children }) => (
+					<ul className="space-y-2 my-3 pl-5 list-disc marker:text-accent font-sans text-xs sm:text-sm text-subtext0">
+						{children}
+					</ul>
+				),
+				ol: ({ children }) => (
+					<ol className="space-y-2 my-3 pl-5 list-decimal marker:text-accent font-sans text-xs sm:text-sm text-subtext0">
+						{children}
+					</ol>
+				),
+				li: ({ children }) => <li className="leading-relaxed pl-1">{children}</li>,
+				strong: ({ children }) => <strong className="font-bold text-text">{children}</strong>,
+				em: ({ children }) => <em className="italic text-subtext1">{children}</em>,
+				code: ({ children }) => (
+					<code className="px-1.5 py-0.5 rounded bg-surface0 text-accent font-mono text-xs border border-surface1/40">
+						{children}
+					</code>
+				),
+				pre: ({ children }) => (
+					<pre className="p-4 rounded-xl bg-crust border border-surface0/80 overflow-x-auto my-4 font-mono text-xs text-text">
+						{children}
+					</pre>
+				),
+				blockquote: ({ children }) => (
+					<blockquote className="border-l-2 border-accent pl-3.5 italic text-subtext1 my-3 bg-surface0/20 py-1.5 rounded-r font-sans text-xs sm:text-sm">
+						{children}
+					</blockquote>
+				),
+				a: ({ href, children }) => (
+					<a
+						href={href}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="text-accent underline hover:opacity-80 transition-opacity"
+					>
+						{children}
+					</a>
+				),
+				hr: () => <hr className="my-6 border-surface0/60" />,
+			}}
+		>
+			{content}
+		</ReactMarkdown>
+	);
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
@@ -86,15 +153,8 @@ export default async function ProjectDetailPage({ params }: Props) {
 			? projectList[currentIndex + 1]
 			: projectList[0];
 
-	// Extract overview fields either from case study or synthesis
-	const overviewProblem =
-		caseStudy?.overview?.problem ||
-		'Designing resilient, accessible systems requires balancing user latency, computational efficiency, and maintainable software architecture.';
-	const overviewSolution =
-		caseStudy?.overview?.solution ||
-		longDescription ||
-		tagline ||
-		'Architected with clean component boundaries, modular service layers, and production-tested patterns.';
+	const caseStudyProblem = caseStudy?.overview?.problem;
+	const caseStudySolution = caseStudy?.overview?.solution;
 
 	return (
 		<div className="min-h-screen bg-base text-text selection:bg-surface1 selection:text-accent font-mono transition-colors">
@@ -199,7 +259,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 					)}
 				</header>
 
-				{/* ─── Section 2: Standardized Overview & Problem-Solution Matrix ─── */}
+				{/* ─── Section 2: Standardized Overview & Technical Context ─── */}
 				<section className="border border-surface0/80 bg-mantle rounded-xl p-6 sm:p-8 shadow-sm space-y-6">
 					<div className="flex items-center gap-2 border-b border-surface0/60 pb-3">
 						<span className="text-accent font-bold">{'//'}</span>
@@ -208,44 +268,51 @@ export default async function ProjectDetailPage({ params }: Props) {
 						</h2>
 					</div>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-5 font-sans">
-						<div className="space-y-2.5 bg-surface0/30 p-5 rounded-xl border border-surface0/70 flex flex-col justify-between">
-							<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider flex items-center gap-2">
-								<span className="w-1.5 h-1.5 rounded-full bg-accent" />
-								<span>Problem & Motivation</span>
-							</h3>
-							<p className="text-xs sm:text-sm text-subtext0 leading-relaxed flex-grow">
-								{displayText(overviewProblem)}
-							</p>
-						</div>
+					{/* Structured Problem & Solution Matrix (for curated Case Studies) */}
+					{caseStudyProblem && caseStudySolution && (
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-5 font-sans">
+							<div className="space-y-2.5 bg-surface0/30 p-5 rounded-xl border border-surface0/70 flex flex-col justify-between">
+								<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider flex items-center gap-2">
+									<span className="w-1.5 h-1.5 rounded-full bg-accent" />
+									<span>Problem & Motivation</span>
+								</h3>
+								<p className="text-xs sm:text-sm text-subtext0 leading-relaxed flex-grow">
+									{displayText(caseStudyProblem)}
+								</p>
+							</div>
 
-						<div className="space-y-2.5 bg-surface0/30 p-5 rounded-xl border border-surface0/70 flex flex-col justify-between">
-							<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider flex items-center gap-2">
-								<span className="w-1.5 h-1.5 rounded-full bg-accent" />
-								<span>Architectural Solution</span>
-							</h3>
-							<p className="text-xs sm:text-sm text-subtext0 leading-relaxed flex-grow">
-								{displayText(overviewSolution)}
-							</p>
-						</div>
-					</div>
-
-					{/* Deep Dive / Long Description if available */}
-					{longDescription && longDescription !== overviewSolution && (
-						<div className="pt-3 border-t border-surface0/60 space-y-3 font-sans">
-							<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider">
-								Implementation Details
-							</h3>
-							<div className="space-y-3 text-xs sm:text-sm text-subtext0 leading-relaxed">
-								{longDescription
-									.split(/\r?\n+/)
-									.map((p) => p.trim())
-									.filter(Boolean)
-									.map((para) => (
-										<p key={para.slice(0, 30)}>{para}</p>
-									))}
+							<div className="space-y-2.5 bg-surface0/30 p-5 rounded-xl border border-surface0/70 flex flex-col justify-between">
+								<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider flex items-center gap-2">
+									<span className="w-1.5 h-1.5 rounded-full bg-accent" />
+									<span>Architectural Solution</span>
+								</h3>
+								<p className="text-xs sm:text-sm text-subtext0 leading-relaxed flex-grow">
+									{displayText(caseStudySolution)}
+								</p>
 							</div>
 						</div>
+					)}
+
+					{/* Comprehensive Markdown Documentation */}
+					{longDescription && (
+						<div
+							className={
+								caseStudyProblem && caseStudySolution ? 'pt-4 border-t border-surface0/60' : ''
+							}
+						>
+							{caseStudyProblem && caseStudySolution && (
+								<h3 className="font-mono text-xs font-bold text-text uppercase tracking-wider mb-4">
+									Implementation Details
+								</h3>
+							)}
+							<ProjectMarkdown content={longDescription} />
+						</div>
+					)}
+
+					{!longDescription && !caseStudyProblem && (
+						<p className="text-xs sm:text-sm text-subtext0 leading-relaxed font-sans">
+							{displayText(tagline || 'Detailed project documentation coming soon.')}
+						</p>
 					)}
 				</section>
 
