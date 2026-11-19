@@ -135,8 +135,9 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 		>
 			{/* Card Body */}
 			<div className="p-5 sm:p-6 pb-4 flex-1 flex flex-col">
-				<div className="flex items-start justify-between gap-2.5 mb-2.5">
-					<h3 className="font-serif italic font-normal text-xl sm:text-2xl text-text group-hover:text-accent transition-colors tracking-tight leading-snug min-w-0">
+				{/* Title row: fixed min-h so description always starts at the same Y regardless of title length */}
+				<div className="flex items-start justify-between gap-2.5 mb-3 min-h-[3.5rem]">
+					<h3 className="font-inconsolata font-semibold text-xl sm:text-2xl text-text group-hover:text-accent transition-colors tracking-tight leading-snug min-w-0 line-clamp-2">
 						<Link href={primaryHref} className="hover:underline">
 							{displayText(project.title)}
 						</Link>
@@ -172,7 +173,7 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 				</div>
 
 				{/* Description with room to breathe */}
-				<p className="font-grotesk text-xs sm:text-[13px] leading-relaxed text-subtext0 line-clamp-3 mb-4 flex-grow min-h-[3.6rem]">
+				<p className="font-inconsolata text-xs sm:text-[13px] leading-relaxed text-subtext0 line-clamp-3 mb-4 flex-grow">
 					{displayText(project.description)}
 				</p>
 
@@ -180,7 +181,7 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 				<div className="pt-3.5 border-t border-surface0/60 mt-auto">
 					<div className="flex items-center justify-between mb-2">
 						<span
-							className="font-grotesk text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5"
+							className="font-inconsolata text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5"
 							style={{ color: accentColor }}
 						>
 							<span
@@ -204,7 +205,7 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 							return (
 								<span
 									key={tech}
-									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-surface0 bg-surface0/40 text-[11px] font-grotesk text-subtext1 hover:text-text hover:border-surface1 transition-colors"
+									className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-surface0 bg-surface0/40 text-[11px] font-inconsolata text-subtext1 hover:text-text hover:border-surface1 transition-colors"
 								>
 									<Icon className="w-3 h-3 flex-shrink-0" />
 									<span>{displayText(tech)}</span>
@@ -213,7 +214,7 @@ export function ProjectCard({ project, index: _index }: ProjectCardProps) {
 						})}
 						{remainingCount > 0 && (
 							<span
-								className="inline-flex items-center px-2 py-0.5 rounded-full border border-surface0/70 bg-surface0/30 text-[10.5px] font-grotesk text-subtext1 hover:text-text hover:border-surface1 transition-colors"
+								className="inline-flex items-center px-2 py-0.5 rounded-full border border-surface0/70 bg-surface0/30 text-[10.5px] font-inconsolata text-subtext1 hover:text-text hover:border-surface1 transition-colors"
 								title={stack.slice(3).join(', ')}
 							>
 								+{remainingCount}

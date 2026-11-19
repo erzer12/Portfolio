@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Inconsolata, Instrument_Serif, Inter, Space_Grotesk } from 'next/font/google';
 import './base.css';
 import './components.css';
 import './app.css';
@@ -7,6 +8,40 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ThemeProvider } from '@/components/theme/ThemeContext';
 import { getProfile } from '@/lib/data/profile';
+
+// Primary monospace — Inconsolata (variable font, all weights)
+const inconsolata = Inconsolata({
+	subsets: ['latin'],
+	display: 'swap',
+	variable: '--font-inconsolata',
+	fallback: ['JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+});
+
+// Sub / body font — Inter (variable font, all weights)
+const inter = Inter({
+	subsets: ['latin'],
+	display: 'swap',
+	variable: '--font-inter',
+	fallback: ['Space Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+});
+
+// Serif display — Instrument Serif (kept for card titles)
+const instrumentSerif = Instrument_Serif({
+	subsets: ['latin'],
+	weight: ['400'],
+	style: ['normal', 'italic'],
+	display: 'swap',
+	variable: '--font-instrument-serif',
+	fallback: ['Georgia', 'serif'],
+});
+
+// Space Grotesk — kept as fallback, loaded via CSS @import
+const spaceGrotesk = Space_Grotesk({
+	subsets: ['latin'],
+	display: 'swap',
+	variable: '--font-space-grotesk',
+	fallback: ['system-ui', 'sans-serif'],
+});
 
 export async function generateMetadata(): Promise<Metadata> {
 	const profile = await getProfile();
@@ -80,7 +115,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html
 			lang="en"
 			suppressHydrationWarning
-			className="bg-base font-mono text-text selection:bg-surface1 selection:text-accent caret-accent min-h-screen"
+			className={`bg-base font-mono text-text selection:bg-surface1 selection:text-accent caret-accent min-h-screen ${inconsolata.variable} ${inter.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable}`}
 		>
 			<head>
 				<script data-theme-init>
